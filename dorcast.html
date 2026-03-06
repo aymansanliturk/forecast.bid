@@ -276,10 +276,6 @@ input:focus, select:focus { border-color:var(--accent); background:#fff; }
     </button>
     <div class="pb-sep"></div>
     <button class="pb-btn export" onclick="exportHTML()">Export HTML</button>
-    <button class="pb-btn" onclick="exportPDF()" title="Export as PDF">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      PDF
-    </button>
     <div class="pb-sep"></div>
     <button class="pb-btn" id="btn-undo" onclick="undo()" disabled title="Undo (Ctrl+Z)">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 00-4-4H4"/></svg>
@@ -335,7 +331,8 @@ input:focus, select:focus { border-color:var(--accent); background:#fff; }
 <div id="output">
   <div class="print-bar">
     <button class="btn-secondary" onclick="goBack()">← Edit Data</button>
-    <button class="btn-generate" style="flex:none;padding:10px 20px;font-size:13px;" onclick="window.print()">Print / PDF</button>
+    <button class="btn-generate" style="flex:none;padding:10px 20px;font-size:13px;" onclick="window.print()">🖨 Print</button>
+    <button class="btn-generate" style="flex:none;padding:10px 20px;font-size:13px;background:#c0392b;" onclick="exportPDF()">⬇ PDF</button>
     <button class="pb-btn xl" onclick="exportExcel()" style="margin-left:4px;">Export Excel</button>
   </div>
   <div class="out-header">
@@ -868,9 +865,7 @@ document.addEventListener('keydown', e => {
 })();
 
 // ── PDF Export ──
-async function exportPDF() {
-  const inEditor = document.getElementById('editor').style.display !== 'none';
-  if (inEditor) { generate(); await new Promise(r => setTimeout(r, 400)); }
+function exportPDF() {
   const state = collectState();
   const name = (state.title || 'dorcast').replace(/[^a-z0-9_-]/gi, '_').toLowerCase();
   const fmt = (state.format || 'A3').toUpperCase();
@@ -879,7 +874,7 @@ async function exportPDF() {
     image: { type: 'jpeg', quality: 0.97 },
     html2canvas: { scale: 2, useCORS: true },
     jsPDF: { unit: 'mm', format: fmt === 'A4' ? 'a4' : 'a3', orientation: 'landscape' }
-  }).from(document.getElementById('output')).save().then(() => { if (inEditor) goBack(); });
+  }).from(document.getElementById('output')).save();
 }
 </script>
 </body>

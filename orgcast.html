@@ -197,10 +197,6 @@
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
       Export HTML
     </button>
-    <button class="pb-btn" onclick="exportPDF()" title="Export as PDF">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      PDF
-    </button>
     <div class="pb-sep"></div>
     <button class="pb-btn" id="btn-undo" onclick="undo()" disabled title="Undo (Ctrl+Z)">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 00-4-4H4"/></svg>
@@ -259,7 +255,8 @@
 <div id="output">
   <div class="print-bar">
     <button class="btn-secondary" onclick="goBack()">← Edit Data</button>
-    <button class="btn-generate" style="flex:none;padding:10px 20px;font-size:13px;" onclick="window.print()">Print / Save PDF</button>
+    <button class="btn-generate" style="flex:none;padding:10px 20px;font-size:13px;" onclick="window.print()">🖨 Print</button>
+    <button class="btn-generate" style="flex:none;padding:10px 20px;font-size:13px;background:#c0392b;" onclick="exportPDF()">⬇ PDF</button>
   </div>
   <div class="chart-header">
     <div class="logo-area"><img id="out-logo" src="" alt="Siemens Energy"></div>
@@ -821,9 +818,7 @@
   })();
 
   // ── PDF Export ──
-  async function exportPDF() {
-    const inEditor = document.getElementById('editor').style.display !== 'none';
-    if (inEditor) { generate(); await new Promise(r => setTimeout(r, 400)); }
+  function exportPDF() {
     const state = collectState();
     const name = (state.title || 'orgcast').replace(/[^a-z0-9_-]/gi, '_').toLowerCase();
     const fmt = (state.format || 'A4').toUpperCase();
@@ -832,7 +827,7 @@
       image: { type: 'jpeg', quality: 0.97 },
       html2canvas: { scale: 2, useCORS: true },
       jsPDF: { unit: 'mm', format: fmt === 'A3' ? 'a3' : 'a4', orientation: 'landscape' }
-    }).from(document.getElementById('output')).save().then(() => { if (inEditor) goBack(); });
+    }).from(document.getElementById('output')).save();
   }
 
 </script>
