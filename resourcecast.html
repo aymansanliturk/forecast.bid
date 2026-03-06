@@ -124,7 +124,6 @@
 
   .out-page { padding: 10mm 12mm; }
   .out-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6mm; padding-bottom: 4mm; border-bottom: 2px solid var(--text); }
-  .out-logo { height: 36px; }
   .out-title-wrap { flex: 1; padding: 0 20px; }
   .out-doc-title { font-size: 20px; font-weight: 700; color: var(--text); }
   .out-doc-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
@@ -181,11 +180,6 @@
       </div>
     </div>
     <div class="brand-right">
-      <label id="logo-btn" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:1.5px solid var(--border);border-radius:20px;background:var(--surface);font-size:10px;font-weight:600;color:var(--faint);letter-spacing:0.5px;text-transform:uppercase;transition:border-color 0.15s,color 0.15s;flex-shrink:0;" title="Upload company logo" onmouseover="this.style.borderColor='var(--text)';this.style.color='var(--text)';" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--faint)';">
-      <input type="file" id="logo-upload" accept="image/*" style="display:none" onchange="handleLogoUpload(event)">
-      <img id="company-logo-img" src="" alt="" style="height:18px;width:auto;max-width:72px;object-fit:contain;display:none;border-radius:2px;">
-      <span id="company-logo-lbl" style="white-space:nowrap;">⬆ Logo</span>
-    </label>
       <a href="/" style="font-size:11px;font-weight:600;color:var(--accent);text-decoration:none;padding:4px 12px;border:1.5px solid var(--accent);border-radius:20px;transition:all 0.15s;" onmouseover="this.style.background='var(--accent)';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='var(--accent)'">&#8962; Home</a>
       <span class="v-badge">v1.0</span>
       <div class="brand-desc">Hours · Rates · DKK Hedge · Cost Breakdown</div>
@@ -315,8 +309,6 @@
   <div class="out-page" id="out-page">
     <div class="out-header">
       <div>
-        <img id="out-logo" class="out-logo" src="" alt="Company Logo" style="display:none">
-        <div id="out-logo-text" style="font-size:13px;font-weight:700;letter-spacing:1px;color:#2c4e87;line-height:1.35;">YOUR<br><span style="font-weight:400;">COMPANY</span></div>
       </div>
       <div class="out-title-wrap">
         <div class="out-doc-title" id="out-title">Resource Cost Breakdown</div>
@@ -333,7 +325,6 @@
 
 <script>
   // ── Constants ──
-  const SE_LOGO = localStorage.getItem('companyLogo') || '';
 
   const COMPANIES = [
     { key:'SE',   label:'Our Company', bg:'#dde8f7', color:'#2c4e87' },
@@ -663,13 +654,6 @@
     document.getElementById('out-hedge').textContent =
       `EUR/DKK hedge rate: ${rate.toFixed(2)} · All DKK amounts rounded to nearest integer`;
 
-    // Logo
-    const logoEl = document.getElementById('out-logo');
-    const logoTxt = document.getElementById('out-logo-text');
-    if (SE_LOGO) {
-      logoEl.src = SE_LOGO; logoEl.style.display=''; logoTxt.style.display='none';
-    }
-
     // Build table HTML
     const phHdr = phases.map(p=>`<th>${esc(p.name)}</th>`).join('');
     let html = `<thead><tr>
@@ -917,36 +901,6 @@
     DEFAULT_ROLES.forEach(r=>addRole(r));
     addExpense({label:'Travel & Accommodation', amount:15000});
     addExpense({label:'Tools & Software',        amount:3000});
-  })();
-
-
-  function handleLogoUpload(e) {
-    const file = e.target.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-      localStorage.setItem('companyLogo', ev.target.result);
-      applyLogo(ev.target.result);
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-  }
-  function clearLogo() {
-    localStorage.removeItem('companyLogo');
-    applyLogo('');
-  }
-  function applyLogo(src) {
-    const outEl  = document.getElementById('out-logo');
-    const outTxt = document.getElementById('out-logo-text');
-    const btnImg = document.getElementById('company-logo-img');
-    const btnLbl = document.getElementById('company-logo-lbl');
-    if (outEl)  { outEl.src = src || ''; outEl.style.display = src ? '' : 'none'; }
-    if (outTxt) outTxt.style.display = src ? 'none' : '';
-    if (btnImg) { btnImg.src = src || ''; btnImg.style.display = src ? '' : 'none'; }
-    if (btnLbl) btnLbl.style.display = src ? 'none' : '';
-  }
-  (function initLogo() {
-    const saved = localStorage.getItem('companyLogo');
-    if (saved) applyLogo(saved);
   })();
 </script>
 </body>
