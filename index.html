@@ -134,14 +134,8 @@
 <body>
 
 <header>
-  <div class="logo-wrap" id="logo-wrap">
-    <div id="logo-img-wrap" style="display:none;"><img id="header-logo" src="" alt="Company Logo" style="height:36px;width:auto;cursor:pointer;" title="Click to change logo" onclick="document.getElementById('logo-upload').click()"></div>
-    <div id="logo-text-wrap" style="cursor:pointer;" title="Click to upload logo" onclick="document.getElementById('logo-upload').click()">
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" style="display:block;"><rect width="28" height="28" rx="6" fill="#2c4e87"/><path d="M8 20l4-5 3 3.5 4-5.5 5 7H8z" fill="white" opacity="0.9"/><circle cx="10" cy="10" r="2" fill="white" opacity="0.9"/></svg>
-    </div>
-    <input type="file" id="logo-upload" accept="image/*" style="display:none" onchange="handleLogoUpload(event)">
-    <div class="logo-divider"></div>
-    <div class="site-name" id="site-company-name" contenteditable="true" spellcheck="false" title="Click to edit company name" style="outline:none;cursor:text;min-width:40px;" onblur="saveCompanyName(this.innerText.trim())" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></div>
+  <div class="logo-wrap">
+    <div class="site-name">Bid Forecast Tools</div>
   </div>
   <div class="header-meta">
     Project Intelligence Suite<br>
@@ -281,40 +275,5 @@
   <span>Files are processed locally in your browser — no data is sent to any server</span>
 </footer>
 
-<script>
-(function(){
-  const logo = localStorage.getItem('companyLogo');
-  const name = localStorage.getItem('companyName') || '';
-  const nameEl = document.getElementById('site-company-name');
-  if (nameEl) nameEl.innerText = name;
-  if (logo) {
-    const img = document.getElementById('header-logo');
-    const imgWrap = document.getElementById('logo-img-wrap');
-    const txtWrap = document.getElementById('logo-text-wrap');
-    if (img) img.src = logo;
-    if (imgWrap) imgWrap.style.display = '';
-    if (txtWrap) txtWrap.style.display = 'none';
-  }
-})();
-function handleLogoUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(ev) {
-    const data = ev.target.result;
-    localStorage.setItem('companyLogo', data);
-    const img = document.getElementById('header-logo');
-    const imgWrap = document.getElementById('logo-img-wrap');
-    const txtWrap = document.getElementById('logo-text-wrap');
-    if (img) img.src = data;
-    if (imgWrap) imgWrap.style.display = '';
-    if (txtWrap) txtWrap.style.display = 'none';
-  };
-  reader.readAsDataURL(file);
-}
-function saveCompanyName(name) {
-  localStorage.setItem('companyName', name);
-}
-</script>
 </body>
 </html>

@@ -93,10 +93,6 @@
     padding: 7px 10px; outline: none; transition: border-color 0.15s;
   }
   input:focus, select:focus { border-color: var(--accent); background: #fff; }
-
-  /* Logo */
-  .btn-upload { display: inline-block; background: #f0f4fa; border: 1px solid #c8d5ea; border-radius: 5px; padding: 6px 10px; font-size: 11px; font-weight: 500; color: var(--accent); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
-  .btn-upload:hover { background: #dce8f5; }
   .btn-clr { background: none; border: 1px solid var(--border); border-radius: 5px; padding: 6px 9px; font-size: 12px; color: var(--faint); cursor: pointer; }
   .btn-clr:hover { color: var(--today); border-color: var(--today); }
 
@@ -199,10 +195,6 @@
   .chart-area { flex: 1; padding: 32px 36px; overflow-x: auto; }
 
   .chart-header { display: flex; align-items: center; border-bottom: 2px solid var(--text); padding-bottom: 12px; margin-bottom: 20px; gap: 16px; }
-  #logo-area { flex-shrink: 0; height: 44px; display: flex; align-items: center; }
-  #logo-area img { height: 44px; width: auto; }
-  #logo-area.placeholder { width: 100px; border: 1.5px dashed #ccc; border-radius: 4px; justify-content: center; }
-  #logo-area.placeholder span { font-size: 9px; color: #ccc; letter-spacing: 1px; text-transform: uppercase; }
   .title-block { flex: 1; }
   .title-block h1 { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
   .title-block .sub { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
@@ -315,11 +307,6 @@
       </div>
     </div>
     <div class="brand-right">
-      <label id="logo-btn" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:1.5px solid var(--border);border-radius:20px;background:var(--surface);font-size:10px;font-weight:600;color:var(--faint);letter-spacing:0.5px;text-transform:uppercase;transition:border-color 0.15s,color 0.15s;flex-shrink:0;" title="Upload company logo" onmouseover="this.style.borderColor='var(--text)';this.style.color='var(--text)';" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--faint)';">
-      <input type="file" id="logo-upload" accept="image/*" style="display:none" onchange="handleLogoUpload(event)">
-      <img id="company-logo-img" src="" alt="" style="height:18px;width:auto;max-width:72px;object-fit:contain;display:none;border-radius:2px;">
-      <span id="company-logo-lbl" style="white-space:nowrap;">⬆ Logo</span>
-    </label>
       <a href="/" style="font-size:11px;font-weight:600;color:var(--accent);text-decoration:none;padding:4px 12px;border:1.5px solid var(--accent);border-radius:20px;transition:all 0.15s;" onmouseover="this.style.background='var(--accent)';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='var(--accent)'">&#8962; Home</a>
       <div class="brand-desc">A3 Print Ready &nbsp;·&nbsp; Multi-Project &nbsp;·&nbsp; Bid + Execution</div>
       <span class="v-badge">v4.3</span>
@@ -452,7 +439,6 @@
     <!-- Chart area -->
     <div class="chart-area">
       <div class="chart-header">
-        <div id="logo-area" class="placeholder"><span>Your Logo</span></div>
         <div class="title-block">
           <h1 id="out-title"></h1>
           <div class="sub" id="out-sub"></div>
@@ -479,9 +465,6 @@
   const EXEC_COLORS = ["#4caf72","#e8903a","#2c4e87","#c9a84c","#5aadcf","#c07ab8","#56a86e","#d4875a"];
   const MILE_COLORS = ["#e05555","#b36a00","#6a3d9a","#1a6b45","#8c3a2a"];
   const PROJ_COLORS = ["#2c4e87","#3a7a52","#7b4fa6"];
-
-  let SE_LOGO = localStorage.getItem('companyLogo') || '';
-  let logoData = localStorage.getItem('companyLogo') || '';
   let projCount  = 0;
   let projIds    = [];
   let chartState = null;
@@ -885,7 +868,7 @@
       execTasks: getRows(`exec-body-${id}`),
     }));
 
-    chartState = { title, sub, rev, status, sColor, sm, sy, em, ey, projects, logoData };
+    chartState = { title, sub, rev, status, sColor, sm, sy, em, ey, projects };
     renderChart();
 
     document.getElementById('editor').style.display = 'none';
@@ -896,7 +879,6 @@
   function refreshChart() {
     if (!chartState) return;
     // Re-read logo in case it changed
-    chartState.logoData = logoData;
     renderChart();
   }
 
@@ -921,18 +903,6 @@
     const badge = document.getElementById('out-badge');
     badge.textContent = status;
     badge.style.cssText = `background:${sColor}18;color:${sColor};border:1.5px solid ${sColor}44;display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:0.5px;padding:3px 10px;border-radius:20px;text-transform:uppercase;`;
-
-    const logoArea = document.getElementById('logo-area');
-    logoArea.innerHTML = '';
-    const ld = chartState.logoData;
-    if (ld) {
-      logoArea.className = '';
-      const img = document.createElement('img'); img.src = ld; img.alt='Logo';
-      logoArea.appendChild(img);
-    } else {
-      logoArea.className = 'placeholder';
-      logoArea.innerHTML = '<span>Your Logo</span>';
-    }
 
     // Grid
     const gantt = document.getElementById('gantt');
@@ -1257,40 +1227,6 @@
       jsPDF: { unit: 'mm', format: fmt === 'A2' ? 'a2' : fmt === 'A4' ? 'a4' : 'a3', orientation: 'landscape' }
     }).from(document.getElementById('output')).save();
   }
-
-  function handleLogoUpload(e) {
-    const file = e.target.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-      logoData = ev.target.result;
-      localStorage.setItem('companyLogo', logoData);
-      applyLogo(logoData);
-      if (chartState) { chartState.logoData = logoData; renderChart(); }
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-  }
-  function clearLogo() {
-    logoData = '';
-    localStorage.removeItem('companyLogo');
-    applyLogo('');
-    if (chartState) { chartState.logoData = ''; renderChart(); }
-  }
-  function applyLogo(src) {
-    const btnImg = document.getElementById('company-logo-img');
-    const btnLbl = document.getElementById('company-logo-lbl');
-    const area   = document.getElementById('logo-area');
-    if (btnImg) { btnImg.src = src || ''; btnImg.style.display = src ? '' : 'none'; }
-    if (btnLbl) btnLbl.style.display = src ? 'none' : '';
-    if (area) {
-      if (src) { area.className = ''; area.innerHTML = ''; const img = document.createElement('img'); img.src = src; img.alt = 'Logo'; area.appendChild(img); }
-      else     { area.className = 'placeholder'; area.innerHTML = '<span>Your Logo</span>'; }
-    }
-  }
-  (function initLogo() {
-    const saved = localStorage.getItem('companyLogo');
-    if (saved) { logoData = saved; applyLogo(saved); }
-  })();
 </script>
 </body>
 </html>
