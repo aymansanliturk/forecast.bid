@@ -35,8 +35,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: var(--surface);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
   }
 
   .logo-wrap { display: flex; align-items: center; gap: 10px; }
@@ -64,36 +68,49 @@
 
   /* ── Hero ── */
   .hero {
-    padding: 64px 48px 48px;
-    max-width: 860px;
+    background-color: var(--surface);
+    background-image: radial-gradient(var(--border) 0.75px, transparent 0.75px);
+    background-size: 24px 24px;
+    border-bottom: 1px solid var(--border);
+    padding: 80px 48px 140px;
   }
+  .hero-inner { max-width: 860px; }
   .hero-eyebrow {
     font-size: 10px; font-weight: 700; letter-spacing: 2px;
     text-transform: uppercase; color: var(--accent); margin-bottom: 16px;
   }
   .hero-title {
-    font-size: 48px; font-weight: 700; letter-spacing: -1.5px;
-    line-height: 1.05; color: var(--text); margin-bottom: 20px;
+    font-size: 60px; font-weight: 700; letter-spacing: -3px;
+    line-height: 1; color: var(--text); margin-bottom: 24px;
   }
   .hero-title span { color: var(--accent); }
-  .hero-sub { font-size: 15px; color: var(--muted); line-height: 1.7; max-width: 540px; }
+  .hero-sub { font-size: 16px; color: var(--muted); line-height: 1.7; max-width: 540px; }
 
   /* ── Cards ── */
+  .cards-wrap {
+    padding: 0 48px 80px;
+    margin-top: -80px;
+    position: relative;
+    z-index: 10;
+  }
   .cards {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 16px;
-    padding: 0 48px 64px;
     max-width: 1600px;
   }
 
   @media (max-width: 900px) {
     header { padding: 14px 24px; }
-    .hero { padding: 40px 24px 32px; }
-    .cards { grid-template-columns: repeat(2, 1fr); padding: 0 24px 32px; }
+    .hero { padding: 60px 24px 120px; }
+    .cards-wrap { padding: 0 24px 48px; }
+    .cards { grid-template-columns: repeat(2, 1fr); }
+    .hero-title { font-size: 42px; letter-spacing: -2px; }
   }
   @media (max-width: 560px) {
-    .cards { grid-template-columns: 1fr; padding: 0 16px 24px; }
+    .cards { grid-template-columns: 1fr; }
+    .cards-wrap { padding: 0 16px 32px; }
+    .hero-title { font-size: 36px; }
   }
 
   .card {
@@ -105,12 +122,13 @@
     color: inherit;
     display: flex;
     flex-direction: column;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04);
   }
   .card:hover {
     border-color: var(--card-color, var(--accent));
-    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+    transform: translateY(-12px);
   }
 
   .card-icon {
@@ -167,11 +185,14 @@
 </header>
 
 <div class="hero">
-  <div class="hero-eyebrow">Enterprise Intelligence Suite</div>
-  <div class="hero-title">Tools built for <span>bid teams.</span></div>
-  <div class="hero-sub">Streamlined, browser-based project tools. No installation required, all data is processed locally for maximum privacy.</div>
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Enterprise Intelligence Suite</div>
+    <div class="hero-title">Tools built for <span>bid teams.</span></div>
+    <div class="hero-sub">Streamlined, browser-based project tools. No installation required, all data is processed locally for maximum privacy.</div>
+  </div>
 </div>
 
+<div class="cards-wrap">
 <div class="cards">
 
   <a href="dorcast.html" class="card" style="--card-color:#d97706;">
@@ -271,6 +292,7 @@
     </div>
   </a>
 
+</div>
 </div>
 
 <footer>
