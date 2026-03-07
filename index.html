@@ -27,6 +27,7 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    -webkit-font-smoothing: antialiased;
   }
 
   /* ── Header ── */
@@ -83,8 +84,8 @@
     font-size: 60px; font-weight: 700; letter-spacing: -3px;
     line-height: 1; color: var(--text); margin-bottom: 24px;
   }
-  .hero-title span { color: var(--accent); }
-  .hero-sub { font-size: 16px; color: var(--muted); line-height: 1.7; max-width: 540px; }
+  .hero-title span { color: var(--accent); opacity: 0.8; }
+  .hero-sub { font-size: 18px; color: var(--muted); line-height: 1.6; max-width: 540px; }
 
   /* ── Cards ── */
   .cards-wrap {
