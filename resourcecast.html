@@ -141,7 +141,6 @@
   .res-inp-phase { font-family: 'DM Mono', monospace; width: 68px; text-align: right; }
   .res-inp-rate  { font-family: 'DM Mono', monospace; width: 74px; text-align: right; }
   .res-inp-name  { width: 150px; }
-  .res-inp-co    { font-size: 11px; padding: 5px 6px; width: 115px; }
   .calc-cell { font-family: 'DM Mono', monospace; font-size: 11px; text-align: right; padding: 4px 8px; color: var(--muted); white-space: nowrap; }
   .calc-cell.hi { color: var(--accent); font-weight: 600; font-size: 12px; }
   .totals-row td { background: #f0f4fb; border-top: 2px solid #c8d6f0; }
@@ -554,8 +553,7 @@ function updateLogoUI() {
     const thead = document.getElementById('res-thead');
     thead.innerHTML = `<tr>
       <th style="width:16px;"></th>
-      <th class="left" style="min-width:150px;">Role / Name</th>
-      <th class="left" style="min-width:115px;">Company</th>
+      <th class="left" style="min-width:160px;">Role / Name</th>
       <th style="width:80px;">Rate €/h</th>
       ${phases.map(p=>`<th style="width:72px;">${esc(p.name)}</th>`).join('')}
       <th style="width:68px;">Total h</th>
@@ -611,14 +609,9 @@ function updateLogoUI() {
         value="${h}" min="0" max="99999" placeholder="0" oninput="updateTotals()"></td>`;
     }).join('');
 
-    const coOpts = COMPANIES.map(c =>
-      `<option value="${c.key}" ${c.key===co?'selected':''}>${c.label}</option>`
-    ).join('');
-
     tr.innerHTML = `
       <td><span class="drag-handle">⠿</span></td>
       <td><input type="text" class="res-inp res-inp-name role-name" value="${esc(name)}" placeholder="Name / role"></td>
-      <td><select class="res-inp res-inp-co">${coOpts}</select></td>
       <td><input type="number" class="res-inp res-inp-rate role-rate"
         data-role="${id}" value="${rate}" min="0" max="9999" step="1" placeholder="0" oninput="updateTotals()"></td>
       ${phaseCells}
@@ -674,7 +667,7 @@ function updateLogoUI() {
 
     document.getElementById('res-tfoot').innerHTML = `<tr class="totals-row">
       <td></td>
-      <td colspan="2" class="totals-label">Phase Totals</td>
+      <td class="totals-label">Phase Totals</td>
       <td></td>
       ${phaseCells}
       <td class="calc-cell hi">${grandH   ? fmtN(grandH) + ' h' : '—'}</td>
@@ -746,7 +739,6 @@ function updateLogoUI() {
       return {
         id:      tr.dataset.id,
         name:    tr.querySelector('.role-name').value.trim() || '—',
-        company: tr.querySelector('select').value,
         rate:    rRate,
         hours, totalH, totalEur,
       };
@@ -788,8 +780,7 @@ function updateLogoUI() {
     // Build table HTML
     const phHdr = phases.map(p=>`<th>${esc(p.name)}</th>`).join('');
     let html = `<thead><tr>
-      <th style="text-align:left;min-width:130px;">Role</th>
-      <th style="text-align:left;">Company</th>
+      <th style="text-align:left;min-width:160px;">Role</th>
       <th>Rate €/h</th>
       ${phHdr}
       <th>Total h</th>
@@ -807,7 +798,6 @@ function updateLogoUI() {
       }).join('');
       html += `<tr>
         <td style="font-weight:600;">${esc(r.name)}</td>
-        <td>${coBadgeHtml(r.company)}</td>
         <td class="num">${r.rate ? fmtN(r.rate, 2) : '—'}</td>
         ${phCells}
         <td class="num">${r.totalH ? fmtN(r.totalH) + ' h' : '—'}</td>
@@ -824,16 +814,16 @@ function updateLogoUI() {
       return `<td class="num"><div>${h ? fmtN(h) + ' h' : '—'}</div><div style="color:var(--accent);font-weight:700;">${c ? fmtEUR(c) : '—'}</div></td>`;
     }).join('');
     html += `<tr class="phase-sub-row">
-      <td colspan="3" style="font-style:italic;padding-left:10px;">↳ phase hours / cost</td>
+      <td colspan="2" style="font-style:italic;padding-left:10px;">↳ phase hours / cost</td>
       ${phSubH}
       <td colspan="${2 + xCols + 1}"></td>
     </tr>`;
 
     // Labor total
     const laborPct = grandEur > 0 ? (laborEur / grandEur * 100).toFixed(1) + '%' : '—';
-    html += `<tr class="sep-row"><td colspan="${4+nPhases+xCols+1}"></td></tr>`;
+    html += `<tr class="sep-row"><td colspan="${3+nPhases+xCols+1}"></td></tr>`;
     html += `<tr class="labor-row">
-      <td colspan="3">Total Labor Cost</td>
+      <td colspan="2">Total Labor Cost</td>
       <td colspan="${nPhases}"></td>
       <td class="num">${totalH ? fmtN(totalH) + ' h' : '—'}</td>
       ${showEur ? `<td class="num">${laborEur ? fmtEUR(laborEur) : '—'}</td>` : ''}
@@ -846,7 +836,7 @@ function updateLogoUI() {
       expenses.forEach(e => {
         const pct = grandEur > 0 ? (e.amount / grandEur * 100).toFixed(1) + '%' : '—';
         html += `<tr class="expense-row">
-          <td colspan="3" style="padding-left:16px;">${esc(e.label)}</td>
+          <td colspan="2" style="padding-left:16px;">${esc(e.label)}</td>
           <td colspan="${nPhases}"></td>
           <td></td>
           ${showEur ? `<td class="num">${fmtEUR(e.amount)}</td>` : ''}
@@ -857,9 +847,9 @@ function updateLogoUI() {
     }
 
     // Grand total
-    html += `<tr class="sep-row"><td colspan="${4+nPhases+xCols+1}"></td></tr>`;
+    html += `<tr class="sep-row"><td colspan="${3+nPhases+xCols+1}"></td></tr>`;
     html += `<tr class="grand-row">
-      <td colspan="3">GRAND TOTAL</td>
+      <td colspan="2">GRAND TOTAL</td>
       <td colspan="${nPhases}"></td>
       <td class="num">${totalH ? fmtN(totalH) + ' h' : '—'}</td>
       ${showEur ? `<td class="num">${grandEur ? fmtEUR(grandEur) : '—'}</td>` : ''}
@@ -914,7 +904,6 @@ function updateLogoUI() {
       const totalH = Object.values(hours).reduce((s,v)=>s+v, 0);
       return {
         name:    tr.querySelector('.role-name').value.trim(),
-        company: tr.querySelector('select').value,
         rate:    parseFloat(tr.querySelector('.role-rate')?.value) || 0,
         hours, totalH,
       };
@@ -1034,9 +1023,9 @@ function updateLogoUI() {
 
     // Role rows
     roles.forEach((role, ri) => {
-      const alt   = ri%2===1;
-      const co    = COMPANIES.find(c=>c.key===role.company)||COMPANIES[3];
+      const alt    = ri%2===1;
       const altCls = alt ? ' alt' : '';
+      const co     = { bg: PHASE_COLORS_G[ri % PHASE_COLORS_G.length] + '22', color: PHASE_COLORS_G[ri % PHASE_COLORS_G.length] };
 
       // Find active months range
       let firstCol=n, lastCol=-1;
@@ -1050,7 +1039,7 @@ function updateLogoUI() {
 
       // Label cell
       const lbl = mk(`rg-role-lbl${altCls}`,'');
-      lbl.innerHTML = `<span class="rg-co-badge" style="background:${co.bg};color:${co.color}">${co.key}</span>${esc(role.name)}`;
+      lbl.textContent = role.name;
       gantt.appendChild(lbl);
 
       // Month cells
@@ -1114,8 +1103,8 @@ function updateLogoUI() {
 
     // Legend
     legend.innerHTML = '<span style="font-weight:600;color:#555;">Roles:</span>';
-    roles.forEach(role => {
-      const co = COMPANIES.find(c=>c.key===role.company)||COMPANIES[3];
+    roles.forEach((role, ri) => {
+      const co = { color: PHASE_COLORS_G[ri % PHASE_COLORS_G.length] };
       legend.innerHTML += `<div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:${co.color}"></div>${esc(role.name)}</div>`;
     });
     legend.innerHTML += `<span style="margin-left:8px;font-weight:600;color:#555;">FTE loading:</span>
@@ -1154,7 +1143,7 @@ function updateLogoUI() {
       const altCls= alt?' alt':'';
 
       const lbl = mk(`rg-role-lbl${altCls}`,'');
-      lbl.innerHTML = `<span class="rg-co-badge" style="background:${co.bg};color:${co.color}">${co.key}</span>${esc(role.name)}`;
+      lbl.textContent = role.name;
       gantt.appendChild(lbl);
 
       // Find active phase range
@@ -1228,7 +1217,6 @@ function updateLogoUI() {
     const roles  = [...document.querySelectorAll('.role-row')].map(tr => ({
       id:      tr.dataset.id,
       name:    tr.querySelector('.role-name').value.trim(),
-      company: tr.querySelector('select').value,
       rate:    parseFloat(tr.querySelector('.role-rate').value) || 0,
       hours:   Object.fromEntries([...tr.querySelectorAll('.phase-inp')].map(i=>[i.dataset.phase, parseFloat(i.value)||0])),
     }));
@@ -1408,7 +1396,7 @@ function suiteWrite() {
       syncId: 'rc_' + r.id,
       name: '', title: r.name,
       roleKey: _syncRoleKey(r.name),
-      company: r.company || 'ourco',
+      company: 'ourco',
       color: _SYNC_COLORS[_syncRoleKey(r.name)] || '#6b6860',
     }));
     const prev = JSON.parse(localStorage.getItem('bidcast_suite_sync') || '{}');

@@ -898,8 +898,8 @@ function updateLogoUI() {
       id,
       name:      document.getElementById(`proj-name-${id}`)?.value.trim() || `Project ${id+1}`,
       color:     document.querySelector(`#proj-card-${id} .proj-color-inp`)?.value || PROJ_COLORS[0],
-      bidTasks:  getRows(`bid-body-${id}`),
-      execTasks: getRows(`exec-body-${id}`),
+      bidTasks:  document.getElementById(`bid-section-${id}`)?.classList.contains('collapsed')  ? [] : getRows(`bid-body-${id}`),
+      execTasks: document.getElementById(`exec-section-${id}`)?.classList.contains('collapsed') ? [] : getRows(`exec-body-${id}`),
     }));
 
     chartState = { title, sub, rev, status, sColor, sm, sy, em, ey, projects };
@@ -1287,10 +1287,22 @@ function _updateSyncBadge() {
     }
   } catch(e) {}
 }
+function suiteRead(sync) {
+  try {
+    if (!sync || sync._from === 'timecast') { _updateSyncBadge(); return; }
+    // Sync project name from ResourceCast or other tools
+    if (sync.projectName) {
+      const inp = document.getElementById('proj-title') || document.querySelector('.proj-name-inp');
+      if (inp && !inp.value.trim()) inp.value = sync.projectName;
+    }
+    _updateSyncBadge();
+  } catch(e) {}
+}
 window.addEventListener('storage', e => {
-  if (e.key === 'bidcast_suite_sync') _updateSyncBadge();
+  if (e.key !== 'bidcast_suite_sync') return;
+  suiteRead(e.newValue ? JSON.parse(e.newValue) : null);
 });
-document.addEventListener('DOMContentLoaded', () => { _updateSyncBadge(); setTimeout(suiteWrite, 900); });
+document.addEventListener('DOMContentLoaded', () => { _updateSyncBadge(); suiteRead(JSON.parse(localStorage.getItem('bidcast_suite_sync')||'{}')); setTimeout(suiteWrite, 900); });
 
 </script>
 </body>

@@ -186,6 +186,23 @@ input:focus, select:focus { border-color:var(--accent); background:#fff; }
 .strat-notes-wrap label { font-size:11px; font-weight:500; color:var(--muted); display:flex; flex-direction:column; gap:4px; }
 .strat-notes-wrap textarea { font-family:'DM Sans',sans-serif; font-size:11px; resize:vertical; min-height:56px; width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid var(--border); border-radius:5px; background:#faf9f7; color:var(--text); outline:none; transition:border-color 0.15s; }
 .strat-notes-wrap textarea:focus { border-color:var(--accent); background:#fff; }
+/* Equipment Type Cards */
+.et-card { border:1.5px solid var(--border); border-radius:8px; margin-bottom:12px; overflow:hidden; }
+.et-card-hd { display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--surface); border-bottom:1px solid var(--border); }
+.et-color-dot { width:14px; height:14px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 0 1.5px var(--border); cursor:pointer; flex-shrink:0; }
+.et-name-inp { font-size:13px; font-weight:600; flex:1; border:none; background:transparent; outline:none; color:var(--text); font-family:'DM Sans',sans-serif; }
+.et-del { border:none; background:none; cursor:pointer; color:var(--faint); font-size:18px; line-height:1; padding:0 4px; }
+.et-del:hover { color:var(--red); }
+.et-body { padding:14px; }
+.et-suppliers { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:10px; }
+.et-strat { width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:11px; resize:vertical; min-height:44px; padding:6px 8px; border:1px solid var(--border); border-radius:5px; background:#faf9f7; color:var(--text); outline:none; }
+.et-strat:focus { border-color:var(--accent); background:#fff; }
+/* Output type sections */
+.out-type-section { margin-bottom:20px; break-inside:avoid; }
+.out-type-hd { display:flex; align-items:center; gap:8px; margin-bottom:8px; padding:5px 0; border-bottom:2px solid var(--border); }
+.out-type-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.out-type-name { font-size:11px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; }
+.out-type-strat { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
 
 /* Output supplier cards */
 .out-supplier-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:12px 0 18px; }
@@ -287,89 +304,11 @@ input:focus, select:focus { border-color:var(--accent); background:#fff; }
   </div>
 
   <div class="section">
-    <div class="section-title">Suppliers &amp; Sourcing Strategy</div>
-    <div class="supplier-cards">
-    <div class="supplier-card">
-      <div class="supplier-card-hd">
-        <div class="supplier-dot" style="background:#2c4e87"></div>
-        Supplier 1
-      </div>
-      <label>Company Name
-        <input type="text" class="s-name" id="s-name-0" placeholder="e.g. ABB, Eaton, Schneider" oninput="syncSupplierHeaders()">
-      </label>
-      <label>Contact Person
-        <input type="text" class="s-contact" id="s-contact-0" placeholder="Name / email">
-      </label>
-      <label>Sourcing Approach
-        <select class="s-approach" id="s-approach-0">
-          <option value="">— Select —</option>
-          <option value="Competitive">Competitive Bidding</option>
-          <option value="Single Source">Single Source</option>
-          <option value="Framework">Framework Agreement</option>
-          <option value="Preferred">Preferred Supplier</option>
-          <option value="In-House">In-House</option>
-        </select>
-      </label>
-      <label>Scope / Items Responsible For
-        <textarea class="s-scope" id="s-scope-0" placeholder="Describe which items or packages this supplier covers..."></textarea>
-      </label>
+    <div class="section-title">Equipment Types &amp; Sourcing Strategy
+      <span style="font-size:10px;font-weight:400;color:var(--faint);text-transform:none;letter-spacing:0;"> — define each equipment type with its own supplier strategy</span>
     </div>
-    <div class="supplier-card">
-      <div class="supplier-card-hd">
-        <div class="supplier-dot" style="background:#3a7a52"></div>
-        Supplier 2
-      </div>
-      <label>Company Name
-        <input type="text" class="s-name" id="s-name-1" placeholder="e.g. ABB, Eaton, Schneider" oninput="syncSupplierHeaders()">
-      </label>
-      <label>Contact Person
-        <input type="text" class="s-contact" id="s-contact-1" placeholder="Name / email">
-      </label>
-      <label>Sourcing Approach
-        <select class="s-approach" id="s-approach-1">
-          <option value="">— Select —</option>
-          <option value="Competitive">Competitive Bidding</option>
-          <option value="Single Source">Single Source</option>
-          <option value="Framework">Framework Agreement</option>
-          <option value="Preferred">Preferred Supplier</option>
-          <option value="In-House">In-House</option>
-        </select>
-      </label>
-      <label>Scope / Items Responsible For
-        <textarea class="s-scope" id="s-scope-1" placeholder="Describe which items or packages this supplier covers..."></textarea>
-      </label>
-    </div>
-    <div class="supplier-card">
-      <div class="supplier-card-hd">
-        <div class="supplier-dot" style="background:#7b4fa6"></div>
-        Supplier 3
-      </div>
-      <label>Company Name
-        <input type="text" class="s-name" id="s-name-2" placeholder="e.g. ABB, Eaton, Schneider" oninput="syncSupplierHeaders()">
-      </label>
-      <label>Contact Person
-        <input type="text" class="s-contact" id="s-contact-2" placeholder="Name / email">
-      </label>
-      <label>Sourcing Approach
-        <select class="s-approach" id="s-approach-2">
-          <option value="">— Select —</option>
-          <option value="Competitive">Competitive Bidding</option>
-          <option value="Single Source">Single Source</option>
-          <option value="Framework">Framework Agreement</option>
-          <option value="Preferred">Preferred Supplier</option>
-          <option value="In-House">In-House</option>
-        </select>
-      </label>
-      <label>Scope / Items Responsible For
-        <textarea class="s-scope" id="s-scope-2" placeholder="Describe which items or packages this supplier covers..."></textarea>
-      </label>
-    </div>
-    </div>
-    <div class="strat-notes-wrap">
-      <label>Overall Strategy Notes
-        <textarea id="strategy-notes" placeholder="General sourcing strategy, constraints, risk notes, approval requirements..."></textarea>
-      </label>
-    </div>
+    <div id="equip-types-wrap"></div>
+    <button class="btn-add" onclick="addEquipType({})">+ Add Equipment Type</button>
   </div>
 
   <div class="section">
@@ -480,6 +419,114 @@ function setFormat(fmt) {
     sizes[fmt] ? `@page { size:${sizes[fmt]}; margin:8mm; }` : '';
 }
 
+
+// ── Equipment Types ──────────────────────────────────────────────
+let etCount = 0;
+const ET_COLORS = ['#2c4e87','#3a7a52','#c47a1e','#7b3dbf','#c43c3c','#1e7a8c','#6a5c1e','#4e7e2c'];
+const APPROACH_OPTS = ['','Competitive','Single Source','Framework Agreement','Preferred','In-House'];
+
+function etApproachSelect(val, cls) {
+  return `<select class="${cls}" style="font-size:11px;padding:4px 5px;width:100%;">
+    ${APPROACH_OPTS.map(o => `<option value="${o}" ${o===val?'selected':''}>${o||'— Approach —'}</option>`).join('')}
+  </select>`;
+}
+
+function addEquipType(data = {}) {
+  const tid   = data.id ? (etCount = Math.max(etCount, +data.id), +data.id) : ++etCount;
+  const color = data.color || ET_COLORS[(tid - 1) % ET_COLORS.length];
+  const name  = data.name  || '';
+  const sups  = data.suppliers || [{},{},{} ];
+  while (sups.length < 3) sups.push({});
+  const strat = data.strategyNotes || '';
+
+  const card = document.createElement('div');
+  card.className  = 'et-card';
+  card.dataset.tid = tid;
+
+  const suppHtml = sups.slice(0,3).map((s, si) => `
+    <div class="supplier-card" style="padding:10px;">
+      <div class="supplier-card-hd" style="margin-bottom:8px;">
+        <div class="supplier-dot et-sup-dot-${tid}-${si}" style="background:${['#2c4e87','#3a7a52','#7b4fa6'][si]}"></div>
+        <span style="font-size:9px;">Supplier ${si+1}</span>
+      </div>
+      <label style="font-size:10.5px;font-weight:500;color:var(--muted);display:flex;flex-direction:column;gap:3px;margin-bottom:6px;">Name
+        <input type="text" class="et-sup-name" data-si="${si}" value="${esc(s.name||'')}" placeholder="Company name" oninput="syncTypeDropdowns()">
+      </label>
+      <label style="font-size:10.5px;font-weight:500;color:var(--muted);display:flex;flex-direction:column;gap:3px;margin-bottom:6px;">Contact
+        <input type="text" class="et-sup-contact" data-si="${si}" value="${esc(s.contact||'')}" placeholder="Name / email">
+      </label>
+      <label style="font-size:10.5px;font-weight:500;color:var(--muted);display:flex;flex-direction:column;gap:3px;margin-bottom:6px;">Approach
+        ${etApproachSelect(s.approach||'', 'et-sup-approach')}
+      </label>
+      <label style="font-size:10.5px;font-weight:500;color:var(--muted);display:flex;flex-direction:column;gap:3px;">Scope
+        <textarea class="et-sup-scope" data-si="${si}" style="font-family:'DM Sans',sans-serif;font-size:10.5px;resize:vertical;min-height:44px;padding:5px 7px;border:1px solid var(--border);border-radius:4px;background:#faf9f7;" placeholder="Items / scope...">${esc(s.scope||'')}</textarea>
+      </label>
+    </div>`).join('');
+
+  card.innerHTML = `
+    <div class="et-card-hd">
+      <label title="Change colour" style="cursor:pointer;display:flex;align-items:center;">
+        <div class="et-color-dot" style="background:${color};" onclick="this.nextElementSibling.click()"></div>
+        <input type="color" value="${color}" style="opacity:0;width:0;height:0;position:absolute;" oninput="updateEtColor(${tid},this.value)">
+      </label>
+      <input type="text" class="et-name-inp" value="${esc(name)}" placeholder="Equipment type name (e.g. 66kV GIS)" oninput="syncTypeDropdowns()">
+      <button class="et-del" onclick="removeEquipType(${tid})" title="Remove type">×</button>
+    </div>
+    <div class="et-body">
+      <div class="et-suppliers">${suppHtml}</div>
+      <label style="font-size:10.5px;font-weight:500;color:var(--muted);display:flex;flex-direction:column;gap:4px;">
+        Strategy Notes
+        <textarea class="et-strat" placeholder="Sourcing strategy, constraints, risks...">${esc(strat)}</textarea>
+      </label>
+    </div>`;
+
+  document.getElementById('equip-types-wrap').appendChild(card);
+  syncTypeDropdowns();
+}
+
+function removeEquipType(tid) {
+  document.querySelector(`.et-card[data-tid="${tid}"]`)?.remove();
+  syncTypeDropdowns();
+}
+
+function updateEtColor(tid, color) {
+  const card = document.querySelector(`.et-card[data-tid="${tid}"]`);
+  if (!card) return;
+  card.querySelector('.et-color-dot').style.background = color;
+}
+
+function getEquipTypes() {
+  return [...document.querySelectorAll('.et-card')].map(card => ({
+    id:            parseInt(card.dataset.tid),
+    name:          card.querySelector('.et-name-inp').value.trim(),
+    color:         card.querySelector('.et-color-dot').style.background,
+    suppliers:     [0,1,2].map(si => ({
+      name:     card.querySelectorAll('.et-sup-name')[si]?.value.trim()    || '',
+      contact:  card.querySelectorAll('.et-sup-contact')[si]?.value.trim() || '',
+      approach: card.querySelectorAll('.et-sup-approach')[si]?.value       || '',
+      scope:    card.querySelectorAll('.et-sup-scope')[si]?.value.trim()   || '',
+    })),
+    strategyNotes: card.querySelector('.et-strat').value.trim(),
+  }));
+}
+
+function syncTypeDropdowns() {
+  const types = getEquipTypes().map(t => t.name).filter(Boolean);
+  // Update all item type selects
+  document.querySelectorAll('.item-type').forEach(sel => {
+    const cur = sel.value;
+    const allTypes = [...new Set([...types, ...ITEM_TYPES])];
+    sel.innerHTML = allTypes.map(t => `<option value="${t}" ${t===cur?'selected':''}>${t}</option>`).join('');
+    if (cur && !allTypes.includes(cur)) {
+      const opt = document.createElement('option');
+      opt.value = cur; opt.textContent = cur; opt.selected = true;
+      sel.prepend(opt);
+    }
+  });
+  // Update vendor block titles in open panels (use type's supplier names for context)
+  syncSupplierHeaders();
+}
+
 // ── Vendor status logic ──
 function vendorStatus(v) {
   if (!v.name) return 'none';
@@ -526,8 +573,12 @@ function addItem(data) {
   tr.draggable = true;
   initDrag(tr);
 
-  const typeOpts = ITEM_TYPES.map(t =>
-    `<option value="${t}" ${t===(data.type||'HV Equipment')?'selected':''}>${t}</option>`
+  // Build type list from defined equipment types + ITEM_TYPES fallback
+  const definedTypes = getEquipTypes().map(t => t.name).filter(Boolean);
+  const allTypes = definedTypes.length ? [...new Set([...definedTypes, ...ITEM_TYPES])] : ITEM_TYPES;
+  const curType  = data.type || (definedTypes[0] || 'HV Equipment');
+  const typeOpts = allTypes.map(t =>
+    `<option value="${t}" ${t===curType?'selected':''}>${t}</option>`
   ).join('');
 
   tr.innerHTML = `
@@ -785,7 +836,7 @@ function getItems() {
 
 function collectState() {
   return {
-    version:  '1.1',
+    version:  '1.2',
     format:   currentFormat,
     projName: document.getElementById('proj-name').value,
     projId:   document.getElementById('proj-id').value,
@@ -793,9 +844,8 @@ function collectState() {
     validityMonths: document.getElementById('validity-months').value,
     rev:      document.getElementById('doc-rev').value,
     date:     document.getElementById('doc-date').value,
-    items:     getItems(),
-    suppliers: getSuppliers(),
-    strategyNotes: document.getElementById('strategy-notes')?.value || '',
+    items:          getItems(),
+    equipmentTypes: getEquipTypes(),
   };
 }
 
@@ -807,44 +857,26 @@ function applyState(s) {
   document.getElementById('doc-rev').value         = s.rev  || '';
   document.getElementById('doc-date').value        = s.date || '';
   if (s.format) setFormat(s.format);
+
+  // Restore equipment types (new format) or migrate legacy global suppliers
+  document.getElementById('equip-types-wrap').innerHTML = '';
+  etCount = 0;
+  if (s.equipmentTypes && s.equipmentTypes.length) {
+    s.equipmentTypes.forEach(t => addEquipType(t));
+  } else if (s.suppliers) {
+    // Migrate legacy: create one "General" type from old global suppliers
+    addEquipType({ name: 'General', suppliers: s.suppliers, strategyNotes: s.strategyNotes || '' });
+  }
+
   document.getElementById('rfq-body').innerHTML = '';
   rowCount = 0;
   (s.items || []).forEach(item => addItem(item));
-  // Restore suppliers
-  (s.suppliers || []).forEach((sup, i) => {
-    const n = document.getElementById(`s-name-${i}`);     if(n) n.value = sup.name    || '';
-    const ct= document.getElementById(`s-contact-${i}`);  if(ct)ct.value= sup.contact || '';
-    const ap= document.getElementById(`s-approach-${i}`); if(ap)ap.value= sup.approach|| '';
-    const sc= document.getElementById(`s-scope-${i}`);    if(sc)sc.value= sup.scope   || '';
-  });
-  const sn = document.getElementById('strategy-notes');
-  if(sn) sn.value = s.strategyNotes || '';
-  syncSupplierHeaders();
+  syncTypeDropdowns();
 }
 
 // ── Supplier helpers ──
-function getSuppliers() {
-  return [0,1,2].map(i => ({
-    name:     document.getElementById(`s-name-${i}`)?.value.trim()     || '',
-    contact:  document.getElementById(`s-contact-${i}`)?.value.trim()  || '',
-    approach: document.getElementById(`s-approach-${i}`)?.value        || '',
-    scope:    document.getElementById(`s-scope-${i}`)?.value.trim()    || '',
-  }));
-}
-
 function syncSupplierHeaders() {
-  const suppliers = getSuppliers();
-  const ths = document.querySelectorAll('#rfq-table-head .v-th');
-  ths.forEach((th, i) => {
-    const name = suppliers[i]?.name;
-    th.textContent = name || `Supplier ${i+1}`;
-  });
-  // Also update vendor block titles in open panels
-  document.querySelectorAll('.vendor-title[data-vi]').forEach(el => {
-    const i = parseInt(el.dataset.vi);
-    const name = suppliers[i]?.name;
-    el.firstChild.textContent = name || `Supplier ${i+1}`;
-  });
+  // No-op for compatibility — item-level vendor names drive the columns
 }
 
 // ── Generate ──
@@ -880,85 +912,136 @@ function generate() {
     <div class="sum-card"><div class="sum-num" style="color:var(--red);">${totalExpired}</div><div class="sum-label">Expired</div></div>
     <div class="sum-card"><div class="sum-num" style="color:var(--amber);">${totalWarn}</div><div class="sum-label">Validity Warnings</div></div>`;
 
-  // Strategy section
-  const suppliers = getSuppliers();
-  const strategyNotes = document.getElementById('strategy-notes')?.value?.trim() || '';
-  const hasAnySupplier = suppliers.some(s => s.name);
-  const stratSection = document.getElementById('out-strategy-section');
-  const supplierGrid = document.getElementById('out-supplier-grid');
-  const stratNotesEl = document.getElementById('out-strat-notes');
-
   const APPROACH_COLORS = {
     'Competitive': {bg:'#e8f0fb', color:'#2c4e87'},
     'Single Source': {bg:'#fde8e8', color:'#a63232'},
-    'Framework': {bg:'#e8f4ed', color:'#3a7a52'},
+    'Framework Agreement': {bg:'#e8f4ed', color:'#3a7a52'},
     'Preferred': {bg:'#f5edfb', color:'#7b4fa6'},
     'In-House': {bg:'#fff3e0', color:'#e65100'},
   };
-  const SUPP_DOTS = ['#2c4e87','#3a7a52','#7b4fa6'];
+  const SUP_DOTS = ['#2c4e87','#3a7a52','#7b4fa6'];
 
-  if (hasAnySupplier) {
-    stratSection.style.display = 'block';
-    supplierGrid.innerHTML = suppliers.map((s, i) => {
-      if (!s.name) return '';
-      const ac = APPROACH_COLORS[s.approach] || {bg:'#f0ede8', color:'#888'};
-      return `<div class="out-supplier-card">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-          <div style="width:8px;height:8px;border-radius:50%;background:${SUPP_DOTS[i]};flex-shrink:0"></div>
-          <div class="out-sc-name">${s.name}</div>
-        </div>
-        ${s.approach ? `<span class="out-sc-tag" style="background:${ac.bg};color:${ac.color}">${s.approach}</span>` : ''}
-        ${s.contact  ? `<div class="out-sc-contact">✉ ${s.contact}</div>` : ''}
-        ${s.scope    ? `<div class="out-sc-scope">${s.scope}</div>` : ''}
-      </div>`;
-    }).join('');
-    if (strategyNotes) {
-      stratNotesEl.style.display = 'block';
-      stratNotesEl.textContent = strategyNotes;
-    } else {
-      stratNotesEl.style.display = 'none';
-    }
-  } else {
-    stratSection.style.display = 'none';
-  }
+  // Hide legacy strategy section (replaced by per-type sections)
+  document.getElementById('out-strategy-section').style.display = 'none';
 
-  // Table
-  const table = document.getElementById('out-table');
-  const sNames = suppliers.map((s,i) => s.name || `Supplier ${i+1}`);
-  let html = `<thead><tr>
-    <th>Type</th>
-    <th>Description</th>
-    <th class="center">Qty</th>
-    <th>Tech Resp.</th>
-    <th>${sNames[0]}</th><th class="center">Status</th><th class="center">Validity</th>
-    <th>${sNames[1]}</th><th class="center">Status</th><th class="center">Validity</th>
-    <th>${sNames[2]}</th><th class="center">Status</th><th class="center">Validity</th>
-    <th>Comments</th>
-  </tr></thead><tbody>`;
+  // Group items by equipment type
+  const equipTypes   = getEquipTypes();
+  const typeMap      = new Map(equipTypes.map(t => [t.name.toLowerCase(), t]));
+  const typeNames    = equipTypes.map(t => t.name).filter(Boolean);
+  const grouped      = new Map();
+  const untypedItems = [];
 
   state.items.forEach(item => {
-    html += '<tr>';
-    html += `<td><span class="out-type">${item.type}</span></td>`;
-    html += `<td class="out-desc">${item.desc}</td>`;
-    html += `<td class="out-mark">${item.qty}</td>`;
-    html += `<td style="font-size:8.5px;">${item.techResp}</td>`;
-    item.vendors.forEach(v => {
-      if (!v.name) {
-        html += '<td>—</td><td></td><td></td>';
-        return;
-      }
-      const s = vendorStatus(v);
-      const warn = validityWarn(v, requiredMonths);
-      html += `<td style="font-size:8.5px;font-weight:500;">${v.name}</td>`;
-      html += `<td class="out-mark"><span class="out-v-pill ${statusClass(s)}">${statusLabel(s)}</span></td>`;
-      html += `<td class="out-mark">${v.validity ? `<span style="${warn?'color:var(--red);font-weight:700;':''}">${v.validity}</span>` : ''}</td>`;
-    });
-    html += `<td style="font-size:8px;color:var(--muted);">${item.comments}</td>`;
-    html += '</tr>';
+    const key = (item.type || '').trim();
+    const match = typeMap.get(key.toLowerCase());
+    if (match) {
+      if (!grouped.has(match.name)) grouped.set(match.name, []);
+      grouped.get(match.name).push(item);
+    } else {
+      untypedItems.push(item);
+    }
   });
 
-  html += '</tbody>';
-  table.innerHTML = html;
+  // Render per-type sections
+  const table = document.getElementById('out-table');
+  table.innerHTML = '';
+
+  function renderTypeTable(typeDef, items) {
+    if (!items.length) return '';
+    const sNames = typeDef ? typeDef.suppliers.map((s,i) => s.name || `Supplier ${i+1}`) : ['Supplier 1','Supplier 2','Supplier 3'];
+    const color  = typeDef ? typeDef.color : '#888';
+
+    let html = '';
+
+    // Type header
+    html += `<tr class="out-type-hdr-row"><td colspan="14" style="padding:10px 0 4px;border-bottom:2px solid ${color}20;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0;"></div>
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:${color};">${typeDef ? esc(typeDef.name) : 'Other'}</span>
+      </div>
+    </td></tr>`;
+
+    // Supplier strategy sub-row (if type has suppliers)
+    if (typeDef && typeDef.suppliers.some(s => s.name)) {
+      html += `<tr class="out-type-strat-row"><td colspan="14" style="padding:5px 0 8px;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          ${typeDef.suppliers.map((s,i) => {
+            if (!s.name) return '';
+            const ac = APPROACH_COLORS[s.approach] || {bg:'#f0ede8', color:'#888'};
+            return `<div class="out-supplier-card" style="flex:1;min-width:160px;">
+              <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px;">
+                <div style="width:7px;height:7px;border-radius:50%;background:${SUP_DOTS[i]};flex-shrink:0;"></div>
+                <span class="out-sc-name">${esc(s.name)}</span>
+              </div>
+              ${s.approach ? `<span class="out-sc-tag" style="background:${ac.bg};color:${ac.color}">${esc(s.approach)}</span>` : ''}
+              ${s.contact  ? `<div class="out-sc-contact">✉ ${esc(s.contact)}</div>` : ''}
+              ${s.scope    ? `<div class="out-sc-scope">${esc(s.scope)}</div>` : ''}
+            </div>`;
+          }).join('')}
+          ${typeDef.strategyNotes ? `<div style="flex:2;min-width:200px;font-size:8.5px;color:var(--muted);background:#faf9f7;border:1px solid var(--border);border-radius:5px;padding:7px 10px;white-space:pre-wrap;">${esc(typeDef.strategyNotes)}</div>` : ''}
+        </div>
+      </td></tr>`;
+    }
+
+    // Items table header
+    html += `<tr class="out-items-hdr-row" style="background:#f7f5f2;">
+      <th style="font-size:9px;font-weight:700;text-align:left;padding:4px 6px;color:var(--faint);">Description</th>
+      <th style="font-size:9px;font-weight:700;text-align:center;padding:4px 6px;color:var(--faint);">Qty</th>
+      <th style="font-size:9px;font-weight:700;padding:4px 6px;color:var(--faint);">Tech Resp.</th>
+      <th style="font-size:9px;font-weight:700;padding:4px 6px;color:var(--faint);">${esc(sNames[0])}</th><th style="font-size:9px;font-weight:700;text-align:center;padding:4px 6px;color:var(--faint);">Status</th><th style="font-size:9px;font-weight:700;text-align:center;padding:4px 6px;color:var(--faint);">Validity</th>
+      <th style="font-size:9px;font-weight:700;padding:4px 6px;color:var(--faint);">${esc(sNames[1])}</th><th style="font-size:9px;font-weight:700;text-align:center;padding:4px 6px;color:var(--faint);">Status</th><th style="font-size:9px;font-weight:700;text-align:center;padding:4px 6px;color:var(--faint);">Validity</th>
+      <th style="font-size:9px;font-weight:700;padding:4px 6px;color:var(--faint);">${esc(sNames[2])}</th><th style="font-size:9px;font-weight:700;text-align:center;padding:4px 6px;color:var(--faint);">Status</th><th style="font-size:9px;font-weight:700;text-align:center;padding:4px 6px;color:var(--faint);">Validity</th>
+      <th style="font-size:9px;font-weight:700;padding:4px 6px;color:var(--faint);">Comments</th>
+      <td style="width:8px;background:#f7f5f2;"></td>
+    </tr>`;
+
+    // Items
+    items.forEach(item => {
+      html += '<tr>';
+      html += `<td class="out-desc">${esc(item.desc)}</td>`;
+      html += `<td class="out-mark">${esc(item.qty||'')}</td>`;
+      html += `<td style="font-size:8.5px;">${esc(item.techResp||'')}</td>`;
+      item.vendors.forEach(v => {
+        if (!v.name) { html += '<td>—</td><td></td><td></td>'; return; }
+        const s    = vendorStatus(v);
+        const warn = validityWarn(v, requiredMonths);
+        html += `<td style="font-size:8.5px;font-weight:500;">${esc(v.name)}</td>`;
+        html += `<td class="out-mark"><span class="out-v-pill ${statusClass(s)}">${statusLabel(s)}</span></td>`;
+        html += `<td class="out-mark">${v.validity ? `<span style="${warn?'color:var(--red);font-weight:700;':''}">${esc(v.validity)}</span>` : ''}</td>`;
+      });
+      html += `<td style="font-size:8px;color:var(--muted);">${esc(item.comments||'')}</td>`;
+      html += '<td></td></tr>';
+    });
+
+    // Spacer
+    html += `<tr><td colspan="14" style="height:14px;"></td></tr>`;
+    return html;
+  }
+
+  let tableHtml = '<tbody>';
+
+  // Render defined types in order
+  equipTypes.forEach(t => {
+    const items = grouped.get(t.name) || [];
+    tableHtml += renderTypeTable(t, items);
+  });
+
+  // Items not matched to any type
+  if (untypedItems.length) {
+    // Group remaining by their type string
+    const ungrouped = new Map();
+    untypedItems.forEach(item => {
+      const k = (item.type||'Other').trim();
+      if (!ungrouped.has(k)) ungrouped.set(k, []);
+      ungrouped.get(k).push(item);
+    });
+    ungrouped.forEach((items, typeName) => {
+      tableHtml += renderTypeTable({ name: typeName, color: '#888', suppliers: [{},{},{}], strategyNotes: '' }, items);
+    });
+  }
+
+  tableHtml += '</tbody>';
+  table.innerHTML = tableHtml;
 
   document.getElementById('editor').style.display = 'none';
   document.getElementById('output').style.display  = 'block';
@@ -972,10 +1055,23 @@ function goBack() {
 
 // ── Preset ──
 function loadPreset() {
-  if (!confirm('Load the standard substation procurement list? This will replace current data.')) return;
+  if (!confirm('Load the standard substation procurement list? This will replace current items and types.')) return;
   document.getElementById('rfq-body').innerHTML = '';
-  rowCount = 0;
+  document.getElementById('equip-types-wrap').innerHTML = '';
+  etCount = 0; rowCount = 0;
+  // Default equipment types for a substation project
+  [
+    { name:'GIS',                    color:'#2c4e87' },
+    { name:'Power Transformer',      color:'#3a7a52' },
+    { name:'Shunt Reactor',          color:'#c47a1e' },
+    { name:'Control & Protection',   color:'#7b3dbf' },
+    { name:'SCADA / Network',        color:'#c43c3c' },
+    { name:'Civil Works',            color:'#1e7a8c' },
+    { name:'Electrical Installation',color:'#6a5c1e' },
+    { name:'LV Systems & Cables',    color:'#4e7e2c' },
+  ].forEach(t => addEquipType(t));
   PRESET_RFQ.items.forEach(item => addItem(item));
+  syncTypeDropdowns();
 }
 
 // ── Save / Load ──
@@ -1182,8 +1278,14 @@ function exportPDF() {
   }).from(document.getElementById('output')).save();
 }
 
-// Init logo UI
-document.addEventListener('DOMContentLoaded', updateLogoUI);
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  updateLogoUI();
+  // If no equipment types after state restore, add a starter
+  setTimeout(() => {
+    if (!document.querySelector('.et-card')) addEquipType({ name: 'GIS', color: '#2c4e87' });
+  }, 100);
+});
 </script>
 </body>
 </html>
