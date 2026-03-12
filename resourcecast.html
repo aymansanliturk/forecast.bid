@@ -6,6 +6,7 @@
 <title>RESOURCECAST — Project Resource &amp; Cost Intelligence</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style id="page-size-style">@page { size: A3 landscape; margin: 8mm; }
   /* ── Resource Gantt Chart ── */
   .gantt-page { page-break-before: always; margin-top: 0; }
@@ -13,7 +14,7 @@
     display: grid;
     border: 1px solid #e8e3dc;
     border-radius: 8px;
-    overflow: hidden;
+    overflow: visible;
     margin-top: 14px;
     font-size: 8.5px;
   }
@@ -403,7 +404,7 @@
   <div class="print-bar">
     <button class="btn-secondary" onclick="goBack()">← Edit Data</button>
     <button class="btn-print" onclick="window.print()">🖨 Print</button>
-    <button class="btn-pdf"   onclick="window.print()">⬇ Print PDF</button>
+    <button class="btn-pdf"   onclick="exportPDF()">⬇ Export PDF</button>
   </div>
 
   <div class="out-page" id="out-page">
@@ -1082,6 +1083,7 @@ function updateLogoUI() {
 
     const gantt  = document.getElementById('rc-gantt');
     const legend = document.getElementById('gantt-legend');
+    gantt.style.gridTemplateColumns = ''; // reset stale value before rebuild
     gantt.innerHTML  = '';
     legend.innerHTML = '';
 
@@ -1102,6 +1104,9 @@ function updateLogoUI() {
     document.getElementById('gantt-print-logo').innerHTML = logoSrc
       ? `<img src="${logoSrc}" style="height:36px;max-width:150px;object-fit:contain;">` : '';
 
+    // Make page visible BEFORE rendering so 1fr columns calculate against real layout width
+    document.getElementById('gantt-page').style.display = '';
+
     // Check if phases have calendar dates
     const hasDates = phases.some(p => p.sm > 0 && p.sy > 0 && p.em > 0 && p.ey > 0);
 
@@ -1110,8 +1115,6 @@ function updateLogoUI() {
     } else {
       _renderPhaseGantt(phases, roles, gantt, legend);
     }
-
-    document.getElementById('gantt-page').style.display = '';
   }
 
   // Calendar-based Gantt (when phases have date ranges from TimeCast sync)
@@ -1476,6 +1479,21 @@ function updateLogoUI() {
       } catch(err) { alert('Invalid .json file.'); }
     };
     reader.readAsText(file); input.value='';
+  }
+
+  function exportPDF() {
+    const state = collectState();
+    const name  = (state.projName || 'resourcecast').replace(/[^a-z0-9_-]/gi, '_').toLowerCase();
+    html2pdf().set({
+      margin: 0,
+      filename: name + '.pdf',
+      image: { type: 'jpeg', quality: 0.97 },
+      html2canvas: {
+        scale: 2, useCORS: true,
+        onclone: d => d.querySelectorAll('.print-bar').forEach(el => el.remove()),
+      },
+      jsPDF: { unit: 'mm', format: 'a3', orientation: 'landscape' },
+    }).from(document.getElementById('output')).save();
   }
 
   function exportHTML() {
