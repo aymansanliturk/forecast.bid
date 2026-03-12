@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DORCAST — Division of Responsibilities</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style id="page-size-style">@page { size: A3 landscape; margin: 8mm; }</style>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -112,6 +112,11 @@ input:focus, select:focus { border-color:var(--accent); background:#fff; }
 .mark-btn:not([data-val=""]):not([data-val="X"]):not([data-val="n.a."]) {
   background:#edf7f0; color:var(--mark-text); border-color:#b8dfc5; }
 .mark-btn:hover { transform:scale(1.1); }
+/* Frequency summary cell */
+.freq-cell { text-align:center; min-width:36px; font-family:'DM Mono',monospace; font-size:10px; color:var(--accent); font-weight:700; }
+.freq-cell.zero { color:var(--faint); font-weight:400; }
+.out-freq { text-align:center; font-family:'DM Mono',monospace; font-size:9px; font-weight:700; color:var(--accent); }
+.out-freq.zero { color:var(--faint); font-weight:400; }
 
 .btn-del-row { background:none; border:1px solid var(--border); border-radius:3px; width:20px; height:20px; cursor:pointer; color:#ccc; font-size:11px; display:flex; align-items:center; justify-content:center; transition:all 0.15s; flex-shrink:0; }
 .btn-del-row:hover { border-color:#e05555; color:#e05555; background:#fff5f5; }
@@ -494,6 +499,7 @@ function rebuildTableHead() {
   parties.forEach(p => {
     html += `<th style="min-width:44px;color:${p.color}">${p.name||'—'}</th>`;
   });
+  html += '<th class="th-freq" title="Count of active marks per row">Freq.</th>';
   html += '<th class="th-comment">Comments</th>';
   html += '<th style="width:22px;"></th></tr>';
   thead.innerHTML = html;
@@ -525,6 +531,16 @@ function syncMarkCells(tr) {
     td.appendChild(btn);
     markTd.appendChild(td);
   });
+  updateFreqCell(tr);
+}
+
+function updateFreqCell(tr) {
+  const fc = tr.querySelector('.freq-cell');
+  if (!fc) return;
+  const count = [...tr.querySelectorAll('.mark-btn')]
+    .filter(b => b.dataset.val && b.dataset.val !== 'n.a.').length;
+  fc.textContent = count || '—';
+  fc.classList.toggle('zero', count === 0);
 }
 
 function cycleVal(btn) {
@@ -532,6 +548,7 @@ function cycleVal(btn) {
   const next = CYCLE_VALS[(idx + 1) % CYCLE_VALS.length];
   btn.dataset.val = next;
   btn.textContent = next || '·';
+  updateFreqCell(btn.closest('tr.dor-row'));
 }
 
 // ── Rows ──
@@ -553,19 +570,21 @@ function addRowAt(data, refTr) {
   tr.draggable = true;
   initRowDrag(tr);
 
-  const colSpan = 2 + parties.length + 2;
+  // drag(1) + num(1) + label(1) + parties(N) + freq(1) + comment(1) + del(1) = N+6
+  // section/subsection span everything between drag and del = N+4
+  const midSpan = parties.length + 4;
 
   if (data.type === 'section') {
     tr.innerHTML = `
       <td><span class="drag-handle">⠿</span></td>
-      <td colspan="${colSpan - 2}">
+      <td colspan="${midSpan}">
         <input class="row-label-inp" type="text" value="${esc(data.label||'')}" placeholder="Section heading (e.g. 1. Administration)" style="font-weight:700;color:var(--accent);">
       </td>
       <td><button class="btn-del-row" onclick="deleteRow(this)" title="Delete">×</button></td>`;
   } else if (data.type === 'subsection') {
     tr.innerHTML = `
       <td><span class="drag-handle">⠿</span></td>
-      <td colspan="${colSpan - 2}">
+      <td colspan="${midSpan}">
         <input class="row-label-inp" type="text" value="${esc(data.label||'')}" placeholder="Subsection (e.g. 1.1. Business Setup)" style="font-weight:600;color:var(--muted);padding-left:12px;">
       </td>
       <td><button class="btn-del-row" onclick="deleteRow(this)" title="Delete">×</button></td>`;
@@ -575,6 +594,7 @@ function addRowAt(data, refTr) {
       <td><input class="row-num-inp" type="text" value="${esc(data.num||'')}" placeholder="1.1.1"></td>
       <td><input class="row-label-inp" type="text" value="${esc(data.label||'')}" placeholder="Item description"></td>
       <td class="mark-cells-group" style="display:contents;"></td>
+      <td class="freq-cell zero">—</td>
       <td><input class="row-comment-inp" type="text" value="${esc(data.comment||'')}" placeholder="Comment..."></td>
       <td><button class="btn-del-row" onclick="deleteRow(this)">×</button></td>`;
   }
@@ -696,30 +716,34 @@ function generate() {
 
   const table = document.getElementById('out-table');
   const hasComment = state.rows.some(r => r.type==='item' && r.comment);
+  // Total cols for section span: label + parties + freq + comment(opt)
+  const totalMidCols = 1 + state.parties.length + 1 + (hasComment ? 1 : 0);
   let html = '<thead><tr>';
   html += '<th class="th-label" style="text-align:left;">Item / Description</th>';
-  state.parties.forEach(p => `<th style="color:${p.color};min-width:36px;">${p.name}</th>`
-    .split('').forEach(c => html += c));
+  state.parties.forEach(p => { html += `<th style="color:${p.color};min-width:36px;">${p.name}</th>`; });
+  html += '<th class="th-freq" title="Active marks per row">Freq.</th>';
   if (hasComment) html += '<th class="th-comment">Comments</th>';
   html += '</tr></thead><tbody>';
 
   state.rows.forEach(r => {
     if (r.type === 'section') {
-      html += `<tr class="out-row-section"><td colspan="${1+state.parties.length+(hasComment?1:0)}">${r.label}</td></tr>`;
+      html += `<tr class="out-row-section"><td colspan="${totalMidCols}">${r.label}</td></tr>`;
     } else if (r.type === 'subsection') {
-      html += `<tr class="out-row-sub"><td colspan="${1+state.parties.length+(hasComment?1:0)}" style="padding-left:14px;">${r.label}</td></tr>`;
+      html += `<tr class="out-row-sub"><td colspan="${totalMidCols}" style="padding-left:14px;">${r.label}</td></tr>`;
     } else {
+      const marks = r.marks || [];
+      const freq  = marks.filter(m => m && m !== 'n.a.').length;
       html += '<tr class="out-row-item">';
       html += `<td><span class="out-num">${r.num}</span> ${r.label}</td>`;
-      (r.marks||[]).forEach((m,i) => {
+      marks.forEach((m, i) => {
         const p = state.parties[i];
         let cls = 'out-mark';
-        let disp = m;
-        if (m==='X')    cls += ' out-mark-x';
+        if (m==='X')         cls += ' out-mark-x';
         else if (m==='n.a.') cls += ' out-mark-na';
-        else if (m)     cls += ' out-mark-text';
-        html += `<td class="${cls}" style="color:${m==='X'?(p?.color||'var(--mark-x)'):''};">${disp||''}</td>`;
+        else if (m)          cls += ' out-mark-text';
+        html += `<td class="${cls}" style="color:${m==='X'?(p?.color||'var(--mark-x)'):''};">${m||''}</td>`;
       });
+      html += `<td class="out-freq${freq===0?' zero':''}">${freq||'—'}</td>`;
       if (hasComment) html += `<td class="out-comment">${r.comment||''}</td>`;
       html += '</tr>';
     }

@@ -596,7 +596,7 @@ function updateLogoUI() {
 
     canvas.appendChild(svg);
 
-    // Draw nodes + collect connections
+    // Draw nodes
     people.forEach(p => {
       const pos = positions[p.id];
       if (!pos) return;
@@ -630,21 +630,42 @@ function updateLogoUI() {
           </div>`;
       }
       canvas.appendChild(div);
+    });
 
-      // Connector from parent bottom-center to this node top-center
-      if (p._parent) {
-        const pp = positions[p._parent.id];
-        if (pp) {
-          const px = pp.x + 20 + pp.w / 2;
-          const py = pp.y + 10 + pp.h;
-          const cx = pos.x + 20 + pos.w / 2;
-          const cy = pos.y + 10;
-          const my = py + vg / 2;
-          line(px, py, px, my);   // down from parent
-          line(px, my, cx, my);   // horizontal
-          line(cx, my, cx, cy);   // down to child
-        }
-      }
+    // Draw orthogonal connectors — grouped per parent (bus-bar style).
+    // Each parent gets: one vertical stub → one horizontal bus → per-child drops.
+    // This avoids overlapping lines when a parent has multiple children.
+    people.forEach(parent => {
+      if (!parent.children.length) return;
+      const pp = positions[parent.id];
+      if (!pp) return;
+
+      const px   = pp.x + 20 + pp.w / 2;  // parent center-x
+      const py   = pp.y + 10 + pp.h;       // parent bottom-y
+      const busY = py + vg / 2;             // horizontal bus level
+
+      const valid = parent.children
+        .map(c => ({ c, cp: positions[c.id] }))
+        .filter(({ cp }) => !!cp);
+      if (!valid.length) return;
+
+      const xs   = valid.map(({ cp }) => cp.x + 20 + cp.w / 2);
+      const minX = Math.min(...xs);
+      const maxX = Math.max(...xs);
+
+      // 1. Vertical stub: parent bottom → bus level
+      line(px, py, px, busY);
+
+      // 2. Horizontal bus spanning all child columns
+      //    Extend to px as well so the stub always meets the bus
+      line(Math.min(px, minX), busY, Math.max(px, maxX), busY);
+
+      // 3. Per-child vertical drop: bus → child top
+      valid.forEach(({ cp }) => {
+        const cx = cp.x + 20 + cp.w / 2;
+        const cy = cp.y + 10;
+        line(cx, busY, cx, cy);
+      });
     });
 
     // Auto-scale for print
