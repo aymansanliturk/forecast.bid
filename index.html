@@ -69,6 +69,10 @@
     color: var(--faint); text-align: right; line-height: 1.8;
     text-transform: uppercase; letter-spacing: 0.5px;
   }
+  .header-custom-logo {
+    height: 34px; max-width: 130px; object-fit: contain;
+    border-radius: 4px; display: none;
+  }
 
   /* ── Workspace Bar ── */
   .workspace-bar {
@@ -400,7 +404,7 @@
 
 <header>
   <div class="logo-wrap">
-    <div class="logo-icon">
+    <div class="logo-icon" id="header-logo-icon">
       <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="1" y="1" width="7" height="7" rx="1.5" fill="white"/>
         <rect x="10" y="1" width="7" height="7" rx="1.5" fill="white"/>
@@ -408,6 +412,7 @@
         <rect x="10" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.4"/>
       </svg>
     </div>
+    <img id="header-custom-logo" class="header-custom-logo" src="" alt="Company Logo">
     <span class="site-name">Bid Forecast <span class="dot">.</span></span>
   </div>
   <div class="header-meta">
@@ -579,9 +584,9 @@
     <!-- ── Brand Settings + Archive panels ── -->
     <div class="dash-panels">
 
-      <!-- Brand Settings -->
+      <!-- Corporate Identity -->
       <div class="dash-panel">
-        <div class="dash-panel-hd">Brand Settings</div>
+        <div class="dash-panel-hd">Corporate Identity</div>
         <div class="dash-panel-row">
           <div class="brand-logo-box" id="brand-logo-box" title="Click to upload logo"
                onclick="document.getElementById('brand-logo-file').click()">
@@ -958,6 +963,19 @@ function ppDelete() {
 }
 
 /* ── Logo helpers ── */
+function _updateHeaderLogo(logo) {
+  const icon    = document.getElementById('header-logo-icon');
+  const img     = document.getElementById('header-custom-logo');
+  if (!icon || !img) return;
+  if (logo) {
+    img.src = logo; img.style.display = 'block';
+    icon.style.display = 'none';
+  } else {
+    img.style.display = 'none';
+    icon.style.display = 'flex';
+  }
+}
+
 function ppUpdateLogo() {
   const logo    = SuiteManager.getLogo();
   const preview = document.getElementById('pp-logo-preview');
@@ -967,6 +985,7 @@ function ppUpdateLogo() {
   if (clearEl) clearEl.style.display = logo ? 'inline-flex' : 'none';
   if (btnEl)   btnEl.textContent     = logo ? '⟳ Logo' : '⊕ Logo';
   _updateBrandPanel();
+  _updateHeaderLogo(logo);
 }
 
 function ppSaveLogo(input) {
@@ -1365,7 +1384,9 @@ function masterImport(input) {
       if (!archive || typeof archive !== 'object') throw new Error('Not a valid archive file');
       const keys = Object.keys(archive).filter(k => k.startsWith('bidcast_'));
       if (!keys.length) throw new Error('No bidcast data found in file');
-      if (!confirm('Restore ' + keys.length + ' data keys from archive?\nCurrent workspace data will be overwritten.')) return;
+      if (!confirm('Restore ' + keys.length + ' data keys from archive?\nAll current workspace data will be cleared and replaced.')) return;
+      // Full clean-up: remove every existing bidcast_ key before restoring
+      Object.keys(localStorage).filter(k => k.startsWith('bidcast_')).forEach(k => localStorage.removeItem(k));
       keys.forEach(k => { if (typeof archive[k] === 'string') localStorage.setItem(k, archive[k]); });
       ppLoad();
       ppPopulateSelect();
