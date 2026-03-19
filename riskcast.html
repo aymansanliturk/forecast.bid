@@ -83,7 +83,7 @@ input[type="text"]:focus { border-color:var(--accent); background:#fff; }
 
 /* ── Risk table ── */
 .risk-table-wrap { overflow-x:auto; margin-bottom:12px; }
-.risk-table { width:100%; border-collapse:collapse; font-size:12px; min-width:1560px; }
+.risk-table { width:100%; border-collapse:collapse; font-size:12px; min-width:1900px; }
 .risk-table th {
   font-size:9px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase;
   color:var(--faint); padding:8px 10px; text-align:left;
@@ -139,6 +139,39 @@ input[type="text"]:focus { border-color:var(--accent); background:#fff; }
 .score-badge.critical     { background:var(--risk-critical-bg); color:var(--risk-critical); }
 .score-badge.empty        { background:#f5f4f0; color:var(--faint); }
 .score-badge.opportunity  { background:#dcfce7; color:var(--green); }
+
+/* ── Probability hint ── */
+.prob-hint { font-size:9px; font-weight:700; color:var(--accent); font-family:'DM Mono',monospace; text-align:center; margin-top:2px; letter-spacing:0.3px; }
+
+/* ── Exposure badge (editor) ── */
+.exposure-badge {
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:84px; padding:3px 9px; border-radius:20px;
+  font-family:'DM Mono',monospace; font-size:10px; font-weight:700; white-space:nowrap;
+}
+.exposure-badge.emv-neutral { background:#f5f4f0; color:var(--faint); }
+.exposure-badge.emv-cost    { background:#fff3e0; color:#b36a00; }
+.exposure-badge.emv-gain    { background:#dcfce7; color:var(--green); }
+
+/* ── Exposure badge (output) ── */
+.out-exposure-badge {
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:64px; padding:2px 6px; border-radius:10px;
+  font-family:'DM Mono',monospace; font-size:7.5px; font-weight:700; white-space:nowrap;
+}
+.out-exposure-badge.emv-neutral { background:#f5f4f0; color:var(--faint); }
+.out-exposure-badge.emv-cost    { background:#fff3e0; color:#b36a00; }
+.out-exposure-badge.emv-gain    { background:#dcfce7; color:var(--green); }
+.otr-fin { text-align:right; font-family:'DM Mono',monospace; font-size:8px; color:var(--muted); }
+
+/* ── Total project exposure pill ── */
+.exposure-total-pill {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:4px 12px; border-radius:99px; font-size:10px; font-weight:600;
+  background:#fff3e0; color:#b36a00; border:1px solid #f5c97a;
+}
+.exposure-total-pill.net-gain { background:#dcfce7; color:var(--green); border-color:#86efac; }
+.exposure-total-pill.net-zero { background:#f5f4f0; color:var(--faint); border-color:var(--border); }
 
 .btn-del-row {
   background:none; border:1px solid var(--border); border-radius:3px;
@@ -348,6 +381,7 @@ input[type="text"]:focus { border-color:var(--accent); background:#fff; }
   <div class="risk-summary no-print" id="risk-summary">
     <span class="risk-count-pill" id="risk-count-pill">0 risks</span>
     <div class="risk-level-pills" id="risk-level-pills"></div>
+    <span id="risk-exposure-total" style="margin-left:auto;display:none;" class="exposure-total-pill net-zero">Total Exposure: —</span>
   </div>
 
   <div class="section">
@@ -367,6 +401,9 @@ input[type="text"]:focus { border-color:var(--accent); background:#fff; }
             <th class="th-lh" style="text-align:center;">Likelihood<br><span style="font-size:7px;font-weight:400;text-transform:none;">1 = Rare · 5 = Certain</span></th>
             <th class="th-im" style="text-align:center;">I<br><span style="font-size:7px;font-weight:400;text-transform:none;">1 = Minor · 5 = Catastrophic</span></th>
             <th class="th-score" style="text-align:center;">Score<br><span style="font-size:7px;font-weight:400;text-transform:none;">L × I</span></th>
+            <th style="min-width:110px;text-align:right;">Impact Cost<br><span style="font-size:7px;font-weight:400;text-transform:none;">Worst-case €</span></th>
+            <th style="min-width:100px;text-align:right;">Mitig. Cost<br><span style="font-size:7px;font-weight:400;text-transform:none;">Implementation €</span></th>
+            <th style="width:110px;text-align:center;">Exposure<br><span style="font-size:7px;font-weight:400;text-transform:none;">EMV €</span></th>
             <th style="min-width:190px;">Mitigation Plan</th>
             <th style="min-width:100px;">Status</th>
             <th class="th-del"></th>
@@ -417,12 +454,20 @@ input[type="text"]:focus { border-color:var(--accent); background:#fff; }
           <th class="oth-lh">L</th>
           <th class="oth-im">I</th>
           <th class="oth-score">Score</th>
+          <th style="min-width:75px;text-align:right;">Impact €</th>
+          <th style="min-width:70px;text-align:right;">Mitig. €</th>
+          <th style="min-width:80px;text-align:center;">Exposure €</th>
           <th style="min-width:160px;">Mitigation Plan</th>
           <th style="min-width:72px;">Status</th>
         </tr>
       </thead>
       <tbody id="out-risk-body"></tbody>
     </table>
+  </div>
+
+  <div id="out-exposure-summary" style="margin:14px 0 0;display:none;">
+    <span id="out-exposure-total-badge" class="exposure-total-pill net-zero">Total Project Exposure: —</span>
+    <span style="font-size:8.5px;color:var(--faint);margin-left:10px;" id="out-exposure-note"></span>
   </div>
 
   <div class="out-bottom-row">
@@ -512,6 +557,46 @@ function setFormat(fmt) {
     : `@page { size: auto; margin: 10mm; }`;
 }
 
+/* ══ EMV helpers ════════════════════════════════════════════════════ */
+const PROB_MAP = { 1: 0.20, 2: 0.35, 3: 0.50, 4: 0.65, 5: 0.80 };
+
+function _fmtEur(n) {
+  if (n === null || n === undefined || isNaN(n) || n === '') return '—';
+  const abs = Math.abs(Math.round(n));
+  return (n < 0 ? '-' : '') + '€\u202f' + abs.toLocaleString('en-GB');
+}
+
+// Returns signed exposure: positive = net cost (risk), negative = net gain (opportunity)
+function _calcExposure(likelihood, impactCost, mitigCost, type) {
+  const l     = parseInt(likelihood) || 1;
+  const impC  = parseFloat(impactCost) || 0;
+  const mitC  = parseFloat(mitigCost)  || 0;
+  const prob  = PROB_MAP[l] || 0;
+  // L=1 is below threshold: expected impact = 0
+  const expectedImpact = (l === 1) ? 0 : (impC * prob);
+  const total = expectedImpact + mitC;
+  return type === 'opportunity' ? -total : total;
+}
+
+function _refreshExposure(tr) {
+  const l          = parseInt(tr.querySelector('.sel-lh').value) || 1;
+  const type       = tr.querySelector('.risk-type')?.value || 'risk';
+  const impactCost = tr.querySelector('.risk-impact-cost').value;
+  const mitigCost  = tr.querySelector('.risk-mitig-cost').value;
+  const exposure   = _calcExposure(l, impactCost, mitigCost, type);
+  const badge      = tr.querySelector('.exposure-badge');
+  if (!badge) return;
+
+  const hasData = (parseFloat(impactCost) || 0) + (parseFloat(mitigCost) || 0) > 0;
+  if (!hasData) {
+    badge.className   = 'exposure-badge emv-neutral';
+    badge.textContent = '—';
+    return;
+  }
+  badge.className   = 'exposure-badge ' + (exposure <= 0 ? 'emv-gain' : 'emv-cost');
+  badge.textContent = _fmtEur(exposure);
+}
+
 /* ══ Score helpers ══════════════════════════════════════════════════ */
 const CAT_ORDER = ['Commercial','Technical','Contractual','Operational','External','Resource'];
 
@@ -573,17 +658,25 @@ function addRisk(d) {
     <td><input class="risk-input risk-cause cause" type="text" placeholder="Root cause or trigger…" value="${esc(d.cause||'')}"></td>
     <td><input class="risk-input risk-desc" type="text" placeholder="Describe the risk event…" value="${esc(d.desc||'')}"></td>
     <td><input class="risk-input risk-impact-desc" type="text" placeholder="Consequence if risk occurs…" value="${esc(d.impactDesc||'')}"></td>
-    <td><select class="risk-sel sel-lh">${opt5(l)}</select></td>
+    <td style="text-align:center;"><select class="risk-sel sel-lh">${opt5(l)}</select><div class="prob-hint">${PROB_MAP[l]*100|0}%</div></td>
     <td><select class="risk-sel sel-im">${opt5(i)}</select></td>
     <td class="td-score"><span class="score-badge ${badgeCls}">${score} · ${badgeLbl}</span></td>
+    <td><input class="risk-input risk-fin-input risk-impact-cost" type="number" placeholder="0" step="1000" min="0" style="text-align:right;" value="${d.impactCost||''}"></td>
+    <td><input class="risk-input risk-fin-input risk-mitig-cost"  type="number" placeholder="0" step="1000" min="0" style="text-align:right;" value="${d.mitigCost||''}"></td>
+    <td class="td-score"><span class="exposure-badge emv-neutral">—</span></td>
     <td><input class="risk-input risk-mitigation" type="text" placeholder="Mitigation plan…" value="${esc(d.mitigation||'')}"></td>
     <td><select class="risk-sel risk-status">${optStatus(d.status||'Open')}</select></td>
     <td><button class="btn-del-row" onclick="removeRisk(this)" title="Remove risk">✕</button></td>
   `;
 
-  tr.querySelector('.sel-lh').addEventListener('change',   () => _refreshScore(tr));
-  tr.querySelector('.sel-im').addEventListener('change',   () => _refreshScore(tr));
-  tr.querySelector('.risk-type').addEventListener('change', () => _refreshScore(tr));
+  tr.querySelector('.sel-lh').addEventListener('change',        () => _refreshScore(tr));
+  tr.querySelector('.sel-im').addEventListener('change',        () => _refreshScore(tr));
+  tr.querySelector('.risk-type').addEventListener('change',     () => _refreshScore(tr));
+  tr.querySelector('.risk-impact-cost').addEventListener('input', () => { _refreshExposure(tr); _updateSummary(); });
+  tr.querySelector('.risk-mitig-cost').addEventListener('input',  () => { _refreshExposure(tr); _updateSummary(); });
+
+  // Initial exposure render if loading saved data
+  if (d.impactCost || d.mitigCost) setTimeout(() => _refreshExposure(tr), 0);
 
   _initDragRow(tr);
   document.getElementById('risk-body').appendChild(tr);
@@ -602,6 +695,11 @@ function _refreshScore(tr) {
     badge.className   = 'score-badge ' + (isOpp ? 'opportunity' : lvl.cls);
     badge.textContent = s + ' · ' + (isOpp ? 'Gain' : lvl.label);
   }
+  // Update probability hint
+  const hint = tr.querySelector('.prob-hint');
+  if (hint) hint.textContent = (PROB_MAP[l] * 100 | 0) + '%' + (l === 1 ? ' ✕' : '');
+  // Recalculate EMV (probability change affects exposure)
+  _refreshExposure(tr);
   _updateSummary();
 }
 
@@ -640,6 +738,22 @@ function _updateSummary() {
     pillsEl.innerHTML = html;
   }
 
+  // Total project exposure
+  const totalExposure = risks.reduce((sum, r) =>
+    sum + _calcExposure(r.likelihood, r.impactCost, r.mitigCost, r.type || 'risk'), 0);
+  const hasFinData = risks.some(r => (r.impactCost || 0) + (r.mitigCost || 0) > 0);
+  const expEl = document.getElementById('risk-exposure-total');
+  if (expEl) {
+    if (!hasFinData || n === 0) {
+      expEl.style.display = 'none';
+    } else {
+      expEl.style.display = 'inline-flex';
+      expEl.className = 'exposure-total-pill ' +
+        (totalExposure < 0 ? 'net-gain' : totalExposure === 0 ? 'net-zero' : '');
+      expEl.textContent = 'Total Exposure: ' + _fmtEur(totalExposure);
+    }
+  }
+
   suiteWrite();
 }
 
@@ -657,6 +771,8 @@ function _getRisks() {
       likelihood: l,
       impact:     i,
       score:      l * i,
+      impactCost: parseFloat(row.querySelector('.risk-impact-cost').value) || 0,
+      mitigCost:  parseFloat(row.querySelector('.risk-mitig-cost').value)  || 0,
       mitigation: row.querySelector('.risk-mitigation').value,
       status:     row.querySelector('.risk-status').value,
     };
@@ -770,14 +886,19 @@ function exportExcel() {
   const wb    = XLSX.utils.book_new();
 
   // Main register sheet
-  const rows = [['#','Type','Category','Topic','Cause','Risk Description','Impact Description','Likelihood','Impact (I)','Score','Level','Mitigation Plan','Status']];
+  const rows = [['#','Type','Category','Topic','Cause','Risk Description','Impact Description','Likelihood','Prob %','Impact (I)','Score','Level','Impact Cost (€)','Mitig. Cost (€)','Exposure (€)','Mitigation Plan','Status']];
   state.risks.forEach((r, i) => {
-    const lvl     = scoreLevel(r.score);
-    const typeStr = (r.type || 'risk') === 'opportunity' ? 'Opportunity' : 'Risk';
-    rows.push([i+1, typeStr, r.category, r.topic||'', r.cause||'', r.desc, r.impactDesc||'', r.likelihood, r.impact, r.score, lvl.label, r.mitigation, r.status]);
+    const lvl      = scoreLevel(r.score);
+    const typeStr  = (r.type || 'risk') === 'opportunity' ? 'Opportunity' : 'Risk';
+    const prob     = PROB_MAP[parseInt(r.likelihood)] || 0;
+    const exposure = _calcExposure(r.likelihood, r.impactCost, r.mitigCost, r.type || 'risk');
+    rows.push([i+1, typeStr, r.category, r.topic||'', r.cause||'', r.desc, r.impactDesc||'',
+      r.likelihood, prob * 100, r.impact, r.score, lvl.label,
+      r.impactCost || 0, r.mitigCost || 0, Math.round(exposure),
+      r.mitigation, r.status]);
   });
   const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = [{wch:4},{wch:13},{wch:16},{wch:22},{wch:28},{wch:42},{wch:36},{wch:12},{wch:10},{wch:8},{wch:10},{wch:42},{wch:14}];
+  ws['!cols'] = [{wch:4},{wch:13},{wch:16},{wch:22},{wch:28},{wch:42},{wch:36},{wch:12},{wch:8},{wch:10},{wch:8},{wch:10},{wch:16},{wch:15},{wch:14},{wch:42},{wch:14}];
   XLSX.utils.book_append_sheet(wb, ws, 'Risk Register');
 
   // Summary sheet — by level and by category
@@ -805,6 +926,21 @@ function exportExcel() {
     [],
     ['Total Risks', state.risks.length],
     ['Max Score', state.risks.reduce((m,r) => Math.max(m,r.score), 0)],
+    [],
+    ['EMV Analysis'],
+    ['','Probability mapping: L1=20% (below threshold), L2=35%, L3=50%, L4=65%, L5=80%'],
+    ['','Formula: Exposure = (Prob × Impact Cost) + Mitig. Cost  |  L=1: Expected Impact = 0'],
+    [],
+    ['Row','Type','Likelihood','Prob%','Impact Cost (€)','Mitig. Cost (€)','Exposure (€)'],
+    ...state.risks.map((r, i) => {
+      const typeStr  = (r.type || 'risk') === 'opportunity' ? 'Opportunity' : 'Risk';
+      const prob     = (PROB_MAP[parseInt(r.likelihood)] || 0) * 100;
+      const exposure = Math.round(_calcExposure(r.likelihood, r.impactCost, r.mitigCost, r.type || 'risk'));
+      return [i+1, typeStr, r.likelihood, prob, r.impactCost || 0, r.mitigCost || 0, exposure];
+    }),
+    [],
+    ['Total Project Exposure (€)', Math.round(state.risks.reduce((sum, r) =>
+      sum + _calcExposure(r.likelihood, r.impactCost, r.mitigCost, r.type || 'risk'), 0))],
   ];
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summary), 'Summary');
 
@@ -856,7 +992,7 @@ function generate() {
 
     tbody.innerHTML += `
       <tr class="cat-group-hdr">
-        <td colspan="11">
+        <td colspan="14">
           <div class="cat-group-hdr-inner">
             <span class="cat-group-name">${esc(cat)}</span>
             <span class="cat-group-meta">${esc(metaParts)}</span>
@@ -873,7 +1009,13 @@ function generate() {
       const badgeLbl  = isOpp ? 'Gain'        : lvl.label;
       const typeLabel = isOpp ? '🌟 Opp'      : '⚠ Risk';
       const typeCls   = isOpp ? 'opportunity' : 'risk';
-      const statusCls = r.status.toLowerCase().replace(/\s+/g, '');
+      const statusCls  = r.status.toLowerCase().replace(/\s+/g, '');
+      const exposure   = _calcExposure(r.likelihood, r.impactCost, r.mitigCost, r.type || 'risk');
+      const hasFinData = (r.impactCost || 0) + (r.mitigCost || 0) > 0;
+      const expCls     = !hasFinData ? 'emv-neutral' : (exposure <= 0 ? 'emv-gain' : 'emv-cost');
+      const expTxt     = hasFinData ? _fmtEur(exposure) : '—';
+      const impCTxt    = r.impactCost ? _fmtEur(r.impactCost) : '—';
+      const mitCTxt    = r.mitigCost  ? _fmtEur(r.mitigCost)  : '—';
       tbody.innerHTML += `
         <tr>
           <td class="otr-type ${typeCls}">${typeLabel}</td>
@@ -885,6 +1027,9 @@ function generate() {
           <td class="otr-lh">${r.likelihood}</td>
           <td class="otr-im">${r.impact}</td>
           <td class="otr-score"><span class="otr-badge ${badgeCls}">${r.score}&thinsp;·&thinsp;${badgeLbl}</span></td>
+          <td class="otr-fin">${impCTxt}</td>
+          <td class="otr-fin">${mitCTxt}</td>
+          <td style="text-align:center;"><span class="out-exposure-badge ${expCls}">${expTxt}</span></td>
           <td>${esc(r.mitigation)}</td>
           <td><span class="otr-status ${statusCls}">${esc(r.status)}</span></td>
         </tr>`;
@@ -892,6 +1037,26 @@ function generate() {
   });
 
   _renderHeatmap(state.risks);
+
+  // Total project exposure block
+  const totalExposure = state.risks.reduce((sum, r) =>
+    sum + _calcExposure(r.likelihood, r.impactCost, r.mitigCost, r.type || 'risk'), 0);
+  const hasFinData = state.risks.some(r => (r.impactCost || 0) + (r.mitigCost || 0) > 0);
+  const expSummary = document.getElementById('out-exposure-summary');
+  const expBadge   = document.getElementById('out-exposure-total-badge');
+  const expNote    = document.getElementById('out-exposure-note');
+  if (expSummary && expBadge) {
+    if (hasFinData && state.risks.length > 0) {
+      expSummary.style.display = 'block';
+      expBadge.className = 'exposure-total-pill ' +
+        (totalExposure < 0 ? 'net-gain' : totalExposure === 0 ? 'net-zero' : '');
+      expBadge.textContent = 'Total Project Exposure: ' + _fmtEur(totalExposure);
+      if (expNote) expNote.textContent =
+        'EMV = (Prob × Impact Cost) + Mitigation Cost  ·  L=1 rows excluded from expected impact  ·  Opportunities shown as net gain';
+    } else {
+      expSummary.style.display = 'none';
+    }
+  }
 
   document.getElementById('editor').style.display = 'none';
   document.getElementById('output').style.display  = 'block';
@@ -930,7 +1095,9 @@ function suiteWrite() {
   const risks = _getRisks();
   const riskCount    = risks.length;
   const maxRiskScore = risks.reduce((m, r) => Math.max(m, r.score), 0);
-  SuiteManager.write({ riskCount, maxRiskScore }, 'riskcast');
+  const totalProjectExposure = risks.reduce((sum, r) =>
+    sum + _calcExposure(r.likelihood, r.impactCost, r.mitigCost, r.type || 'risk'), 0);
+  SuiteManager.write({ riskCount, maxRiskScore, totalProjectExposure }, 'riskcast');
 }
 
 function suiteRead(sync) {
