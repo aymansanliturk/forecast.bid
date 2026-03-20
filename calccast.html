@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CalcCast · PYL0N</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f5f4f0; --surface: #ffffff; --border: #e0ddd6;
+  --text: #1a1916; --muted: #6b6860; --faint: #a8a49e;
+  --accent: #2c4e87; --accent2: #1e3a6b; --green: #107c41; --red: #c0392b;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Unified Toolbar ── */
+#toolbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.tb-left  { display: flex; align-items: center; gap: 12px; }
+.tb-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.logo-icon {
+  width: 28px; height: 28px; background: var(--accent2); border-radius: 7px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.logo-icon svg { width: 16px; height: 16px; }
+.tool-name { font-size: 14px; font-weight: 700; letter-spacing: -0.3px; }
+.tool-tag  { font-size: 9px; font-weight: 600; color: var(--faint); letter-spacing: 1px; text-transform: uppercase; }
+.tb-sep    { width: 1px; height: 22px; background: var(--border); }
+.tb-btn {
+  font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500;
+  padding: 6px 12px; border-radius: 7px; border: 1.5px solid var(--border);
+  background: var(--bg); color: var(--muted); cursor: pointer; white-space: nowrap; transition: all .15s;
+}
+.tb-btn:hover { border-color: var(--accent); color: var(--accent); background: #fff; }
+.tb-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+.tb-btn.primary:hover { background: var(--accent2); }
+.save-confirm { font-size: 10px; color: var(--green); display: none; font-weight: 600; }
+
+/* ── Editor ── */
+#editor { max-width: 1500px; margin: 0 auto; padding: 24px 28px 60px; }
+
+.section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 24px; margin-bottom: 14px;
+}
+.section-title {
+  font-size: 10px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--faint);
+  margin-bottom: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ TOOLBAR ══════════════════ -->
+<div id="toolbar">
+  <div class="tb-left">
+    <div class="logo-icon">
+      <svg viewBox="0 0 18 18" fill="none">
+        <rect x="2.5" y="1.5" width="13" height="15" rx="2" stroke="white" stroke-width="1.4"/>
+        <line x1="5" y1="5.5" x2="13" y2="5.5" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+        <rect x="4.5" y="8"   width="2.5" height="2" rx="0.5" fill="white"/>
+        <rect x="7.75" y="8"  width="2.5" height="2" rx="0.5" fill="white" opacity="0.7"/>
+        <rect x="11"   y="8"  width="2.5" height="2" rx="0.5" fill="white" opacity="0.5"/>
+        <rect x="4.5"  y="11" width="2.5" height="2" rx="0.5" fill="white" opacity="0.7"/>
+        <rect x="7.75" y="11" width="2.5" height="2" rx="0.5" fill="white" opacity="0.7"/>
+        <rect x="11"   y="11" width="2.5" height="2" rx="0.5" fill="white"/>
+      </svg>
+    </div>
+    <div>
+      <div class="tool-name">CalcCast</div>
+      <div class="tool-tag">Financial Pricing Engine</div>
+    </div>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" onclick="location.href='index.html'">← Dashboard</button>
+  </div>
+  <div class="tb-right">
+    <label class="tb-btn" style="cursor:pointer;">
+      ↑ Load JSON
+      <input type="file" accept=".json" style="display:none;" onchange="loadJSON(this)">
+    </label>
+    <button class="tb-btn primary" onclick="saveJSON()">↓ Save JSON</button>
+    <span class="save-confirm" id="save-confirm">✓ Saved</span>
+  </div>
+</div>
+
+<!-- ══════════════════ EDITOR ══════════════════ -->
+<div id="editor">
+
+  <!-- Section 1: Global Parameters & KPIs -->
+  <div class="section">
+    <div class="section-title">Global Parameters &amp; KPIs</div>
+  </div>
+
+  <!-- Section 2: Guarantee Cost & Additional Tax -->
+  <div class="section">
+    <div class="section-title">Guarantee Cost &amp; Additional Tax</div>
+  </div>
+
+  <!-- Section 3: Main Cost Breakdown -->
+  <div class="section">
+    <div class="section-title">Main Cost Breakdown</div>
+  </div>
+
+  <!-- Section 4: LoA W2W Consolidated Summary -->
+  <div class="section">
+    <div class="section-title">LoA W2W Consolidated Summary</div>
+  </div>
+
+</div><!-- /editor -->
+
+<script>
+/* ══ SuiteManager ══════════════════════════════════════════════════════
+   Central synchronisation utility — shared across all Bid Forecast tools.
+════════════════════════════════════════════════════════════════════════ */
+const SuiteManager = (() => {
+  const SYNC_KEY = 'bidcast_suite_sync';
+  const LOGO_KEY = 'bidcast_logo';
+
+  function read() {
+    try { return JSON.parse(localStorage.getItem(SYNC_KEY) || '{}'); } catch { return {}; }
+  }
+  function write(patch, source) {
+    try {
+      const next = { ...read(), ...patch, _ts: Date.now(), _src: source };
+      localStorage.setItem(SYNC_KEY, JSON.stringify(next));
+      return next;
+    } catch { return {}; }
+  }
+  function getLogo()           { return localStorage.getItem(LOGO_KEY) || null; }
+  function setLogo(dataUrl)    { localStorage.setItem(LOGO_KEY, dataUrl); write({ _logoTs: Date.now() }, 'logo'); }
+  function removeLogo()        { localStorage.removeItem(LOGO_KEY); write({ _logoTs: Date.now() }, 'logo'); }
+  function migrate() {
+    const toMove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('pyl0n_')) toMove.push(k);
+    }
+    toMove.forEach(k => {
+      const newKey = 'bidcast_' + k.slice('pyl0n_'.length);
+      if (!localStorage.getItem(newKey)) localStorage.setItem(newKey, localStorage.getItem(k));
+      localStorage.removeItem(k);
+    });
+  }
+
+  return { read, write, getLogo, setLogo, removeLogo, migrate };
+})();
+
+/* ══ State ═════════════════════════════════════════════════════════════ */
+function collectState() {
+  // TODO: read all form inputs and return a plain JSON object
+  return {};
+}
+
+function applyState(s) {
+  // TODO: populate all form inputs from JSON object, then calculateModel()
+  if (!s) return;
+  calculateModel();
+}
+
+function calculateModel() {
+  // TODO: run the full W2W pricing math and update the summary
+}
+
+/* ══ Persistence ════════════════════════════════════════════════════════ */
+function saveJSON() {
+  const state = collectState();
+  localStorage.setItem('bidcast_state_calccast', JSON.stringify(state));
+  const blob  = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a     = document.createElement('a');
+  a.href      = URL.createObjectURL(blob);
+  a.download  = 'calccast_pricing.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  const c = document.getElementById('save-confirm');
+  if (c) { c.style.display = 'inline'; setTimeout(() => c.style.display = 'none', 2000); }
+}
+
+function loadJSON(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try { applyState(JSON.parse(e.target.result)); } catch { alert('Invalid JSON file.'); }
+  };
+  reader.readAsText(file); input.value = '';
+}
+
+/* ══ Boot ═══════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  SuiteManager.migrate();
+
+  const saved = localStorage.getItem('bidcast_state_calccast');
+  if (saved) {
+    try { applyState(JSON.parse(saved)); } catch { /* ignore corrupt state */ }
+  }
+});
+</script>
+
+</body>
+</html>
