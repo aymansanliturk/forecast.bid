@@ -1561,7 +1561,7 @@ function customerClearLogo() {
 function masterExport() {
   const archive = {};
   // Tool states
-  ['timecast', 'resourcecast', 'orgcast', 'rfqcast', 'dorcast', 'riskcast'].forEach(k => {
+  ['timecast', 'resourcecast', 'orgcast', 'rfqcast', 'dorcast', 'riskcast', 'calccast', 'lettercast'].forEach(k => {
     const v = localStorage.getItem('bidcast_state_' + k);
     if (v != null) archive['bidcast_state_' + k] = v;
   });
@@ -1642,7 +1642,48 @@ function generateExecutiveReport() {
   const rc = _load('resourcecast');
   const ri = _load('riskcast');
 
-  // ── ResourceCast: labour + expenses ──────────────────────────────
+  // ── CalcCast: Financials for Report ──────────────────────────────
+  const cc = _load('calccast');
+  let ccDirect = 0, ccOrder = 0, ccCustomer = 0, ccMargin = 0, ccProfit = 0, hasCalc = false;
+  if (cc && cc.costRows) {
+    hasCalc = true;
+    const fxMap = { EUR: 1.0, USD: parseFloat(cc.fxUsd)||0.92, GBP: parseFloat(cc.fxGbp)||1.17, DKK: parseFloat(cc.fxDkk)||0.134 };
+    const risk = (parseFloat(cc.kpiRisk)||0)/100;
+    const warr = (parseFloat(cc.kpiWarranty)||0)/100;
+    const sga  = (parseFloat(cc.kpiSga)||0)/100;
+    const exu  = (parseFloat(cc.kpiExu)||0)/100;
+    const ba   = (parseFloat(cc.kpiBa)||0)/100;
+    const ebit = (parseFloat(cc.kpiEbit)||0)/100;
+    const neg  = (parseFloat(cc.kpiNeg)||0)/100;
+    const kpiBasePct  = risk + warr + sga + exu + ba;
+    const kpiTotalPct = kpiBasePct + ebit;
+    const divSell = kpiTotalPct >= 1 ? 0.01 : (1 - kpiTotalPct);
+    const divBase = kpiBasePct  >= 1 ? 0.01 : (1 - kpiBasePct);
+    const divNeg  = neg >= 1 ? 0.01 : (1 - neg);
+    // 1. Row Costs
+    cc.costRows.forEach(r => {
+      if (r.scope === 'excluded') return;
+      const q  = parseFloat(r.qty)       || 0;
+      const u  = parseFloat(r.unitPrice) || 0;
+      const fx = fxMap[r.currency]       || 1;
+      const cost = q * u * fx;
+      ccDirect += cost;
+      ccOrder  += (cost / divSell);
+    });
+    // 2. Guarantee Costs
+    (cc.guarRows || []).forEach(g => {
+      const dur  = parseFloat(g.duration) || 0;
+      const rate = (parseFloat(g.rate)    || 0) / 100;
+      const bondCost = ccOrder * rate * dur;
+      ccDirect += bondCost;
+      ccOrder  += bondCost;
+    });
+    // 3. Final Metrics
+    ccCustomer = ccOrder / divNeg;
+    ccMargin   = ccCustomer - ccDirect;
+    const overhead = (ccDirect / divBase) - ccDirect;
+    ccProfit = ccCustomer - (ccDirect + overhead);
+  }
   let totalBudget = 0, totalLabour = 0, totalExpenses = 0;
   const roleRows = [], expenseRows = [];
   if (rc) {
@@ -1982,6 +2023,7 @@ document.addEventListener('DOMContentLoaded', () => {
       'bidcast_state_timecast', 'bidcast_state_resourcecast',
       'bidcast_state_orgcast', 'bidcast_state_rfqcast',
       'bidcast_state_dorcast', 'bidcast_state_riskcast',
+      'bidcast_state_calccast', 'bidcast_state_lettercast',
       'bidcast_suite_sync',
     ];
     if (trackedKeys.includes(e.key)) refreshStats();
