@@ -93,6 +93,65 @@ input[type="number"] { font-family: 'DM Mono', monospace; }
   margin-bottom: 12px; margin-top: 18px;
 }
 .field-group-label:first-child { margin-top: 0; }
+
+/* ── Cost Breakdown Table ── */
+.calc-table-wrap { overflow-x: auto; margin-bottom: 12px; }
+.calc-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1000px; }
+.calc-table th {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+  color: var(--faint); padding: 8px 10px; text-align: left;
+  border-bottom: 2px solid var(--border); white-space: nowrap; background: var(--surface);
+}
+.calc-table th.th-r { text-align: right; }
+.calc-table th.th-c { text-align: center; }
+.calc-table td { padding: 4px 6px; border-bottom: 1px solid #f0ede8; vertical-align: middle; }
+.calc-table tbody tr:hover td { background: #fafaf8; }
+.td-num { text-align: center; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--faint); width: 28px; }
+
+/* Override global yellow-tint for table cell inputs */
+.calc-table input.calc-inp {
+  width: 100%; padding: 5px 8px; font-family: 'DM Sans', sans-serif; font-size: 12px;
+  color: var(--text); background: transparent; border: 1px solid transparent;
+  border-radius: 5px; outline: none; transition: all 0.12s;
+}
+.calc-table input.calc-inp:hover { border-color: var(--border); background: #faf9f7; }
+.calc-table input.calc-inp:focus { border-color: var(--accent); background: #fff; }
+.calc-table input.calc-inp.num { font-family: 'DM Mono', monospace; text-align: right; }
+
+.calc-table select.calc-sel {
+  width: 100%; padding: 5px 7px; font-family: 'DM Sans', sans-serif; font-size: 12px;
+  color: var(--text); background: #faf9f7; border: 1px solid var(--border);
+  border-radius: 5px; outline: none; cursor: pointer; transition: border-color 0.12s;
+}
+.calc-table select.calc-sel:focus { border-color: var(--accent); background: #fff; }
+
+/* Readonly computed cells */
+.calc-readonly {
+  display: block; font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 600;
+  text-align: right; padding: 5px 8px; white-space: nowrap; border-radius: 5px;
+  color: var(--accent2); background: #eef2f9;
+}
+.calc-readonly.sell-eur { color: var(--green); background: #f0fdf4; }
+
+/* Excluded row fades out, except the delete button */
+.cost-row.is-excluded > td { opacity: 0.4; }
+.cost-row.is-excluded .btn-del-row { opacity: 1; }
+
+/* Delete row button */
+.btn-del-row {
+  background: none; border: 1px solid var(--border); border-radius: 4px;
+  width: 22px; height: 22px; cursor: pointer; color: var(--faint); font-size: 12px;
+  display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s;
+}
+.btn-del-row:hover { border-color: var(--red); color: var(--red); background: #fff5f5; }
+
+/* Add Item button */
+.btn-add-item {
+  background: none; border: 1.5px dashed var(--border); border-radius: 7px;
+  padding: 8px 18px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
+  color: var(--muted); cursor: pointer; transition: all 0.15s; margin-top: 10px;
+}
+.btn-add-item:hover { border-color: var(--accent); color: var(--accent); background: #f0f4fa; }
 </style>
 </head>
 <body>
@@ -223,6 +282,28 @@ input[type="number"] { font-family: 'DM Mono', monospace; }
   <!-- Section 3: Main Cost Breakdown -->
   <div class="section">
     <div class="section-title">Main Cost Breakdown</div>
+
+    <div class="calc-table-wrap">
+      <table class="calc-table" id="cost-table">
+        <thead>
+          <tr>
+            <th class="th-c" style="width:28px;">#</th>
+            <th style="min-width:140px;">Category</th>
+            <th style="width:110px;">Scope</th>
+            <th style="min-width:140px;">Supplier</th>
+            <th class="th-r" style="width:80px;">Qty</th>
+            <th class="th-r" style="width:130px;">Unit Price</th>
+            <th class="th-c" style="width:76px;">Ccy</th>
+            <th class="th-r" style="width:150px;">Cost Price EUR</th>
+            <th class="th-r" style="width:150px;">Selling Price EUR</th>
+            <th style="width:36px;"></th>
+          </tr>
+        </thead>
+        <tbody id="cost-tbody"></tbody>
+      </table>
+    </div>
+
+    <button class="btn-add-item" onclick="addCostRow()">+ Add Item</button>
   </div>
 
   <!-- Section 4: LoA W2W Consolidated Summary -->
@@ -293,6 +374,8 @@ function collectState() {
     guarBondType: g('guar-bond-type').value,
     guarDuration: g('guar-duration').value,
     guarRate:     g('guar-rate').value,
+    // Cost rows
+    costRows:     _collectCostRows(),
   };
 }
 
@@ -317,11 +400,93 @@ function applyState(s) {
   set('guar-bond-type',  s.guarBondType);
   set('guar-duration',   s.guarDuration);
   set('guar-rate',       s.guarRate);
+  // Rebuild cost rows
+  const tbody = document.getElementById('cost-tbody');
+  if (tbody) { tbody.innerHTML = ''; _rowCounter = 0; }
+  (s.costRows || []).forEach(row => addCostRow(row));
   calculateModel();
 }
 
 function calculateModel() {
   // TODO: run the full W2W pricing math and update the summary
+}
+
+/* ══ Cost Table ════════════════════════════════════════════════════════ */
+const CATEGORIES = ['Transformers','GIS','Cables','Civil Works','Project Hours','Other'];
+const CURRENCIES  = ['EUR','USD','GBP','DKK'];
+let _rowCounter   = 0;
+
+function addCostRow(data = {}) {
+  const tbody = document.getElementById('cost-tbody');
+  const idx   = _rowCounter++;
+  const tr    = document.createElement('tr');
+  tr.className   = 'cost-row';
+  tr.dataset.idx = idx;
+
+  function catOpts(sel) {
+    return CATEGORIES.map(c =>
+      `<option${c === (sel || 'Other') ? ' selected' : ''}>${c}</option>`
+    ).join('');
+  }
+  function ccyOpts(sel) {
+    return CURRENCIES.map(c =>
+      `<option${c === (sel || 'EUR') ? ' selected' : ''}>${c}</option>`
+    ).join('');
+  }
+
+  tr.innerHTML = `
+    <td class="td-num row-num"></td>
+    <td><select class="calc-sel sel-category" oninput="calculateModel()">${catOpts(data.category)}</select></td>
+    <td>
+      <select class="calc-sel sel-scope" oninput="calculateModel()">
+        <option value="included"${(data.scope || 'included') === 'included' ? ' selected' : ''}>Included</option>
+        <option value="excluded"${data.scope === 'excluded' ? ' selected' : ''}>Excluded</option>
+      </select>
+    </td>
+    <td><input type="text"   class="calc-inp inp-supplier" placeholder="Supplier name"
+          value="${_esc(data.supplier || '')}" oninput="calculateModel()"></td>
+    <td><input type="number" class="calc-inp num inp-qty" placeholder="1"
+          min="0" step="1" value="${data.qty || ''}" oninput="calculateModel()"></td>
+    <td><input type="number" class="calc-inp num inp-unit-price" placeholder="0.00"
+          min="0" step="100" value="${data.unitPrice || ''}" oninput="calculateModel()"></td>
+    <td><select class="calc-sel sel-currency" oninput="calculateModel()">${ccyOpts(data.currency)}</select></td>
+    <td><span class="calc-readonly cost-eur">—</span></td>
+    <td><span class="calc-readonly sell-eur">—</span></td>
+    <td><button class="btn-del-row" onclick="deleteCostRow(this)" title="Remove row">✕</button></td>
+  `;
+
+  tbody.appendChild(tr);
+  _renumberRows();
+  calculateModel();
+}
+
+function deleteCostRow(btn) {
+  btn.closest('.cost-row').remove();
+  _renumberRows();
+  calculateModel();
+}
+
+function _renumberRows() {
+  document.querySelectorAll('#cost-tbody .cost-row .row-num').forEach((cell, i) => {
+    cell.textContent = i + 1;
+  });
+}
+
+function _esc(s) {
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function _collectCostRows() {
+  return Array.from(document.querySelectorAll('#cost-tbody .cost-row')).map(tr => ({
+    category:  tr.querySelector('.sel-category').value,
+    scope:     tr.querySelector('.sel-scope').value,
+    supplier:  tr.querySelector('.inp-supplier').value,
+    qty:       tr.querySelector('.inp-qty').value,
+    unitPrice: tr.querySelector('.inp-unit-price').value,
+    currency:  tr.querySelector('.sel-currency').value,
+  }));
 }
 
 /* ══ Persistence ════════════════════════════════════════════════════════ */
