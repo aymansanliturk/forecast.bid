@@ -285,6 +285,7 @@ input:focus, select:focus { border-color:var(--accent); background:#fff; }
           <tr>
             <th style="width:20px;"></th>
             <th>Type</th>
+            <th style="min-width:160px;">Category</th>
             <th style="min-width:220px;">Description</th>
             <th style="width:50px;">Qty</th>
             <th style="min-width:100px;" class="v-th">Supplier 1</th>
@@ -424,6 +425,16 @@ const ITEM_TYPES = ['HV Equipment','Power Transformer','Shunt Reactor','Aux Tran
   'GIS','HV Cables','LV Cables','LV Systems','Control & Protection','SCADA',
   'Network & Telecoms','Cybersecurity','Civil Works','Electrical Installation',
   'Logistics','MEP','Earthing','ICMN','Harmonic Filter','STATCOM','Other'];
+
+const CATEGORIES = [
+  'Transformers', 'Shunt Reactors', '400kV / 245–275kV / 66–145kV GIS',
+  'Control & Protection & Telecom', 'STATCOM', 'MV Switchgear / AIS Switchgear',
+  'Auxiliary Transformers', 'Harmonic Filters / MSCDN', 'ICMS',
+  'Auxiliary System & UPS', 'Diesel Generator', 'Panels', 'LV/HV Cables',
+  'Earthing & Lightning', 'Building Systems', 'Civil Works', 'I&C Contractor',
+  'Onshore/Offshore Supervision', 'Studies', 'Project Hours & Travel',
+  'Training', 'O&M', 'Other Cost Items'
+];
 
 function setFormat(fmt) {
   currentFormat = fmt;
@@ -596,10 +607,16 @@ function addItem(data) {
   const typeOpts = allTypes.map(t =>
     `<option value="${t}" ${t===curType?'selected':''}>${t}</option>`
   ).join('');
+  function catOpts(sel) {
+    return CATEGORIES.map(c =>
+      `<option value="${c}"${c === (sel || 'Other Cost Items') ? ' selected' : ''}>${c}</option>`
+    ).join('');
+  }
 
   tr.innerHTML = `
     <td><span class="drag-handle">⠿</span></td>
     <td><select class="item-type" style="font-size:11px;padding:3px 5px;min-width:120px;">${typeOpts}</select></td>
+    <td><select class="rfq-inp-category" style="font-size:11px;padding:3px 5px;width:100%;">${catOpts(data.category)}</select></td>
     <td><input class="item-desc" type="text" value="${esc(data.desc||'')}" placeholder="Technical description" style="width:100%;min-width:200px;"></td>
     <td><input class="item-qty" type="text" value="${esc(data.qty||'')}" placeholder="Qty" style="width:50px;text-align:center;"></td>
     <td class="v-cell" data-vi="0"></td>
@@ -614,7 +631,7 @@ function addItem(data) {
   det.className = 'detail-row';
   det.dataset.parent = id;
   const requiredMonths = parseInt(document.getElementById('validity-months').value) || 3;
-  det.innerHTML = `<td colspan="8"><div class="detail-panel" id="detail-${id}"></div></td>`;
+  det.innerHTML = `<td colspan="9"><div class="detail-panel" id="detail-${id}"></div></td>`;
   tbody.appendChild(det);
 
   // Store vendor data on tr
@@ -857,7 +874,7 @@ function getItems() {
     return {
       id:       tr.dataset.rfqId    || '',
       type:     tr.querySelector('.item-type')?.value || '',
-      category: tr.querySelector('.item-type')?.value || '',
+      category: tr.querySelector('.rfq-inp-category')?.value || tr.querySelector('.item-type')?.value || '',
       desc:     tr.querySelector('.item-desc')?.value || '',
       qty:      tr.querySelector('.item-qty')?.value  || '',
       units:    'pcs',
