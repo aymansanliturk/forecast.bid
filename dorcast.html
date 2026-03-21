@@ -6,6 +6,7 @@
 <title>DORCast · PYL0N</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style id="page-size-style">@page { size: A3 landscape; margin: 8mm; }</style>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -17,6 +18,23 @@
   --mark-na:   #a8a49e;
   --mark-text: #3a7a52;
 }
+
+/* ── Dark mode ── */
+[data-theme="dark"] {
+  --bg: #1a1917;
+  --surface: #242320;
+  --border: #3a3835;
+  --text: #e8e6e1;
+  --muted: #9b9891;
+  --faint: #6b6860;
+  --accent: #5b82c4;
+  --accent2: #4a6da8;
+  --green: #22a85a;
+  --green-dk: #1a8a47;
+}
+[data-theme="dark"] #toolbar {
+  background: rgba(36,35,32,0.95);
+}[data-theme="dark"] { --mark-x: #7aa0d8; --mark-na: #6b6860; --mark-text: #4dba7c; }
 body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; -webkit-font-smoothing:antialiased; }
 
 /* ── Unified Toolbar ── */
@@ -265,6 +283,8 @@ input:focus, select:focus { border-color:var(--accent); background:#fff; }
     <label class="tb-btn" style="cursor:pointer;">↑ Import Excel<input type="file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(this)"></label>
     <button class="tb-btn green" onclick="exportExcel()">⬇ Export Excel</button>
     <button class="tb-btn" onclick="exportHTML()">⬇ Export HTML</button>
+    <button class="tb-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle dark mode" style="font-size:14px;padding:4px 8px;border:none;background:transparent;cursor:pointer;">🌙</button>
+    <div style="position:relative;display:inline-block;"><button class="tb-btn" id="backup-btn" onclick="_showBackups()" style="font-size:11px;">⏱ Backups</button></div>
     <span id="autosave-label" style="font-size:10px;color:var(--faint);"></span>
     <span class="save-confirm" id="save-confirm">✓ Saved!</span>
   </div>
@@ -776,6 +796,7 @@ function saveJSON() {
   URL.revokeObjectURL(a.href);
   const c=document.getElementById('save-confirm');
   c.style.display='inline'; setTimeout(()=>c.style.display='none',2000);
+  _writeBackup();
 }
 
 function loadJSON(input) {
@@ -968,13 +989,24 @@ document.addEventListener('keydown', e => {
 
 // ── PDF Export ──
 function exportPDF() {
-  // Use native browser print — correctly repeats the header on each page
-  // and natively handles thead repeat. Browser → Print → Save as PDF.
-  window.print();
+  const state = collectState();
+  const name = (state.title || 'dorcast').replace(/[^a-z0-9_-]/gi, '_').toLowerCase();
+  html2pdf().set({
+    margin: 10,
+    filename: 'dorcast-export.pdf',
+    image: { type: 'jpeg', quality: 0.97 },
+    html2canvas: { scale: 0.85, useCORS: true, onclone: d => {
+      d.querySelectorAll('.no-print, .print-bar').forEach(el => el.remove());
+      const out = d.querySelector('#output');
+      if (out) { out.style.display = 'block'; out.style.padding = '0'; }
+    }},
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }).from(document.getElementById('output')).save();
 }
 
 // Init
 document.addEventListener('DOMContentLoaded', () => {
+  _applyTheme(localStorage.getItem('bidcast_theme') || 'light');
   updateLogoUI();
   const _saved = localStorage.getItem('bidcast_state_dorcast');
   if (_saved) { try { applyState(JSON.parse(_saved)); } catch(e) {} }
@@ -984,9 +1016,90 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(suiteWrite, 900);
   SuiteManager.onUpdate((sync, key) => {
     if (key === 'bidcast_logo') { updateLogoUI(); return; }
+    if (sync && sync.theme) _applyTheme(sync.theme);
     suiteRead(sync);
   });
 });
+
+/* ── Dark mode ── */
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const newTheme = isDark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('bidcast_theme', newTheme);
+  const btn = document.getElementById('theme-toggle-btn');
+  if (btn) btn.textContent = newTheme === 'dark' ? '☀' : '🌙';
+  try {
+    const sync = JSON.parse(localStorage.getItem('bidcast_suite_sync') || '{}');
+    sync.theme = newTheme; sync._ts = Date.now();
+    localStorage.setItem('bidcast_suite_sync', JSON.stringify(sync));
+  } catch(e) {}
+}
+function _applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme || 'light');
+  const btn = document.getElementById('theme-toggle-btn');
+  if (btn) btn.textContent = theme === 'dark' ? '☀' : '🌙';
+}
+
+function _writeBackup() {
+  const toolKey = 'bidcast_state_dorcast';
+  const stateStr = localStorage.getItem(toolKey);
+  if (!stateStr) return;
+  localStorage.setItem('bidcast_backup_dorcast_' + Date.now(), stateStr);
+  // Prune: keep only last 5 backups for this tool
+  const prefix = 'bidcast_backup_dorcast_';
+  const keys = Object.keys(localStorage).filter(k => k.startsWith(prefix)).sort();
+  while (keys.length > 5) localStorage.removeItem(keys.shift());
+}
+
+function _showBackups() {
+  const existing = document.getElementById('backup-popover');
+  if (existing) { existing.remove(); return; }
+  const prefix = 'bidcast_backup_dorcast_';
+  const keys = Object.keys(localStorage).filter(k => k.startsWith(prefix)).sort().reverse();
+  const pop = document.createElement('div');
+  pop.id = 'backup-popover';
+  pop.style.cssText = 'position:absolute;z-index:999;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px;min-width:220px;max-height:200px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,0.12);font-size:11px;';
+  if (keys.length === 0) {
+    pop.innerHTML = '<div style="color:var(--faint);padding:4px 6px;">No backups yet.</div>';
+  } else {
+    keys.forEach(k => {
+      const ts = parseInt(k.replace(prefix, ''));
+      const d = new Date(ts);
+      const ago = _relTime(ts);
+      const item = document.createElement('div');
+      item.style.cssText = 'padding:5px 8px;cursor:pointer;border-radius:4px;';
+      item.textContent = ago + ' — ' + d.toLocaleTimeString();
+      item.onmouseover = () => item.style.background = 'var(--bg)';
+      item.onmouseout  = () => item.style.background = '';
+      item.onclick = () => {
+        if (!confirm('Restore this backup? Current state will be replaced.')) return;
+        try { applyState(JSON.parse(localStorage.getItem(k))); pop.remove(); } catch(e) { alert('Could not restore backup.'); }
+      };
+      pop.appendChild(item);
+    });
+  }
+  // Position near the backup button
+  const btn = document.getElementById('backup-btn');
+  if (btn) {
+    const rect = btn.getBoundingClientRect();
+    pop.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+    pop.style.right = (window.innerWidth - rect.right) + 'px';
+    pop.style.left = 'auto';
+  }
+  document.body.appendChild(pop);
+  setTimeout(() => document.addEventListener('click', function _cl(e) {
+    if (!pop.contains(e.target) && e.target.id !== 'backup-btn') { pop.remove(); document.removeEventListener('click', _cl); }
+  }), 50);
+}
+
+function _relTime(ts) {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60)  return s + 's ago';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  return Math.floor(s/86400) + 'd ago';
+}
 </script>
 </body>
 </html>

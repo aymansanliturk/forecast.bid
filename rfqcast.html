@@ -22,6 +22,23 @@
   --s-expired: #f8d7da; --s-expired-txt: #721c24;
   --s-binding: #e8f5e9; --s-binding-txt: #2e7d32;
 }
+
+/* ── Dark mode ── */
+[data-theme="dark"] {
+  --bg: #1a1917;
+  --surface: #242320;
+  --border: #3a3835;
+  --text: #e8e6e1;
+  --muted: #9b9891;
+  --faint: #6b6860;
+  --accent: #5b82c4;
+  --accent2: #4a6da8;
+  --green: #22a85a;
+  --green-dk: #1a8a47;
+}
+[data-theme="dark"] #toolbar {
+  background: rgba(36,35,32,0.95);
+}[data-theme="dark"] { --s-none: #2a2825; --s-none-txt: #9b9891; --s-enquiry: #1e2d42; --s-enquiry-txt: #7aa0d8; --s-waiting: #2e2408; --s-waiting-txt: #c8a02e; --s-received: #0e2918; --s-received-txt: #4db87a; --s-expired: #2e0f0f; --s-expired-txt: #e06060; --s-binding: #0e2818; --s-binding-txt: #4dba7c; }
 body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; -webkit-font-smoothing:antialiased; }
 
 /* ── Unified Toolbar ── */
@@ -143,6 +160,17 @@ input:focus, select:focus { border-color:var(--accent); background:#fff; }
 #output { display:none; padding:20px 28px 40px; }
 .print-bar { display:flex; gap:10px; margin-bottom:18px; align-items:center; }
 
+/* Vendor comparison table */
+.vcmp-wrap { margin-top:10px; margin-bottom:8px; overflow-x:auto; }
+.vcmp-table { width:100%; border-collapse:collapse; font-size:8.5px; }
+.vcmp-table th { font-size:7.5px; font-weight:700; letter-spacing:0.3px; text-transform:uppercase; color:var(--faint); padding:4px 8px; text-align:left; border-bottom:1px solid var(--border); background:#f7f5f2; }
+.vcmp-table th.vcmp-winner { background:#fffbe6; border-bottom:2px solid #e6b800; color:#7c5c00; }
+.vcmp-table td { padding:4px 8px; border-bottom:1px solid #f0ede8; vertical-align:top; font-size:8.5px; }
+.vcmp-table td.vcmp-winner-col { background:#fffbe6; border-left:2px solid #e6b800; border-right:2px solid #e6b800; }
+.vcmp-table tr:last-child td.vcmp-winner-col { border-bottom:2px solid #e6b800; }
+.vcmp-table .vcmp-field { font-size:7.5px; font-weight:700; letter-spacing:0.3px; text-transform:uppercase; color:var(--faint); white-space:nowrap; }
+.vcmp-winner-badge { display:inline-flex; align-items:center; gap:3px; font-size:8px; font-weight:700; color:#7c5c00; background:#fffbe6; border:1px solid #e6b800; border-radius:10px; padding:1px 6px; margin-top:2px; }
+
 .out-header { display:flex; align-items:center; border-bottom:2px solid var(--text); padding-bottom:10px; margin-bottom:16px; gap:16px; }
 .out-logo { flex-shrink:0; }
 .out-logo img { height:34px; width:auto; }
@@ -207,6 +235,8 @@ input:focus, select:focus { border-color:var(--accent); background:#fff; }
     <label class="tb-btn" style="cursor:pointer;">↑ Import Excel<input type="file" accept=".xlsx,.xls" style="display:none" onchange="importExcel(this)"></label>
     <button class="tb-btn green" onclick="exportExcel()">⬇ Export Excel</button>
     <button class="tb-btn" onclick="exportHTML()">⬇ Export HTML</button>
+    <button class="tb-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle dark mode" style="font-size:14px;padding:4px 8px;border:none;background:transparent;cursor:pointer;">🌙</button>
+    <div style="position:relative;display:inline-block;"><button class="tb-btn" id="backup-btn" onclick="_showBackups()" style="font-size:11px;">⏱ Backups</button></div>
     <span id="autosave-label" style="font-size:10px;color:var(--faint);"></span>
   </div>
 </div>
@@ -900,6 +930,40 @@ function generate() {
       
       tableHtml += `<td style="font-size:8px;color:var(--muted);">${esc(item.comments||'')}</td>`;
       tableHtml += '</tr>';
+
+      // Vendor comparison table for items with ≥2 named vendors
+      const namedVendors = item.vendors.filter(v => v.name);
+      if (namedVendors.length >= 2) {
+        tableHtml += `<tr><td colspan="7" style="padding:4px 0 10px;">`;
+        tableHtml += `<div class="vcmp-wrap">`;
+        tableHtml += `<table class="vcmp-table"><thead><tr><th class="vcmp-field">Field</th>`;
+        namedVendors.forEach(v => {
+          const isWinner = !!v.isWinner;
+          tableHtml += `<th class="${isWinner ? 'vcmp-winner' : ''}">${esc(v.name)}${isWinner ? ' ★' : ''}</th>`;
+        });
+        tableHtml += `</tr></thead><tbody>`;
+
+        const fields = [
+          { key: 'status',   label: 'Status',              fn: v => `<span class="out-v-pill ${statusClass(vendorStatus(v))}">${statusLabel(vendorStatus(v))}</span>` },
+          { key: 'offerRec', label: 'Quote Date',           fn: v => v.offerRec   || '—' },
+          { key: 'validity', label: 'Valid Until',          fn: v => v.validity   || '—' },
+          { key: 'price',    label: 'Unit Price',           fn: v => v.price ? `<strong>${v.currency||'EUR'} ${Number(v.price).toLocaleString()}</strong>` : '—' },
+          { key: 'leadtime', label: 'Lead Time',            fn: v => v.leadTime   || '—' },
+          { key: 'nda',      label: 'NDA',                  fn: v => v.nda        || '—' },
+          { key: 'binding',  label: 'Binding Offer',        fn: v => v.binding    || '—' },
+        ];
+
+        fields.forEach(f => {
+          tableHtml += `<tr><td class="vcmp-field">${f.label}</td>`;
+          namedVendors.forEach(v => {
+            const isWinner = !!v.isWinner;
+            tableHtml += `<td class="${isWinner ? 'vcmp-winner-col' : ''}">${f.fn(v)}</td>`;
+          });
+          tableHtml += `</tr>`;
+        });
+
+        tableHtml += `</tbody></table></div></td></tr>`;
+      }
     });
     tableHtml += `<tr><td colspan="8" style="height:10px;"></td></tr>`;
   });
@@ -936,6 +1000,7 @@ function saveJSON() {
   const a = document.createElement('a');
   a.href=URL.createObjectURL(blob); a.download=name+'_suite.json'; a.click();
   URL.revokeObjectURL(a.href);
+  _writeBackup();
 }
 
 function loadJSON(input) {
@@ -1100,6 +1165,7 @@ function exportPDF() {
 
 // Init
 document.addEventListener('DOMContentLoaded', () => {
+  _applyTheme(localStorage.getItem('bidcast_theme') || 'light');
   updateLogoUI();
   const _saved = localStorage.getItem('bidcast_state_rfqcast');
   if (_saved) { try { applyState(JSON.parse(_saved)); } catch(e) {} }
@@ -1110,9 +1176,90 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(suiteWrite, 900);
   SuiteManager.onUpdate((sync, key) => {
     if (key === 'bidcast_logo') { updateLogoUI(); return; }
+    if (sync && sync.theme) _applyTheme(sync.theme);
     suiteRead(sync);
   });
 });
+
+/* ── Dark mode ── */
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const newTheme = isDark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('bidcast_theme', newTheme);
+  const btn = document.getElementById('theme-toggle-btn');
+  if (btn) btn.textContent = newTheme === 'dark' ? '☀' : '🌙';
+  try {
+    const sync = JSON.parse(localStorage.getItem('bidcast_suite_sync') || '{}');
+    sync.theme = newTheme; sync._ts = Date.now();
+    localStorage.setItem('bidcast_suite_sync', JSON.stringify(sync));
+  } catch(e) {}
+}
+function _applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme || 'light');
+  const btn = document.getElementById('theme-toggle-btn');
+  if (btn) btn.textContent = theme === 'dark' ? '☀' : '🌙';
+}
+
+function _writeBackup() {
+  const toolKey = 'bidcast_state_rfqcast';
+  const stateStr = localStorage.getItem(toolKey);
+  if (!stateStr) return;
+  localStorage.setItem('bidcast_backup_rfqcast_' + Date.now(), stateStr);
+  // Prune: keep only last 5 backups for this tool
+  const prefix = 'bidcast_backup_rfqcast_';
+  const keys = Object.keys(localStorage).filter(k => k.startsWith(prefix)).sort();
+  while (keys.length > 5) localStorage.removeItem(keys.shift());
+}
+
+function _showBackups() {
+  const existing = document.getElementById('backup-popover');
+  if (existing) { existing.remove(); return; }
+  const prefix = 'bidcast_backup_rfqcast_';
+  const keys = Object.keys(localStorage).filter(k => k.startsWith(prefix)).sort().reverse();
+  const pop = document.createElement('div');
+  pop.id = 'backup-popover';
+  pop.style.cssText = 'position:absolute;z-index:999;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px;min-width:220px;max-height:200px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,0.12);font-size:11px;';
+  if (keys.length === 0) {
+    pop.innerHTML = '<div style="color:var(--faint);padding:4px 6px;">No backups yet.</div>';
+  } else {
+    keys.forEach(k => {
+      const ts = parseInt(k.replace(prefix, ''));
+      const d = new Date(ts);
+      const ago = _relTime(ts);
+      const item = document.createElement('div');
+      item.style.cssText = 'padding:5px 8px;cursor:pointer;border-radius:4px;';
+      item.textContent = ago + ' — ' + d.toLocaleTimeString();
+      item.onmouseover = () => item.style.background = 'var(--bg)';
+      item.onmouseout  = () => item.style.background = '';
+      item.onclick = () => {
+        if (!confirm('Restore this backup? Current state will be replaced.')) return;
+        try { applyState(JSON.parse(localStorage.getItem(k))); pop.remove(); } catch(e) { alert('Could not restore backup.'); }
+      };
+      pop.appendChild(item);
+    });
+  }
+  // Position near the backup button
+  const btn = document.getElementById('backup-btn');
+  if (btn) {
+    const rect = btn.getBoundingClientRect();
+    pop.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+    pop.style.right = (window.innerWidth - rect.right) + 'px';
+    pop.style.left = 'auto';
+  }
+  document.body.appendChild(pop);
+  setTimeout(() => document.addEventListener('click', function _cl(e) {
+    if (!pop.contains(e.target) && e.target.id !== 'backup-btn') { pop.remove(); document.removeEventListener('click', _cl); }
+  }), 50);
+}
+
+function _relTime(ts) {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60)  return s + 's ago';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  return Math.floor(s/86400) + 'd ago';
+}
 </script>
 </body>
 </html>
