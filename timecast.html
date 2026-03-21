@@ -389,6 +389,7 @@
     <div class="tb-sep"></div>
     <button class="tb-btn" onclick="exportHTML()">⬇ Export HTML</button>
     <button class="tb-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle dark mode" style="font-size:14px;padding:4px 8px;border:none;background:transparent;cursor:pointer;">🌙</button>
+    <div style="position:relative;display:inline-block;"><button class="tb-btn" id="backup-btn" onclick="_showBackups()" style="font-size:11px;">⏱ Backups</button></div>
     <span id="autosave-label" style="font-size:10px;color:var(--faint);"></span>
     <span class="save-confirm" id="save-confirm">✓ Saved!</span>
   </div>
@@ -1625,7 +1626,8 @@ function updateLogoUI() {
     URL.revokeObjectURL(a.href);
     const c = document.getElementById('save-confirm');
     if (c) { c.style.display='inline'; setTimeout(()=>c.style.display='none', 2000); }
-  }
+    _writeBackup();
+}
 
   function loadJSON(input) {
     const file = input.files[0]; if (!file) return;
@@ -1881,6 +1883,66 @@ function _applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme || 'light');
   const btn = document.getElementById('theme-toggle-btn');
   if (btn) btn.textContent = theme === 'dark' ? '☀' : '🌙';
+}
+
+function _writeBackup() {
+  const toolKey = 'bidcast_state_timecast';
+  const stateStr = localStorage.getItem(toolKey);
+  if (!stateStr) return;
+  localStorage.setItem('bidcast_backup_timecast_' + Date.now(), stateStr);
+  // Prune: keep only last 5 backups for this tool
+  const prefix = 'bidcast_backup_timecast_';
+  const keys = Object.keys(localStorage).filter(k => k.startsWith(prefix)).sort();
+  while (keys.length > 5) localStorage.removeItem(keys.shift());
+}
+
+function _showBackups() {
+  const existing = document.getElementById('backup-popover');
+  if (existing) { existing.remove(); return; }
+  const prefix = 'bidcast_backup_timecast_';
+  const keys = Object.keys(localStorage).filter(k => k.startsWith(prefix)).sort().reverse();
+  const pop = document.createElement('div');
+  pop.id = 'backup-popover';
+  pop.style.cssText = 'position:absolute;z-index:999;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px;min-width:220px;max-height:200px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,0.12);font-size:11px;';
+  if (keys.length === 0) {
+    pop.innerHTML = '<div style="color:var(--faint);padding:4px 6px;">No backups yet.</div>';
+  } else {
+    keys.forEach(k => {
+      const ts = parseInt(k.replace(prefix, ''));
+      const d = new Date(ts);
+      const ago = _relTime(ts);
+      const item = document.createElement('div');
+      item.style.cssText = 'padding:5px 8px;cursor:pointer;border-radius:4px;';
+      item.textContent = ago + ' — ' + d.toLocaleTimeString();
+      item.onmouseover = () => item.style.background = 'var(--bg)';
+      item.onmouseout  = () => item.style.background = '';
+      item.onclick = () => {
+        if (!confirm('Restore this backup? Current state will be replaced.')) return;
+        try { applyState(JSON.parse(localStorage.getItem(k))); pop.remove(); } catch(e) { alert('Could not restore backup.'); }
+      };
+      pop.appendChild(item);
+    });
+  }
+  // Position near the backup button
+  const btn = document.getElementById('backup-btn');
+  if (btn) {
+    const rect = btn.getBoundingClientRect();
+    pop.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+    pop.style.right = (window.innerWidth - rect.right) + 'px';
+    pop.style.left = 'auto';
+  }
+  document.body.appendChild(pop);
+  setTimeout(() => document.addEventListener('click', function _cl(e) {
+    if (!pop.contains(e.target) && e.target.id !== 'backup-btn') { pop.remove(); document.removeEventListener('click', _cl); }
+  }), 50);
+}
+
+function _relTime(ts) {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60)  return s + 's ago';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  return Math.floor(s/86400) + 'd ago';
 }
 </script>
 </body>
