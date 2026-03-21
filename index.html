@@ -36,9 +36,11 @@
   --green: #22a85a;
   --green-dk: #1a8a47;
 }
-[data-theme="dark"] #toolbar {
+[data-theme="dark"] #toolbar,
+[data-theme="dark"] header {
   background: rgba(36,35,32,0.95);
-}[data-theme="dark"] { --navy: #2a3f6a; }
+}
+[data-theme="dark"] { --navy: #2a3f6a; }
 
   body {
     font-family: 'DM Sans', sans-serif;
@@ -965,7 +967,20 @@ const SuiteManager = (() => {
     }
   }
 
-  return { read, write, getLogo, setLogo, removeLogo, getCustomerLogo, setCustomerLogo, removeCustomerLogo, onUpdate, updateBadge };
+  function migrate() {
+    const toMove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('pyl0n_')) toMove.push(k);
+    }
+    toMove.forEach(k => {
+      const newKey = 'bidcast_' + k.slice('pyl0n_'.length);
+      if (!localStorage.getItem(newKey)) localStorage.setItem(newKey, localStorage.getItem(k));
+      localStorage.removeItem(k);
+    });
+  }
+
+  return { read, write, getLogo, setLogo, removeLogo, getCustomerLogo, setCustomerLogo, removeCustomerLogo, onUpdate, updateBadge, migrate };
 })();
 
 /* ══ Project Management ══════════════════════════════════════════ */
