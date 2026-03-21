@@ -827,7 +827,18 @@ function loadJSON(input) {
   const file = input.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
-    try { applyState(JSON.parse(e.target.result)); } catch { alert('Invalid JSON file.'); }
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data._suite) {
+        ['timecast','resourcecast','orgcast','rfqcast','dorcast','calccast','riskcast'].forEach(k => {
+          if (k !== 'riskcast' && data[k]) localStorage.setItem('bidcast_state_' + k, JSON.stringify(data[k]));
+        });
+        if (data.riskcast) applyState(data.riskcast);
+        else alert('No RiskCast data found in this suite file.');
+      } else {
+        applyState(data);
+      }
+    } catch { alert('Invalid JSON file.'); }
   };
   reader.readAsText(file); input.value = '';
 }
