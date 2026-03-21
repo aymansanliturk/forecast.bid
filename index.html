@@ -41,6 +41,8 @@
   background: rgba(36,35,32,0.95);
 }
 [data-theme="dark"] { --navy: #2a3f6a; }
+[data-theme="dark"] .stat-icon,
+[data-theme="dark"] .card-icon { background: rgba(255,255,255,0.07) !important; }
 
   body {
     font-family: 'DM Sans', sans-serif;
@@ -67,6 +69,7 @@
   }
 
   .logo-wrap { display: flex; align-items: center; gap: 10px; }
+  .logo-text { display: flex; flex-direction: column; justify-content: center; gap: 1px; }
 
   .logo-icon {
     width: 34px; height: 34px;
@@ -80,12 +83,13 @@
   .site-name {
     font-size: 15px; font-weight: 600;
     color: var(--text); white-space: nowrap; letter-spacing: -0.3px;
+    line-height: 1;
   }
   .site-name .dot { opacity: 0.35; }
 
   .header-meta {
-    font-family: 'DM Mono', monospace; font-size: 9px;
-    color: var(--faint); text-align: right; line-height: 1.8;
+    font-family: 'DM Mono', monospace; font-size: 8.5px;
+    color: var(--faint); text-align: left; line-height: 1;
     text-transform: uppercase; letter-spacing: 0.5px;
   }
   .header-custom-logo {
@@ -463,11 +467,10 @@
       </svg>
     </div>
     <img id="header-custom-logo" class="header-custom-logo" src="" alt="Company Logo">
-    <span class="site-name">PYL0N<span class="dot">.</span></span>
-  </div>
-  <div class="header-meta">
-    PYL0N Suite<br>
-    100% Private · Local Execution
+    <div class="logo-text">
+      <span class="site-name">PYL0N<span class="dot">.</span></span>
+      <div class="header-meta">100% Private · Local Execution</div>
+    </div>
   </div>
   <button id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle dark mode" style="font-size:16px;padding:4px 8px;border:none;background:transparent;cursor:pointer;color:inherit;margin-left:auto;">🌙</button>
 </header>

@@ -1140,13 +1140,18 @@ function updateLogoUI() {
     chartState.multiProj  = multiProj;
     chartState._hasNotes  = hasNotes;
 
-    // Critical path: mark tasks before rendering bars
+    // Critical path: mark tasks per project to avoid cross-project false positives
     const onlyTasks = allTasks.filter(t => t.type === 'task' || t.type === 'TASK' || !t.type);
     onlyTasks.forEach(t => { t._isCritical = false; });
-    onlyTasks.forEach((a, ai) => {
-      onlyTasks.forEach((b, bi) => {
-        if (ai === bi) return;
-        if (a.em === b.sm && a.ey === b.sy) { a._isCritical = true; b._isCritical = true; }
+    projects.forEach(proj => {
+      const projTasks = [...proj.bidTasks, ...proj.execTasks].filter(
+        t => t.type === 'task' || t.type === 'TASK' || !t.type
+      );
+      projTasks.forEach((a, ai) => {
+        projTasks.forEach((b, bi) => {
+          if (ai === bi) return;
+          if (a.em === b.sm && a.ey === b.sy) { a._isCritical = true; b._isCritical = true; }
+        });
       });
     });
 
@@ -1298,6 +1303,13 @@ function updateLogoUI() {
           <div style="width:14px;height:4px;background:#888;border-radius:1px;opacity:0.35"></div>
           <div style="width:14px;height:7px;background:#888;border-radius:1px"></div>
         </div>Planned vs Current</div>`;
+    }
+    const hasPct = allTasks.some(t => (t.pct || 0) > 0 && t.type !== 'milestone');
+    if (hasPct) {
+      legend.innerHTML += `<div class="legend-sep"></div>
+        <div class="li"><div style="width:14px;height:10px;border-radius:2px;background:#888;overflow:hidden;flex-shrink:0;position:relative;">
+          <div style="position:absolute;top:0;left:0;width:55%;height:100%;background:rgba(0,0,0,0.28);border-radius:2px 0 0 2px;"></div>
+        </div>% Complete</div>`;
     }
     if (hasCriticalPath) {
       legend.innerHTML += `<div class="legend-sep"></div>
