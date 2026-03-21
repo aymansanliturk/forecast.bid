@@ -143,6 +143,17 @@ input:focus, select:focus { border-color:var(--accent); background:#fff; }
 #output { display:none; padding:20px 28px 40px; }
 .print-bar { display:flex; gap:10px; margin-bottom:18px; align-items:center; }
 
+/* Vendor comparison table */
+.vcmp-wrap { margin-top:10px; margin-bottom:8px; overflow-x:auto; }
+.vcmp-table { width:100%; border-collapse:collapse; font-size:8.5px; }
+.vcmp-table th { font-size:7.5px; font-weight:700; letter-spacing:0.3px; text-transform:uppercase; color:var(--faint); padding:4px 8px; text-align:left; border-bottom:1px solid var(--border); background:#f7f5f2; }
+.vcmp-table th.vcmp-winner { background:#fffbe6; border-bottom:2px solid #e6b800; color:#7c5c00; }
+.vcmp-table td { padding:4px 8px; border-bottom:1px solid #f0ede8; vertical-align:top; font-size:8.5px; }
+.vcmp-table td.vcmp-winner-col { background:#fffbe6; border-left:2px solid #e6b800; border-right:2px solid #e6b800; }
+.vcmp-table tr:last-child td.vcmp-winner-col { border-bottom:2px solid #e6b800; }
+.vcmp-table .vcmp-field { font-size:7.5px; font-weight:700; letter-spacing:0.3px; text-transform:uppercase; color:var(--faint); white-space:nowrap; }
+.vcmp-winner-badge { display:inline-flex; align-items:center; gap:3px; font-size:8px; font-weight:700; color:#7c5c00; background:#fffbe6; border:1px solid #e6b800; border-radius:10px; padding:1px 6px; margin-top:2px; }
+
 .out-header { display:flex; align-items:center; border-bottom:2px solid var(--text); padding-bottom:10px; margin-bottom:16px; gap:16px; }
 .out-logo { flex-shrink:0; }
 .out-logo img { height:34px; width:auto; }
@@ -900,6 +911,40 @@ function generate() {
       
       tableHtml += `<td style="font-size:8px;color:var(--muted);">${esc(item.comments||'')}</td>`;
       tableHtml += '</tr>';
+
+      // Vendor comparison table for items with ≥2 named vendors
+      const namedVendors = item.vendors.filter(v => v.name);
+      if (namedVendors.length >= 2) {
+        tableHtml += `<tr><td colspan="7" style="padding:4px 0 10px;">`;
+        tableHtml += `<div class="vcmp-wrap">`;
+        tableHtml += `<table class="vcmp-table"><thead><tr><th class="vcmp-field">Field</th>`;
+        namedVendors.forEach(v => {
+          const isWinner = !!v.isWinner;
+          tableHtml += `<th class="${isWinner ? 'vcmp-winner' : ''}">${esc(v.name)}${isWinner ? ' ★' : ''}</th>`;
+        });
+        tableHtml += `</tr></thead><tbody>`;
+
+        const fields = [
+          { key: 'status',   label: 'Status',              fn: v => `<span class="out-v-pill ${statusClass(vendorStatus(v))}">${statusLabel(vendorStatus(v))}</span>` },
+          { key: 'offerRec', label: 'Quote Date',           fn: v => v.offerRec   || '—' },
+          { key: 'validity', label: 'Valid Until',          fn: v => v.validity   || '—' },
+          { key: 'price',    label: 'Unit Price',           fn: v => v.price ? `<strong>${v.currency||'EUR'} ${Number(v.price).toLocaleString()}</strong>` : '—' },
+          { key: 'leadtime', label: 'Lead Time',            fn: v => v.leadTime   || '—' },
+          { key: 'nda',      label: 'NDA',                  fn: v => v.nda        || '—' },
+          { key: 'binding',  label: 'Binding Offer',        fn: v => v.binding    || '—' },
+        ];
+
+        fields.forEach(f => {
+          tableHtml += `<tr><td class="vcmp-field">${f.label}</td>`;
+          namedVendors.forEach(v => {
+            const isWinner = !!v.isWinner;
+            tableHtml += `<td class="${isWinner ? 'vcmp-winner-col' : ''}">${f.fn(v)}</td>`;
+          });
+          tableHtml += `</tr>`;
+        });
+
+        tableHtml += `</tbody></table></div></td></tr>`;
+      }
     });
     tableHtml += `<tr><td colspan="8" style="height:10px;"></td></tr>`;
   });
