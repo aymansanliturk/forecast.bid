@@ -713,7 +713,7 @@ function generate() {
   const totalMidCols = 1 + state.parties.length + 1 + (hasComment ? 1 : 0);
   let html = '<thead><tr>';
   html += '<th class="th-label" style="text-align:left;">Item / Description</th>';
-  state.parties.forEach(p => { html += `<th style="color:${p.color};min-width:36px;">${p.name}</th>`; });
+  state.parties.forEach(p => { html += `<th style="color:${p.color};min-width:36px;background:${p.color}18;border-bottom:2px solid ${p.color};">${p.name}</th>`; });
   html += '<th class="th-freq" title="Active marks per row">Freq.</th>';
   if (hasComment) html += '<th class="th-comment">Comments</th>';
   html += '</tr></thead><tbody>';
