@@ -1002,62 +1002,31 @@ function updateLogoUI() {
 
   // ── PNG Export ──
   function exportPNG() {
-    const svg = document.querySelector('#output svg.connectors');
-    const canvas = document.getElementById('org-canvas');
-    if (!canvas) { alert('Please generate the chart first.'); return; }
+    const orgCanvas = document.getElementById('org-canvas');
+    if (!orgCanvas || !orgCanvas.children.length) { alert('Please generate the chart first.'); return; }
 
-    // Clone the output section to a temporary container for rendering
-    const outputEl = document.getElementById('output');
-    const clone = outputEl.cloneNode(true);
-    clone.style.cssText = 'position:fixed;left:-9999px;top:0;background:#fff;padding:28px 36px;display:block;';
-    // Remove print-bar from clone
-    clone.querySelectorAll('.print-bar, .no-print').forEach(el => el.remove());
-    document.body.appendChild(clone);
+    // html2canvas is bundled inside html2pdf.bundle — access via window.html2canvas
+    if (typeof html2canvas === 'undefined') {
+      alert('PNG export unavailable — html2canvas not loaded.');
+      return;
+    }
 
-    const cloneCanvas = clone.querySelector('#org-canvas');
-    const cloneSvg = clone.querySelector('svg.connectors');
+    const state = collectState();
+    const name  = (state.title || 'orgcast').replace(/[^a-z0-9_-]/gi, '_').toLowerCase();
 
-    // Determine dimensions
-    const w = cloneCanvas ? (parseInt(cloneCanvas.style.width) || 800) + 80 : 800;
-    const h = cloneCanvas ? (parseInt(cloneCanvas.style.height) || 600) + 80 : 600;
-
-    // Build a standalone SVG wrapping the full output as foreignObject
-    // Use XMLSerializer to get the SVG connectors, then draw to canvas
-    const svgConnectors = cloneSvg ? new XMLSerializer().serializeToString(cloneSvg) : '';
-
-    // Fallback: use html2canvas-style approach via SVG foreignObject
-    const fullSvg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${w}" height="${h}">
-      <rect width="${w}" height="${h}" fill="#fff"/>
-      <foreignObject width="${w}" height="${h}">
-        <div xmlns="http://www.w3.org/1999/xhtml" style="width:${w}px;height:${h}px;overflow:hidden;">${clone.innerHTML}</div>
-      </foreignObject>
-    </svg>`;
-
-    document.body.removeChild(clone);
-
-    const blob = new Blob([fullSvg], { type: 'image/svg+xml;charset=utf-8' });
-    const url  = URL.createObjectURL(blob);
-    const img  = new Image();
-    img.onload = () => {
-      const cvs = document.createElement('canvas');
-      cvs.width  = w * 2;
-      cvs.height = h * 2;
-      const ctx  = cvs.getContext('2d');
-      ctx.scale(2, 2);
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(0, 0, w, h);
-      ctx.drawImage(img, 0, 0);
-      URL.revokeObjectURL(url);
+    html2canvas(orgCanvas, {
+      scale: 2,
+      backgroundColor: '#ffffff',
+      useCORS: true,
+      logging: false
+    }).then(cvs => {
       const a = document.createElement('a');
-      a.download = 'orgcast-export.png';
+      a.download = name + '-export.png';
       a.href = cvs.toDataURL('image/png');
       a.click();
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
+    }).catch(() => {
       alert('PNG export failed. Try the PDF export instead.');
-    };
-    img.src = url;
+    });
   }
 
 /* ── SUITE SYNC ── */
