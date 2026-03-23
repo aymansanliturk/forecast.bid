@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W2W Report · PYL0N</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f5f4f0; --surface: #ffffff; --border: #e0ddd6;
+  --text: #1a1916; --muted: #6b6860; --faint: #a8a49e;
+  --accent: #2c4e87; --accent2: #1e3a6b;
+  --green: #107c41; --green-dk: #0a6032;
+  --red: #c0392b; --amber: #b45309;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Toolbar ── */
+#toolbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.tb-left  { display: flex; align-items: center; gap: 12px; }
+.tb-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.logo-icon {
+  width: 28px; height: 28px; background: var(--accent2); border-radius: 7px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.logo-icon svg { width: 16px; height: 16px; }
+.tool-name  { font-size: 14px; font-weight: 700; letter-spacing: -0.3px; }
+.tool-tag   { font-size: 9px; font-weight: 600; color: var(--faint); letter-spacing: 1px; text-transform: uppercase; }
+.tb-sep     { width: 1px; height: 22px; background: var(--border); }
+.tb-btn {
+  font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500;
+  padding: 6px 12px; border-radius: 7px; border: 1.5px solid var(--border);
+  background: var(--bg); color: var(--muted); cursor: pointer; white-space: nowrap; transition: all .15s;
+}
+.tb-btn:hover { border-color: var(--accent); color: var(--accent); background: #fff; }
+#proj-name-display { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+/* ── Tab Nav ── */
+#tab-nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex; gap: 0;
+  overflow-x: auto;
+}
+.tab-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px; font-weight: 500; color: var(--muted);
+  background: none; border: none; cursor: pointer;
+  padding: 14px 18px; border-bottom: 2px solid transparent;
+  transition: all .15s; white-space: nowrap; flex-shrink: 0;
+}
+.tab-btn:hover  { color: var(--text); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+
+/* ── Content ── */
+#main-content { max-width: 1400px; margin: 0 auto; padding: 28px 28px 60px; }
+.tab-panel         { display: none; }
+.tab-panel.active  { display: block; }
+
+/* ── Cards ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 24px; margin-bottom: 16px;
+}
+.card-title {
+  font-size: 10px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--faint);
+  margin-bottom: 18px; display: flex; align-items: center; gap: 8px;
+}
+.card-title-bar {
+  width: 4px; height: 14px; background: var(--accent); border-radius: 2px; flex-shrink: 0;
+}
+
+/* ── Form fields ── */
+.fields  { display: grid; gap: 12px; }
+.f2 { grid-template-columns: 1fr 1fr; }
+.f3 { grid-template-columns: 1fr 1fr 1fr; }
+.f4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+label {
+  display: flex; flex-direction: column; gap: 5px;
+  font-size: 11px; font-weight: 500; color: var(--muted);
+}
+label input {
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 400;
+  color: var(--text); background: var(--bg);
+  border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 8px 10px; outline: none; transition: border-color .15s; width: 100%;
+}
+label input:focus   { border-color: var(--accent); background: #fff; }
+label input[readonly] { background: var(--bg); color: var(--muted); cursor: default; }
+
+/* ── Summary Banner ── */
+.summary-banner {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+  border-radius: 12px; margin-bottom: 20px; overflow: hidden;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+}
+.sb-item {
+  padding: 22px 24px; border-right: 1px solid rgba(255,255,255,0.12);
+}
+.sb-item:last-child { border-right: none; }
+.sb-label { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+.sb-val   { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 700; color: #fff; margin: 4px 0 2px; line-height: 1.1; }
+.sb-pct   { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 600; color: #86efac; }
+.sb-sub   { font-size: 10px; color: rgba(255,255,255,0.4); }
+
+/* ── Benchmark chips ── */
+.benchmarks { display: flex; gap: 12px; flex-wrap: wrap; }
+.bm-chip {
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 10px 16px; display: flex; flex-direction: column; gap: 3px;
+}
+.bm-label { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--faint); }
+.bm-val   { font-family: 'DM Mono', monospace; font-size: 17px; font-weight: 700; color: var(--accent); }
+
+/* ── KPI Stack ── */
+.kpi-stack { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.ksr {
+  display: grid;
+  grid-template-columns: 200px 1fr 110px 70px;
+  align-items: center; padding: 11px 16px;
+  border-bottom: 1px solid var(--border); gap: 12px;
+}
+.ksr:last-child { border-bottom: none; }
+.ksr.hi {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+}
+.ksr-label { font-size: 12px; font-weight: 600; color: var(--muted); }
+.ksr-sub   { font-size: 10px; color: var(--faint); margin-top: 1px; }
+.ksr.hi .ksr-label, .ksr.hi .ksr-sub { color: rgba(255,255,255,0.65); }
+.ksr-val   { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 600; color: var(--text); text-align: right; }
+.ksr.hi .ksr-val { color: #fff; }
+.ksr-add   { font-size: 10px; color: var(--green); text-align: right; }
+.ksr.hi .ksr-add { color: #86efac; }
+.ksr-pct   { font-size: 10px; color: var(--faint); text-align: right; }
+.ksr.hi .ksr-pct { color: rgba(255,255,255,0.45); }
+
+/* ── Scope table ── */
+.scope-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.scope-table th {
+  font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--faint); border-bottom: 2px solid var(--border);
+  padding: 8px 12px; text-align: left; white-space: nowrap;
+}
+.scope-table th.r, .scope-table td.r { text-align: right; }
+.scope-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+.scope-table td.mono { font-family: 'DM Mono', monospace; }
+.scope-table tbody tr:last-child td { border-bottom: none; }
+.scope-table tr.foot-row { background: var(--bg); }
+.scope-table tr.foot-row td { border-top: 2px solid var(--border); font-weight: 700; border-bottom: none; }
+.bar-wrap { display: flex; align-items: center; gap: 8px; }
+.bar-fill { height: 5px; background: var(--accent); border-radius: 3px; min-width: 2px; transition: width .3s; }
+.bar-pct  { font-size: 10px; color: var(--faint); min-width: 38px; }
+
+/* ── LoA metrics table ── */
+.loa-tbl { width: 100%; border-collapse: collapse; }
+.loa-tbl tr { border-bottom: 1px solid var(--border); }
+.loa-tbl tr:last-child { border-bottom: none; }
+.loa-tbl td { padding: 10px 12px; font-size: 13px; }
+.loa-tbl td.ll { color: var(--muted); font-weight: 500; width: 52%; }
+.loa-tbl td.lv { font-family: 'DM Mono', monospace; font-weight: 600; text-align: right; width: 28%; }
+.loa-tbl td.lp { font-size: 11px; color: var(--faint); text-align: right; width: 20%; }
+.loa-tbl tr.loa-hi td.ll { color: var(--accent); font-weight: 700; }
+.loa-tbl tr.loa-hi td.lv { color: var(--accent); }
+.loa-tbl tr.loa-hi { background: rgba(44,78,135,0.05); }
+.loa-tbl .loa-section-head td {
+  font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--faint); padding-top: 16px; border-bottom: none;
+}
+.loa-tbl td.loa-indent { padding-left: 28px; }
+
+/* ── Risk split ── */
+.risk-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-top: 14px; }
+.rg-item   { display: flex; flex-direction: column; gap: 6px; }
+.rg-val    { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 700; color: var(--text); }
+.rg-sub    { font-size: 9px; color: var(--faint); letter-spacing: 0.5px; }
+.warn-txt  { font-size: 11px; color: var(--amber); font-weight: 600; margin-top: 8px; display: none; }
+
+/* ── Scenarios ── */
+.sc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.sc-card {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 22px;
+}
+.sc-card.sc-b { border-color: var(--accent); }
+.sc-head {
+  font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--faint); margin-bottom: 14px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.sc-head.sc-b-head { color: var(--accent); }
+.sc-big { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 700; color: var(--text); margin: 4px 0 2px; }
+.sc-b .sc-big { color: var(--accent); }
+.delta-pill {
+  font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 700;
+  padding: 4px 12px; border-radius: 20px; display: inline-block; margin-top: 12px;
+}
+.dp-pos  { background: #dcfce7; color: #166534; }
+.dp-neg  { background: #fee2e2; color: #991b1b; }
+.dp-zero { background: var(--bg); color: var(--muted); }
+
+/* ── Empty state ── */
+.empty-state { text-align: center; padding: 60px 24px; color: var(--faint); }
+.empty-state h3 { font-size: 16px; color: var(--muted); margin-bottom: 8px; }
+.empty-state p  { font-size: 13px; }
+
+/* ── Misc helpers ── */
+.two-col   { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.three-col { display: grid; grid-template-columns: 1fr 1.8fr; gap: 16px; }
+.big-stat  { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 700; }
+
+@media (max-width: 900px) {
+  .summary-banner { grid-template-columns: 1fr 1fr; }
+  .two-col, .three-col, .sc-grid { grid-template-columns: 1fr; }
+  .ksr { grid-template-columns: 1fr 1fr; }
+  .ksr-add, .ksr-pct { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ TOOLBAR ═════════════════════════════════ -->
+<div id="toolbar">
+  <div class="tb-left">
+    <div class="logo-icon">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="6" height="6" rx="1.5" fill="white" opacity="0.9"/>
+        <rect x="9" y="1" width="6" height="6" rx="1.5" fill="white" opacity="0.6"/>
+        <rect x="1" y="9" width="6" height="6" rx="1.5" fill="white" opacity="0.6"/>
+        <rect x="9" y="9" width="6" height="6" rx="1.5" fill="white" opacity="0.3"/>
+      </svg>
+    </div>
+    <div>
+      <div class="tool-name">W2W Report</div>
+      <div class="tool-tag">Win-to-Win · Financial Analysis</div>
+    </div>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" onclick="location.href='calccast.html'">← CalcCast</button>
+    <button class="tb-btn" onclick="location.href='index.html'">⌂ Dashboard</button>
+  </div>
+  <div class="tb-right">
+    <button class="tb-btn" onclick="refreshAll()">↻ Refresh from CalcCast</button>
+    <span id="proj-name-display"></span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ TAB NAV ════════════════════════════════ -->
+<div id="tab-nav">
+  <button class="tab-btn active"  onclick="showTab('overview',   this)">① Overview</button>
+  <button class="tab-btn"         onclick="showTab('scope',      this)">② Project Scope</button>
+  <button class="tab-btn"         onclick="showTab('kpis',       this)">③ W2W KPIs</button>
+  <button class="tab-btn"         onclick="showTab('loa',        this)">④ LoA W2W</button>
+  <button class="tab-btn"         onclick="showTab('scenarios',  this)">⑤ Scenarios</button>
+</div>
+
+<!-- ══════════════════════════ MAIN CONTENT ═════════════════════════════════ -->
+<div id="main-content">
+
+  <!-- ── Tab 1: Overview ──────────────────────────────────────────────────── -->
+  <div id="tab-overview" class="tab-panel active">
+
+    <div class="summary-banner">
+      <div class="sb-item">
+        <div class="sb-label">Customer Price</div>
+        <div class="sb-val" id="ov-sell-price">—</div>
+        <div class="sb-sub">Before negotiation buffer</div>
+      </div>
+      <div class="sb-item">
+        <div class="sb-label">Customer Price incl. Neg.</div>
+        <div class="sb-val" id="ov-cust-price">—</div>
+        <div class="sb-sub">Including negotiation margin</div>
+      </div>
+      <div class="sb-item">
+        <div class="sb-label">Sales Margin</div>
+        <div class="sb-val" id="ov-margin-eur">—</div>
+        <div class="sb-pct" id="ov-margin-pct">—</div>
+      </div>
+      <div class="sb-item">
+        <div class="sb-label">Profit (EBIT level)</div>
+        <div class="sb-val" id="ov-profit-eur">—</div>
+        <div class="sb-pct" id="ov-profit-pct">—</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title"><div class="card-title-bar"></div>LoA Bid Volume Reference</div>
+        <div class="fields f2" style="margin-bottom:16px;">
+          <label>LoA Bid Volume (kEUR)
+            <input type="number" id="loa-bid-volume" placeholder="Enter bid volume…" step="1" min="0" oninput="updateOverviewLoA()">
+          </label>
+          <div>
+            <div style="font-size:11px;font-weight:500;color:var(--muted);margin-bottom:6px;">Model vs. LoA Delta</div>
+            <div id="loa-delta-display" style="font-size:13px;color:var(--faint);">Enter LoA Bid Volume to compare</div>
+          </div>
+        </div>
+        <div class="fields f2">
+          <div>
+            <div style="font-size:11px;font-weight:500;color:var(--muted);margin-bottom:4px;">Computed Sales Margin</div>
+            <div class="big-stat" id="ov-loa-margin" style="color:var(--accent);">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:500;color:var(--muted);margin-bottom:4px;">Computed Profit</div>
+            <div class="big-stat" id="ov-loa-profit" style="color:var(--green);">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><div class="card-title-bar"></div>Corporate Benchmarks</div>
+        <div class="benchmarks" style="margin-bottom:16px;">
+          <div class="bm-chip">
+            <div class="bm-label">Min Margin</div>
+            <div class="bm-val">17.5%</div>
+          </div>
+          <div class="bm-chip">
+            <div class="bm-label">FY Profit Target</div>
+            <div class="bm-val">13.0%</div>
+          </div>
+          <div class="bm-chip" id="bm-margin-chip" style="display:none;">
+            <div class="bm-label">Margin vs. Min (17.5%)</div>
+            <div class="bm-val" id="bm-margin-val">—</div>
+          </div>
+          <div class="bm-chip" id="bm-profit-chip" style="display:none;">
+            <div class="bm-label">Profit vs. Target (13.0%)</div>
+            <div class="bm-val" id="bm-profit-val">—</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--faint);line-height:1.65;">
+          Values computed from the W2W KPI engine using direct cost imported from CalcCast.<br>
+          Adjust percentages in the <strong>W2W KPIs</strong> tab. Click <strong>↻ Refresh</strong> to reload CalcCast data.
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-overview -->
+
+  <!-- ── Tab 2: Project Scope ─────────────────────────────────────────────── -->
+  <div id="tab-scope" class="tab-panel">
+    <div class="card">
+      <div class="card-title"><div class="card-title-bar"></div>Aggregated Direct Cost by Category</div>
+      <div id="scope-wrap">
+        <div class="empty-state">
+          <h3>No CalcCast data found</h3>
+          <p>Open CalcCast, add cost rows, then click ↻ Refresh.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tab 3: W2W KPIs ──────────────────────────────────────────────────── -->
+  <div id="tab-kpis" class="tab-panel">
+    <div class="three-col">
+
+      <div class="card">
+        <div class="card-title"><div class="card-title-bar"></div>KPI Inputs</div>
+        <div class="fields" style="gap:10px;">
+          <label>Risk %
+            <input type="number" id="w-risk" value="5.0" min="0" step="0.1" oninput="updateAll()">
+          </label>
+          <label>SG&amp;A %
+            <input type="number" id="w-sga" value="4.0" min="0" step="0.1" oninput="updateAll()">
+          </label>
+          <label>HQ Adders EXU %
+            <input type="number" id="w-exu" value="3.0" min="0" step="0.1" oninput="updateAll()">
+          </label>
+          <label>HQ Adders BA %
+            <input type="number" id="w-ba" value="2.0" min="0" step="0.1" oninput="updateAll()">
+          </label>
+          <label>EBIT %
+            <input type="number" id="w-ebit" value="8.0" min="0" step="0.1" oninput="updateAll()">
+          </label>
+          <label>Negotiation Margin %
+            <input type="number" id="w-neg" value="5.0" min="0" step="0.1" oninput="updateAll()">
+          </label>
+        </div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--faint);margin-bottom:8px;">Direct Cost (from CalcCast)</div>
+          <div style="font-family:'DM Mono',monospace;font-size:18px;font-weight:700;color:var(--text);" id="kpi-direct-cost">—</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><div class="card-title-bar"></div>W2W Sequential Stack</div>
+        <div class="kpi-stack" id="kpi-stack">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /tab-kpis -->
+
+  <!-- ── Tab 4: LoA W2W ───────────────────────────────────────────────────── -->
+  <div id="tab-loa" class="tab-panel">
+    <div class="two-col">
+
+      <div class="card">
+        <div class="card-title"><div class="card-title-bar"></div>Executive Corporate Metrics</div>
+        <table class="loa-tbl">
+          <tr>
+            <td class="ll">Revenue (without Neg.)</td>
+            <td class="lv" id="loa-revenue">—</td>
+            <td class="lp"></td>
+          </tr>
+          <tr>
+            <td class="ll">COGS — Direct Cost</td>
+            <td class="lv" id="loa-cogs">—</td>
+            <td class="lp"></td>
+          </tr>
+          <tr class="loa-hi">
+            <td class="ll">Sales Margin</td>
+            <td class="lv" id="loa-sm-eur">—</td>
+            <td class="lp" id="loa-sm-pct">—</td>
+          </tr>
+          <tr class="loa-section-head">
+            <td colspan="3">Overhead Breakdown</td>
+          </tr>
+          <tr>
+            <td class="ll loa-indent">Risk Provision</td>
+            <td class="lv" id="loa-risk-prov">—</td>
+            <td class="lp"></td>
+          </tr>
+          <tr>
+            <td class="ll loa-indent">SG&amp;A</td>
+            <td class="lv" id="loa-sga-prov">—</td>
+            <td class="lp"></td>
+          </tr>
+          <tr>
+            <td class="ll loa-indent">Functional Cost (EXU + BA)</td>
+            <td class="lv" id="loa-func-cost">—</td>
+            <td class="lp"></td>
+          </tr>
+          <tr>
+            <td class="ll loa-indent">EBIT Provision</td>
+            <td class="lv" id="loa-ebit-prov">—</td>
+            <td class="lp"></td>
+          </tr>
+          <tr class="loa-hi">
+            <td class="ll">Profit (Sales Margin − Func. Cost)</td>
+            <td class="lv" id="loa-profit-eur">—</td>
+            <td class="lp" id="loa-profit-pct">—</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><div class="card-title-bar"></div>Risk Contingency Breakdown</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">
+          Total Risk Provision:
+          <strong style="font-family:'DM Mono',monospace;" id="loa-risk-total">—</strong>
+        </div>
+        <div style="font-size:11px;color:var(--faint);margin-top:4px;">
+          Enter how the risk budget splits across the three buckets. They must sum to 100%.
+        </div>
+        <div class="risk-grid">
+          <div class="rg-item">
+            <label>Specified %
+              <input type="number" id="rs-specified" value="50" min="0" max="100" step="1" oninput="updateRiskSplit()">
+            </label>
+            <div class="rg-val" id="rs-specified-eur">—</div>
+            <div class="rg-sub">kEUR · Specified</div>
+          </div>
+          <div class="rg-item">
+            <label>Unspecified %
+              <input type="number" id="rs-unspecified" value="30" min="0" max="100" step="1" oninput="updateRiskSplit()">
+            </label>
+            <div class="rg-val" id="rs-unspecified-eur">—</div>
+            <div class="rg-sub">kEUR · Unspecified</div>
+          </div>
+          <div class="rg-item">
+            <label>Warranty %
+              <input type="number" id="rs-warranty" value="20" min="0" max="100" step="1" oninput="updateRiskSplit()">
+            </label>
+            <div class="rg-val" id="rs-warranty-eur">—</div>
+            <div class="rg-sub">kEUR · Warranty</div>
+          </div>
+        </div>
+        <div id="rs-warn" class="warn-txt">⚠ Percentages do not sum to 100%.</div>
+      </div>
+
+    </div>
+  </div><!-- /tab-loa -->
+
+  <!-- ── Tab 5: Scenarios ─────────────────────────────────────────────────── -->
+  <div id="tab-scenarios" class="tab-panel">
+
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap;">
+      <button class="tb-btn" onclick="cloneToB()" style="border-color:var(--accent);color:var(--accent);">
+        ⎘ Clone Current KPIs to Scenario B
+      </button>
+      <div id="sc-delta-bar" style="font-size:13px;color:var(--muted);"></div>
+    </div>
+
+    <div class="sc-grid">
+
+      <!-- Scenario A (read-only mirror) -->
+      <div class="sc-card">
+        <div class="sc-head">Scenario A · Current</div>
+        <div class="fields" style="gap:8px;margin-bottom:14px;">
+          <label>Risk %      <input type="number" id="sa-risk" readonly tabindex="-1"></label>
+          <label>SG&amp;A %  <input type="number" id="sa-sga"  readonly tabindex="-1"></label>
+          <label>HQ EXU %   <input type="number" id="sa-exu"  readonly tabindex="-1"></label>
+          <label>HQ BA %    <input type="number" id="sa-ba"   readonly tabindex="-1"></label>
+          <label>EBIT %     <input type="number" id="sa-ebit" readonly tabindex="-1"></label>
+          <label>Neg. %     <input type="number" id="sa-neg"  readonly tabindex="-1"></label>
+        </div>
+        <div style="padding-top:12px;border-top:1px solid var(--border);">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--faint);margin-bottom:4px;">
+            Customer Price incl. Neg.
+          </div>
+          <div class="sc-big" id="sa-price">—</div>
+          <div style="font-size:11px;color:var(--faint);margin-top:4px;">
+            Sales Margin: <span id="sa-margin" style="font-weight:600;color:var(--text);">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scenario B (editable) -->
+      <div class="sc-card sc-b">
+        <div class="sc-head sc-b-head">Scenario B · What-If</div>
+        <div class="fields" style="gap:8px;margin-bottom:14px;">
+          <label>Risk %      <input type="number" id="sb-risk" value="5.0" min="0" step="0.1" oninput="updateScenarios()"></label>
+          <label>SG&amp;A %  <input type="number" id="sb-sga"  value="4.0" min="0" step="0.1" oninput="updateScenarios()"></label>
+          <label>HQ EXU %   <input type="number" id="sb-exu"  value="3.0" min="0" step="0.1" oninput="updateScenarios()"></label>
+          <label>HQ BA %    <input type="number" id="sb-ba"   value="2.0" min="0" step="0.1" oninput="updateScenarios()"></label>
+          <label>EBIT %     <input type="number" id="sb-ebit" value="8.0" min="0" step="0.1" oninput="updateScenarios()"></label>
+          <label>Neg. %     <input type="number" id="sb-neg"  value="5.0" min="0" step="0.1" oninput="updateScenarios()"></label>
+        </div>
+        <div style="padding-top:12px;border-top:1px solid var(--border);">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--faint);margin-bottom:4px;">
+            Customer Price incl. Neg.
+          </div>
+          <div class="sc-big" id="sb-price">—</div>
+          <div style="font-size:11px;color:var(--faint);margin-top:4px;">
+            Sales Margin: <span id="sb-margin" style="font-weight:600;color:var(--accent);">—</span>
+          </div>
+          <div id="delta-pill-wrap"></div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /tab-scenarios -->
+
+</div><!-- /main-content -->
+
+<script>
+/* ══ SuiteManager ══════════════════════════════════════════════════════════
+   Shared synchronisation utility — identical pattern to other PYL0N tools.
+═══════════════════════════════════════════════════════════════════════════ */
+const SuiteManager = (() => {
+  const SYNC_KEY = 'bidcast_suite_sync';
+  const LOGO_KEY = 'bidcast_logo';
+
+  function read() {
+    try { return JSON.parse(localStorage.getItem(SYNC_KEY) || '{}'); } catch { return {}; }
+  }
+  function write(patch, source) {
+    try {
+      const next = { ...read(), ...patch, _ts: Date.now(), _src: source };
+      localStorage.setItem(SYNC_KEY, JSON.stringify(next));
+      return next;
+    } catch { return {}; }
+  }
+  function getLogo()        { return localStorage.getItem(LOGO_KEY) || null; }
+  function setLogo(dataUrl) { localStorage.setItem(LOGO_KEY, dataUrl); write({ _logoTs: Date.now() }, 'logo'); }
+  function removeLogo()     { localStorage.removeItem(LOGO_KEY); write({ _logoTs: Date.now() }, 'logo'); }
+  function migrate() {
+    const toMove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('pyl0n_')) toMove.push(k);
+    }
+    toMove.forEach(k => {
+      const nk = 'bidcast_' + k.slice('pyl0n_'.length);
+      if (!localStorage.getItem(nk)) localStorage.setItem(nk, localStorage.getItem(k));
+      localStorage.removeItem(k);
+    });
+  }
+  function onUpdate(cb) {
+    window.addEventListener('storage', e => {
+      if (e.storageArea !== localStorage) return;
+      if (e.key && e.key !== SYNC_KEY && e.key !== LOGO_KEY) return;
+      cb(read(), e.key);
+    });
+  }
+  return { read, write, getLogo, setLogo, removeLogo, migrate, onUpdate };
+})();
+
+/* ══ Module-level state ════════════════════════════════════════════════════ */
+let _ccState     = {};   // raw CalcCast localStorage state
+let _directCost  = 0;    // total EUR direct cost (included rows only)
+let _byCategory  = {};   // { categoryName: totalEUR }
+let _lastResults = null; // last computeKpis() result (Scenario A)
+
+/* ══ Data Ingestion ════════════════════════════════════════════════════════ */
+function loadCalcCastData() {
+  try {
+    _ccState = JSON.parse(localStorage.getItem('bidcast_state_calccast') || '{}');
+  } catch {
+    _ccState = {};
+  }
+
+  // Project name in toolbar
+  const pn = _ccState.projName || SuiteManager.read().projectName || '';
+  const el = document.getElementById('proj-name-display');
+  if (el) el.textContent = pn ? pn : '';
+
+  // Pre-fill KPI inputs from ccState (keep user's edits if already changed)
+  const kpiMap = [
+    ['w-risk', 'kpiRisk', 5.0],
+    ['w-sga',  'kpiSga',  4.0],
+    ['w-exu',  'kpiExu',  3.0],
+    ['w-ba',   'kpiBa',   2.0],
+    ['w-ebit', 'kpiEbit', 8.0],
+    ['w-neg',  'kpiNeg',  5.0],
+  ];
+  kpiMap.forEach(([elId, key, def]) => {
+    const inp = document.getElementById(elId);
+    if (inp) inp.value = parseFloat(_ccState[key] ?? def);
+  });
+
+  // Compute aggregated direct cost
+  const computed  = aggregateDirectCost(_ccState);
+  _directCost     = computed.totalDC;
+  _byCategory     = computed.byCategory;
+
+  updateAll();
+  renderScope();
+}
+
+function refreshAll() {
+  loadCalcCastData();
+}
+
+/* ── Aggregate cost rows into EUR totals ── */
+function aggregateDirectCost(s) {
+  const fx = {
+    EUR: 1,
+    USD: parseFloat(s.fxUsd) || 0.92,
+    GBP: parseFloat(s.fxGbp) || 1.17,
+    DKK: parseFloat(s.fxDkk) || 0.134,
+  };
+
+  let totalDC       = 0;
+  let runningBase   = 0;          // for contingency % calculation
+  const byCategory  = {};
+
+  (s.costRows || []).forEach(row => {
+    if (row.rowType === 'contingency') {
+      if (row.scope !== 'excluded') {
+        const pct     = parseFloat(row.contingencyPct) || 0;
+        const costEUR = runningBase * (pct / 100);
+        totalDC += costEUR;
+        _addToCat(byCategory, 'Contingency', costEUR);
+      }
+      return;
+    }
+    if (row.scope === 'excluded') return;
+
+    const qty     = parseFloat(row.qty)       || 0;
+    const unit    = parseFloat(row.unitPrice)  || 0;
+    const fxRate  = fx[row.currency]           || 1;
+    const costEUR = qty * unit * fxRate;
+
+    totalDC      += costEUR;
+    runningBase  += costEUR;
+    _addToCat(byCategory, row.category || 'Uncategorized', costEUR);
+  });
+
+  return { totalDC, byCategory };
+}
+
+function _addToCat(map, cat, val) {
+  map[cat] = (map[cat] || 0) + val;
+}
+
+/* ══ Math Engine ═══════════════════════════════════════════════════════════
+   Sequential markup formula as specified:
+     afterRisk  = DC       * (1 + risk / 100)
+     afterSGA   = afterRisk * (1 + sga  / 100)
+     afterEXU   = afterSGA  * (1 + exu  / 100)
+     afterBA    = afterEXU  * (1 + ba   / 100)
+     sellPrice  = afterBA   * (1 + ebit / 100)
+     custPrice  = sellPrice * (1 + neg  / 100)
+═══════════════════════════════════════════════════════════════════════════ */
+function computeKpis(dc, risk, sga, exu, ba, ebit, neg) {
+  const afterRisk = dc        * (1 + risk / 100);
+  const afterSGA  = afterRisk  * (1 + sga  / 100);
+  const afterEXU  = afterSGA   * (1 + exu  / 100);
+  const afterBA   = afterEXU   * (1 + ba   / 100);
+  const sellPrice = afterBA    * (1 + ebit / 100);
+  const custPrice = sellPrice  * (1 + neg  / 100);
+
+  // Layer provisions (absolute EUR added at each step)
+  const riskProv = afterRisk - dc;
+  const sgaProv  = afterSGA  - afterRisk;
+  const exuProv  = afterEXU  - afterSGA;
+  const baProv   = afterBA   - afterEXU;
+  const ebitProv = sellPrice - afterBA;
+  const negProv  = custPrice - sellPrice;
+
+  // Derived KPIs
+  const funcCost       = exuProv + baProv;           // EXU + BA overhead
+  const salesMargin    = sellPrice - dc;
+  const salesMarginPct = sellPrice > 0 ? (salesMargin / sellPrice) * 100 : 0;
+  const profit         = salesMargin - funcCost;
+  const profitPct      = sellPrice > 0 ? (profit / sellPrice) * 100 : 0;
+
+  return {
+    dc, afterRisk, afterSGA, afterEXU, afterBA, sellPrice, custPrice,
+    riskProv, sgaProv, exuProv, baProv, ebitProv, negProv, funcCost,
+    salesMargin, salesMarginPct, profit, profitPct,
+  };
+}
+
+/* ── Read current KPI inputs ── */
+function readKpis(prefix) {
+  const p = prefix || 'w';
+  const v = id => parseFloat(document.getElementById(p + '-' + id)?.value) || 0;
+  return {
+    risk: v('risk'), sga: v('sga'), exu: v('exu'),
+    ba:   v('ba'),   ebit: v('ebit'), neg: v('neg'),
+  };
+}
+
+/* ══ Format helpers ════════════════════════════════════════════════════════ */
+const fmtK  = n  => Math.round(n / 1000).toLocaleString('en-GB') + '\u202fkEUR';
+const fmtP  = n  => n.toFixed(1) + '%';
+const fmtKd = n  => { const v = Math.round(n / 1000); return (v >= 0 ? '+' : '') + v.toLocaleString('en-GB') + '\u202fkEUR'; };
+const $     = id => document.getElementById(id);
+
+/* ══ Master update ═════════════════════════════════════════════════════════ */
+function updateAll() {
+  const k = readKpis('w');
+  const r = computeKpis(_directCost, k.risk, k.sga, k.exu, k.ba, k.ebit, k.neg);
+  _lastResults = r;
+
+  updateOverview(r);
+  updateKpiStack(r, k);
+  updateLoaTab(r);
+  updateScenarios();
+}
+
+/* ══ Tab 1: Overview ═══════════════════════════════════════════════════════ */
+function updateOverview(r) {
+  const set = (id, val) => { const el = $(id); if (el) el.textContent = val; };
+
+  set('ov-sell-price',  fmtK(r.sellPrice));
+  set('ov-cust-price',  fmtK(r.custPrice));
+  set('ov-margin-eur',  fmtK(r.salesMargin));
+  set('ov-margin-pct',  fmtP(r.salesMarginPct));
+  set('ov-profit-eur',  fmtK(r.profit));
+  set('ov-profit-pct',  fmtP(r.profitPct));
+
+  // LoA card computed values (derived from KPI model, not from LoA input)
+  set('ov-loa-margin',  fmtK(r.salesMargin));
+  set('ov-loa-profit',  fmtK(r.profit));
+
+  // Benchmark vs targets
+  const md = r.salesMarginPct - 17.5;
+  const pd = r.profitPct      - 13.0;
+
+  const mc = $('bm-margin-chip'); if (mc) mc.style.display = 'flex';
+  const pc = $('bm-profit-chip'); if (pc) pc.style.display = 'flex';
+
+  const mv = $('bm-margin-val');
+  if (mv) {
+    mv.textContent = (md >= 0 ? '+' : '') + md.toFixed(1) + '%';
+    mv.style.color = md >= 0 ? 'var(--green)' : 'var(--red)';
+  }
+  const pv = $('bm-profit-val');
+  if (pv) {
+    pv.textContent = (pd >= 0 ? '+' : '') + pd.toFixed(1) + '%';
+    pv.style.color = pd >= 0 ? 'var(--green)' : 'var(--red)';
+  }
+
+  updateOverviewLoA();
+}
+
+function updateOverviewLoA() {
+  if (!_lastResults) return;
+  const loaEl = $('loa-bid-volume');
+  const loaK  = loaEl ? parseFloat(loaEl.value) * 1000 : 0;  // kEUR → EUR
+  const dd    = $('loa-delta-display');
+  if (!dd) return;
+  if (!loaK || loaK <= 0) {
+    dd.textContent = 'Enter LoA Bid Volume to compare';
+    dd.style.color = 'var(--faint)';
+    return;
+  }
+  const delta = loaK - _lastResults.custPrice;
+  dd.innerHTML = `Model: <strong>${fmtK(_lastResults.custPrice)}</strong> vs. LoA: <strong>${fmtK(loaK)}</strong><br>
+    <span style="font-weight:700;color:${delta >= 0 ? 'var(--green)' : 'var(--red)'};">${fmtKd(delta)}</span>`;
+}
+
+/* ══ Tab 2: Project Scope ══════════════════════════════════════════════════ */
+function renderScope() {
+  const wrap = $('scope-wrap');
+  if (!wrap) return;
+
+  const entries = Object.entries(_byCategory)
+    .filter(([, v]) => v > 0)
+    .sort((a, b) => b[1] - a[1]);
+
+  if (entries.length === 0) {
+    wrap.innerHTML = `<div class="empty-state">
+      <h3>No CalcCast data found</h3>
+      <p>Open CalcCast, add cost rows, then click ↻ Refresh.</p>
+    </div>`;
+    return;
+  }
+
+  const total  = entries.reduce((s, [, v]) => s + v, 0);
+  const BAR_MAX = 180; // px for 100%
+
+  const rows = entries.map(([cat, val]) => {
+    const pct  = total > 0 ? (val / total) * 100 : 0;
+    const barW = Math.max(2, Math.round((pct / 100) * BAR_MAX));
+    return `<tr>
+      <td>${cat}</td>
+      <td class="r mono">${fmtK(val)}</td>
+      <td class="r" style="color:var(--faint);">—</td>
+      <td class="r mono">${fmtK(val)}</td>
+      <td style="padding:8px 12px;">
+        <div class="bar-wrap">
+          <div class="bar-fill" style="width:${barW}px;"></div>
+          <span class="bar-pct">${pct.toFixed(1)}%</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `
+    <table class="scope-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th class="r">Direct Cost (kEUR)</th>
+          <th class="r">Transport Cost</th>
+          <th class="r">Total EUR</th>
+          <th>Share</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+      <tfoot>
+        <tr class="foot-row">
+          <td>TOTAL</td>
+          <td class="r mono">${fmtK(total)}</td>
+          <td class="r">—</td>
+          <td class="r mono">${fmtK(total)}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>`;
+}
+
+/* ══ Tab 3: KPI Stack ══════════════════════════════════════════════════════ */
+function updateKpiStack(r, k) {
+  // Direct cost display in the inputs card
+  const dcel = $('kpi-direct-cost');
+  if (dcel) dcel.textContent = fmtK(r.dc);
+
+  const stack = $('kpi-stack');
+  if (!stack) return;
+
+  const rows = [
+    {
+      label: 'Direct Cost',
+      sub:   'Supplier procurement · EUR-adjusted',
+      val:   r.dc,
+      add:   null,
+      pct:   null,
+      hi:    false,
+    },
+    {
+      label: 'After Risk',
+      sub:   `Risk markup applied (${fmtP(k.risk)})`,
+      val:   r.afterRisk,
+      add:   r.riskProv,
+      pct:   k.risk,
+      hi:    false,
+    },
+    {
+      label: 'After SG&A',
+      sub:   `SG&A markup applied (${fmtP(k.sga)})`,
+      val:   r.afterSGA,
+      add:   r.sgaProv,
+      pct:   k.sga,
+      hi:    false,
+    },
+    {
+      label: 'After EXU',
+      sub:   `HQ Adders EXU markup (${fmtP(k.exu)})`,
+      val:   r.afterEXU,
+      add:   r.exuProv,
+      pct:   k.exu,
+      hi:    false,
+    },
+    {
+      label: 'After BA',
+      sub:   `HQ Adders BA markup (${fmtP(k.ba)})`,
+      val:   r.afterBA,
+      add:   r.baProv,
+      pct:   k.ba,
+      hi:    false,
+    },
+    {
+      label: 'Customer Price (no Neg.)',
+      sub:   `EBIT markup applied (${fmtP(k.ebit)})`,
+      val:   r.sellPrice,
+      add:   r.ebitProv,
+      pct:   k.ebit,
+      hi:    true,
+    },
+    {
+      label: 'Customer Price incl. Neg.',
+      sub:   `Negotiation buffer (${fmtP(k.neg)})`,
+      val:   r.custPrice,
+      add:   r.negProv,
+      pct:   k.neg,
+      hi:    true,
+    },
+  ];
+
+  stack.innerHTML = rows.map(row => `
+    <div class="ksr${row.hi ? ' hi' : ''}">
+      <div>
+        <div class="ksr-label">${row.label}</div>
+        <div class="ksr-sub">${row.sub}</div>
+      </div>
+      <div class="ksr-val">${fmtK(row.val)}</div>
+      <div class="ksr-add">${row.add !== null ? '+\u202f' + fmtK(row.add) : ''}</div>
+      <div class="ksr-pct">${row.pct !== null ? fmtP(row.pct) : ''}</div>
+    </div>`
+  ).join('');
+}
+
+/* ══ Tab 4: LoA W2W ════════════════════════════════════════════════════════ */
+function updateLoaTab(r) {
+  const set = (id, val) => { const el = $(id); if (el) el.textContent = val; };
+
+  set('loa-revenue',    fmtK(r.sellPrice));
+  set('loa-cogs',       fmtK(r.dc));
+  set('loa-sm-eur',     fmtK(r.salesMargin));
+  set('loa-sm-pct',     fmtP(r.salesMarginPct));
+  set('loa-risk-prov',  fmtK(r.riskProv));
+  set('loa-sga-prov',   fmtK(r.sgaProv));
+  set('loa-func-cost',  fmtK(r.funcCost));
+  set('loa-ebit-prov',  fmtK(r.ebitProv));
+  set('loa-profit-eur', fmtK(r.profit));
+  set('loa-profit-pct', fmtP(r.profitPct));
+  set('loa-risk-total', fmtK(r.riskProv));
+
+  // Store for risk split
+  window._riskProvEUR = r.riskProv;
+  updateRiskSplit();
+}
+
+function updateRiskSplit() {
+  const rp   = window._riskProvEUR || 0;
+  const sp   = parseFloat($('rs-specified')?.value)   || 0;
+  const up   = parseFloat($('rs-unspecified')?.value) || 0;
+  const wp   = parseFloat($('rs-warranty')?.value)    || 0;
+  const sum  = sp + up + wp;
+  const warn = $('rs-warn');
+  if (warn) warn.style.display = Math.abs(sum - 100) > 0.01 ? 'block' : 'none';
+
+  const set = (id, val) => { const el = $(id); if (el) el.textContent = val; };
+  set('rs-specified-eur',   fmtK(rp * sp / 100));
+  set('rs-unspecified-eur', fmtK(rp * up / 100));
+  set('rs-warranty-eur',    fmtK(rp * wp / 100));
+}
+
+/* ══ Tab 5: Scenarios ══════════════════════════════════════════════════════ */
+function updateScenarios() {
+  const kA = readKpis('w');
+  const rA = computeKpis(_directCost, kA.risk, kA.sga, kA.exu, kA.ba, kA.ebit, kA.neg);
+
+  const kB = readKpis('sb');
+  const rB = computeKpis(_directCost, kB.risk, kB.sga, kB.exu, kB.ba, kB.ebit, kB.neg);
+
+  // Mirror Scenario A inputs (read-only display)
+  ['risk','sga','exu','ba','ebit','neg'].forEach(key => {
+    const el = $('sa-' + key);
+    if (el) el.value = kA[key].toFixed(1);
+  });
+
+  const set = (id, val) => { const el = $(id); if (el) el.textContent = val; };
+  set('sa-price',  fmtK(rA.custPrice));
+  set('sa-margin', fmtP(rA.salesMarginPct));
+  set('sb-price',  fmtK(rB.custPrice));
+  set('sb-margin', fmtP(rB.salesMarginPct));
+
+  // Delta pill
+  const delta      = rB.custPrice - rA.custPrice;
+  const absDelta   = Math.abs(delta);
+  const cls        = absDelta < 0.5 ? 'dp-zero' : delta > 0 ? 'dp-pos' : 'dp-neg';
+  const pillHTML   = `<span class="delta-pill ${cls}">Delta: ${fmtKd(delta)}</span>`;
+  const wrap       = $('delta-pill-wrap');
+  if (wrap) wrap.innerHTML = pillHTML;
+
+  const bar = $('sc-delta-bar');
+  if (bar) bar.innerHTML = `Comparing A vs B &nbsp;·&nbsp; ${pillHTML}`;
+}
+
+function cloneToB() {
+  const kA = readKpis('w');
+  ['risk','sga','exu','ba','ebit','neg'].forEach(key => {
+    const el = $('sb-' + key);
+    if (el) el.value = kA[key].toFixed(1);
+  });
+  updateScenarios();
+}
+
+/* ══ Tab Switching ═════════════════════════════════════════════════════════ */
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const panel = $('tab-' + id);
+  if (panel) panel.classList.add('active');
+  if (btn)   btn.classList.add('active');
+}
+
+/* ══ Boot ══════════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  SuiteManager.migrate();
+  loadCalcCastData();
+
+  // Live sync: reload when CalcCast state changes from another tab
+  window.addEventListener('storage', e => {
+    if (e.storageArea !== localStorage) return;
+    if (e.key === 'bidcast_state_calccast') loadCalcCastData();
+  });
+
+  // Suite sync (project name, theme)
+  SuiteManager.onUpdate((sync) => {
+    const pn = sync.projectName || '';
+    const el = $('proj-name-display');
+    if (el && pn) el.textContent = pn;
+  });
+});
+</script>
+
+
+</body>
+</html>
