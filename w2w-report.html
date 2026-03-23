@@ -248,21 +248,25 @@ label input[readonly] { background: var(--bg); color: var(--muted); cursor: defa
 .btn-del-factory:hover { border-color: var(--red); color: var(--red); }
 .factory-kpis {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px 8px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
   margin-bottom: 16px;
 }
 .factory-kpis label {
-  font-size: 9.5px;
-  letter-spacing: -0.2px;
+  font-size: 8.5px;
+  letter-spacing: -0.3px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   height: 100%;
+  white-space: nowrap;
 }
 .factory-kpis label input {
-  font-size: 12px; padding: 6px 8px;
-  margin-top: 5px;
+  font-size: 11px;
+  padding: 5px 4px;
+  margin-top: 4px;
+  width: 100%;
+  text-align: center;
 }
 .factory-stack { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
 .fsr {
@@ -370,7 +374,6 @@ table.w2w-tbl tr.w2w-row-spacer td { height: 6px; background: var(--bg); padding
   <button class="tab-btn"         onclick="showTab('kpis',       this)">③ W2W KPIs</button>
   <button class="tab-btn"         onclick="showTab('loa',        this)">④ LoA W2W</button>
   <button class="tab-btn"         onclick="showTab('scenarios',  this)">⑤ Scenarios</button>
-  <button class="tab-btn"         onclick="showTab('factories',  this)">⑥ Factory Breakdowns</button>
 </div>
 
 <!-- ══════════════════════════ MAIN CONTENT ═════════════════════════════════ -->
@@ -571,6 +574,24 @@ table.w2w-tbl tr.w2w-row-spacer td { height: 6px; background: var(--bg); padding
       </div>
 
     </div>
+
+    <div style="margin-top:24px;padding-top:24px;border-top:2px solid var(--border);">
+      <div style="font-size:14px;font-weight:700;color:var(--accent2);margin-bottom:16px;">Subsystem / Factory Breakdowns</div>
+
+      <div id="w2w-consolidator-table"></div>
+      <div class="factory-add-bar">
+        <select id="factory-cat-select">
+          <option value="">— select category —</option>
+        </select>
+        <button class="btn-add-factory" onclick="addFactory()">+ Add Factory Breakdown</button>
+        <span style="font-size:11px;color:var(--faint);">Base Direct Cost is read live from CalcCast · KPI inputs are saved independently.</span>
+      </div>
+      <div id="factory-empty" style="display:none;">
+        No factory breakdowns yet. Select a category above and click Add.
+      </div>
+      <div class="factory-grid" id="factory-list"></div>
+    </div>
+
   </div><!-- /tab-loa -->
 
   <!-- ── Tab 5: Scenarios ─────────────────────────────────────────────────── -->
@@ -632,26 +653,6 @@ table.w2w-tbl tr.w2w-row-spacer td { height: 6px; background: var(--bg); padding
 
     </div>
   </div><!-- /tab-scenarios -->
-
-  <!-- ── Tab 6: Factory Breakdowns ────────────────────────────────────────── -->
-  <div id="tab-factories" class="tab-panel">
-
-    <div id="w2w-consolidator-table"></div>
-
-    <div class="factory-add-bar">
-      <select id="factory-cat-select">
-        <option value="">— select category —</option>
-      </select>
-      <button class="btn-add-factory" onclick="addFactory()">+ Add Factory Breakdown</button>
-      <span style="font-size:11px;color:var(--faint);">Base Direct Cost is read live from CalcCast · KPI inputs are saved independently.</span>
-    </div>
-
-    <div id="factory-empty" style="display:none;">
-      No factory breakdowns yet. Select a category above and click Add.
-    </div>
-    <div class="factory-grid" id="factory-list"></div>
-
-  </div><!-- /tab-factories -->
 
 </div><!-- /main-content -->
 
