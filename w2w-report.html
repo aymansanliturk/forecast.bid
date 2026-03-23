@@ -295,60 +295,36 @@ label input[readonly] { background: var(--bg); color: var(--muted); cursor: defa
         <div class="sb-pct" id="ov-margin-pct">—</div>
       </div>
       <div class="sb-item">
-        <div class="sb-label">Profit (EBIT level)</div>
+        <div class="sb-label">Profit</div>
         <div class="sb-val" id="ov-profit-eur">—</div>
         <div class="sb-pct" id="ov-profit-pct">—</div>
+        <div class="sb-sub">EBIT + Negotiation Margin</div>
       </div>
     </div>
 
-    <div class="two-col">
-      <div class="card">
-        <div class="card-title"><div class="card-title-bar"></div>LoA Bid Volume Reference</div>
-        <div class="fields f2" style="margin-bottom:16px;">
-          <label>LoA Bid Volume (kEUR)
-            <input type="number" id="loa-bid-volume" placeholder="Enter bid volume…" step="1" min="0" oninput="updateOverviewLoA()">
-          </label>
-          <div>
-            <div style="font-size:11px;font-weight:500;color:var(--muted);margin-bottom:6px;">Model vs. LoA Delta</div>
-            <div id="loa-delta-display" style="font-size:13px;color:var(--faint);">Enter LoA Bid Volume to compare</div>
-          </div>
+    <div class="card">
+      <div class="card-title"><div class="card-title-bar"></div>Corporate Benchmarks</div>
+      <div class="benchmarks" style="margin-bottom:16px;">
+        <div class="bm-chip">
+          <div class="bm-label">Min Margin</div>
+          <div class="bm-val">17.5%</div>
         </div>
-        <div class="fields f2">
-          <div>
-            <div style="font-size:11px;font-weight:500;color:var(--muted);margin-bottom:4px;">Computed Sales Margin</div>
-            <div class="big-stat" id="ov-loa-margin" style="color:var(--accent);">—</div>
-          </div>
-          <div>
-            <div style="font-size:11px;font-weight:500;color:var(--muted);margin-bottom:4px;">Computed Profit</div>
-            <div class="big-stat" id="ov-loa-profit" style="color:var(--green);">—</div>
-          </div>
+        <div class="bm-chip">
+          <div class="bm-label">FY Profit Target</div>
+          <div class="bm-val">13.0%</div>
+        </div>
+        <div class="bm-chip" id="bm-margin-chip" style="display:none;">
+          <div class="bm-label">Margin vs. Min (17.5%)</div>
+          <div class="bm-val" id="bm-margin-val">—</div>
+        </div>
+        <div class="bm-chip" id="bm-profit-chip" style="display:none;">
+          <div class="bm-label">Profit vs. Target (13.0%)</div>
+          <div class="bm-val" id="bm-profit-val">—</div>
         </div>
       </div>
-
-      <div class="card">
-        <div class="card-title"><div class="card-title-bar"></div>Corporate Benchmarks</div>
-        <div class="benchmarks" style="margin-bottom:16px;">
-          <div class="bm-chip">
-            <div class="bm-label">Min Margin</div>
-            <div class="bm-val">17.5%</div>
-          </div>
-          <div class="bm-chip">
-            <div class="bm-label">FY Profit Target</div>
-            <div class="bm-val">13.0%</div>
-          </div>
-          <div class="bm-chip" id="bm-margin-chip" style="display:none;">
-            <div class="bm-label">Margin vs. Min (17.5%)</div>
-            <div class="bm-val" id="bm-margin-val">—</div>
-          </div>
-          <div class="bm-chip" id="bm-profit-chip" style="display:none;">
-            <div class="bm-label">Profit vs. Target (13.0%)</div>
-            <div class="bm-val" id="bm-profit-val">—</div>
-          </div>
-        </div>
-        <div style="font-size:11px;color:var(--faint);line-height:1.65;">
-          Values computed from the W2W KPI engine using direct cost imported from CalcCast.<br>
-          Adjust percentages in the <strong>W2W KPIs</strong> tab. Click <strong>↻ Refresh</strong> to reload CalcCast data.
-        </div>
+      <div style="font-size:11px;color:var(--faint);line-height:1.65;">
+        Values computed from the W2W KPI engine using direct cost imported from CalcCast.<br>
+        Adjust percentages in the <strong>W2W KPIs</strong> tab. Click <strong>↻ Refresh</strong> to reload CalcCast data.
       </div>
     </div>
 
@@ -374,8 +350,11 @@ label input[readonly] { background: var(--bg); color: var(--muted); cursor: defa
       <div class="card">
         <div class="card-title"><div class="card-title-bar"></div>KPI Inputs</div>
         <div class="fields" style="gap:10px;">
-          <label>Risk %
-            <input type="number" id="w-risk" value="5.0" min="0" step="0.1" oninput="updateAll()">
+          <label>Specified Risk %
+            <input type="number" id="w-spec-risk" value="2.0" min="0" step="0.1" oninput="updateAll()">
+          </label>
+          <label>Unspecified Risk %
+            <input type="number" id="w-unspec-risk" value="3.0" min="0" step="0.1" oninput="updateAll()">
           </label>
           <label>SG&amp;A %
             <input type="number" id="w-sga" value="4.0" min="0" step="0.1" oninput="updateAll()">
@@ -391,6 +370,9 @@ label input[readonly] { background: var(--bg); color: var(--muted); cursor: defa
           </label>
           <label>Negotiation Margin %
             <input type="number" id="w-neg" value="5.0" min="0" step="0.1" oninput="updateAll()">
+          </label>
+          <label>Warranty %
+            <input type="number" id="w-warranty" value="1.0" min="0" step="0.1" oninput="updateAll()">
           </label>
         </div>
         <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
@@ -469,32 +451,22 @@ label input[readonly] { background: var(--bg); color: var(--muted); cursor: defa
           <strong style="font-family:'DM Mono',monospace;" id="loa-risk-total">—</strong>
         </div>
         <div style="font-size:11px;color:var(--faint);margin-top:4px;">
-          Enter how the risk budget splits across the three buckets. They must sum to 100%.
+          Amounts derived directly from Direct Cost × each risk percentage set in the W2W KPIs tab.
         </div>
         <div class="risk-grid">
           <div class="rg-item">
-            <label>Specified %
-              <input type="number" id="rs-specified" value="50" min="0" max="100" step="1" oninput="updateRiskSplit()">
-            </label>
+            <div class="rg-sub">Specified Risk</div>
             <div class="rg-val" id="rs-specified-eur">—</div>
-            <div class="rg-sub">kEUR · Specified</div>
           </div>
           <div class="rg-item">
-            <label>Unspecified %
-              <input type="number" id="rs-unspecified" value="30" min="0" max="100" step="1" oninput="updateRiskSplit()">
-            </label>
+            <div class="rg-sub">Unspecified Risk</div>
             <div class="rg-val" id="rs-unspecified-eur">—</div>
-            <div class="rg-sub">kEUR · Unspecified</div>
           </div>
           <div class="rg-item">
-            <label>Warranty %
-              <input type="number" id="rs-warranty" value="20" min="0" max="100" step="1" oninput="updateRiskSplit()">
-            </label>
+            <div class="rg-sub">Warranty</div>
             <div class="rg-val" id="rs-warranty-eur">—</div>
-            <div class="rg-sub">kEUR · Warranty</div>
           </div>
         </div>
-        <div id="rs-warn" class="warn-txt">⚠ Percentages do not sum to 100%.</div>
       </div>
 
     </div>
@@ -626,12 +598,14 @@ function loadCalcCastData() {
 
   // Pre-fill KPI inputs from ccState (keep user's edits if already changed)
   const kpiMap = [
-    ['w-risk', 'kpiRisk', 5.0],
-    ['w-sga',  'kpiSga',  4.0],
-    ['w-exu',  'kpiExu',  3.0],
-    ['w-ba',   'kpiBa',   2.0],
-    ['w-ebit', 'kpiEbit', 8.0],
-    ['w-neg',  'kpiNeg',  5.0],
+    ['w-spec-risk',   'kpiSpecRisk',   2.0],
+    ['w-unspec-risk', 'kpiUnspecRisk', 3.0],
+    ['w-sga',         'kpiSga',        4.0],
+    ['w-exu',         'kpiExu',        3.0],
+    ['w-ba',          'kpiBa',         2.0],
+    ['w-ebit',        'kpiEbit',       8.0],
+    ['w-neg',         'kpiNeg',        5.0],
+    ['w-warranty',    'kpiWarranty',   1.0],
   ];
   kpiMap.forEach(([elId, key, def]) => {
     const inp = document.getElementById(elId);
@@ -736,9 +710,16 @@ function computeKpis(dc, risk, sga, exu, ba, ebit, neg) {
 function readKpis(prefix) {
   const p = prefix || 'w';
   const v = id => parseFloat(document.getElementById(p + '-' + id)?.value) || 0;
+  // For the main 'w' prefix, risk is split into spec + unspec
+  const risk = (p === 'w')
+    ? v('spec-risk') + v('unspec-risk')
+    : v('risk');
   return {
-    risk: v('risk'), sga: v('sga'), exu: v('exu'),
+    risk, sga: v('sga'), exu: v('exu'),
     ba:   v('ba'),   ebit: v('ebit'), neg: v('neg'),
+    specRisk:   p === 'w' ? v('spec-risk')   : 0,
+    unspecRisk: p === 'w' ? v('unspec-risk') : 0,
+    warranty:   p === 'w' ? v('warranty')    : 0,
   };
 }
 
@@ -771,10 +752,6 @@ function updateOverview(r) {
   set('ov-profit-eur',  fmtK(r.profit));
   set('ov-profit-pct',  fmtP(r.profitPct));
 
-  // LoA card computed values (derived from KPI model, not from LoA input)
-  set('ov-loa-margin',  fmtK(r.salesMargin));
-  set('ov-loa-profit',  fmtK(r.profit));
-
   // Benchmark vs targets
   const md = r.salesMarginPct - 17.5;
   const pd = r.profitPct      - 13.0;
@@ -793,23 +770,6 @@ function updateOverview(r) {
     pv.style.color = pd >= 0 ? 'var(--green)' : 'var(--red)';
   }
 
-  updateOverviewLoA();
-}
-
-function updateOverviewLoA() {
-  if (!_lastResults) return;
-  const loaEl = $('loa-bid-volume');
-  const loaK  = loaEl ? parseFloat(loaEl.value) * 1000 : 0;  // kEUR → EUR
-  const dd    = $('loa-delta-display');
-  if (!dd) return;
-  if (!loaK || loaK <= 0) {
-    dd.textContent = 'Enter LoA Bid Volume to compare';
-    dd.style.color = 'var(--faint)';
-    return;
-  }
-  const delta = loaK - _lastResults.custPrice;
-  dd.innerHTML = `Model: <strong>${fmtK(_lastResults.custPrice)}</strong> vs. LoA: <strong>${fmtK(loaK)}</strong><br>
-    <span style="font-weight:700;color:${delta >= 0 ? 'var(--green)' : 'var(--red)'};">${fmtKd(delta)}</span>`;
 }
 
 /* ══ Tab 2: Project Scope ══════════════════════════════════════════════════ */
@@ -893,7 +853,7 @@ function updateKpiStack(r, k) {
     },
     {
       label: 'After Risk',
-      sub:   `Risk markup applied (${fmtP(k.risk)})`,
+      sub:   `Spec. ${fmtP(k.specRisk || 0)} + Unspec. ${fmtP(k.unspecRisk || 0)} = ${fmtP(k.risk)}`,
       val:   r.afterRisk,
       add:   r.riskProv,
       pct:   k.risk,
@@ -970,24 +930,13 @@ function updateLoaTab(r) {
   set('loa-profit-pct', fmtP(r.profitPct));
   set('loa-risk-total', fmtK(r.riskProv));
 
-  // Store for risk split
-  window._riskProvEUR = r.riskProv;
-  updateRiskSplit();
-}
-
-function updateRiskSplit() {
-  const rp   = window._riskProvEUR || 0;
-  const sp   = parseFloat($('rs-specified')?.value)   || 0;
-  const up   = parseFloat($('rs-unspecified')?.value) || 0;
-  const wp   = parseFloat($('rs-warranty')?.value)    || 0;
-  const sum  = sp + up + wp;
-  const warn = $('rs-warn');
-  if (warn) warn.style.display = Math.abs(sum - 100) > 0.01 ? 'block' : 'none';
-
-  const set = (id, val) => { const el = $(id); if (el) el.textContent = val; };
-  set('rs-specified-eur',   fmtK(rp * sp / 100));
-  set('rs-unspecified-eur', fmtK(rp * up / 100));
-  set('rs-warranty-eur',    fmtK(rp * wp / 100));
+  // Risk contingency breakdown — derived directly from Direct Cost × KPI %
+  const specPct   = parseFloat($('w-spec-risk')?.value)   || 0;
+  const unspecPct = parseFloat($('w-unspec-risk')?.value) || 0;
+  const warrPct   = parseFloat($('w-warranty')?.value)    || 0;
+  set('rs-specified-eur',   fmtK(_directCost * (specPct   / 100)));
+  set('rs-unspecified-eur', fmtK(_directCost * (unspecPct / 100)));
+  set('rs-warranty-eur',    fmtK(_directCost * (warrPct   / 100)));
 }
 
 /* ══ Tab 5: Scenarios ══════════════════════════════════════════════════════ */
