@@ -416,7 +416,14 @@ function renderMilestones() {
 }
 
 function updateMilestone(idx, field, val) {
-  _simState.milestones[idx][field] = parseFloat(val) || 0;
+  let parsedVal = parseFloat(val) || 0;
+  if (field === 'm') {
+    const maxDur = _simData.duration || 120;
+    if (parsedVal > maxDur) parsedVal = maxDur;
+    if (parsedVal < 1) parsedVal = 1;
+  }
+  if (field === 'p' && parsedVal < 0) parsedVal = 0;
+  _simState.milestones[idx][field] = parsedVal;
   renderMilestones();
 }
 
@@ -452,7 +459,9 @@ function fmtEUR(n) {
   return '€\u202f' + Math.round(n).toLocaleString('en-GB');
 }
 function fmtK(n) {
-  return (Math.round(Math.abs(n) / 100) / 10).toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 1 }) + ' k';
+  const sign = n < 0 ? '-' : '';
+  const val = Math.round(Math.abs(n) / 100) / 10;
+  return sign + val.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 1 }) + ' k';
 }
 
 /* ══ Data Ingestion ════════════════════════════════════════════════════ */
@@ -665,7 +674,7 @@ function updateCharts(labels, payments, costs, cumCash, sunkDC, sunkFC, penalty)
           title: { display: true, text: 'Project Cash Flow (Cash Valley)', font: { family: 'DM Sans', size: 12 } },
           legend: { labels: { font: { family: 'DM Sans', size: 10 }, boxWidth: 12 } },
           tooltip: { mode: 'index', intersect: false,
-            callbacks: { label: ctx => ' ' + fmtK(ctx.parsed.y) + 'EUR' } },
+            callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmtK(ctx.raw)}EUR` } },
         },
         scales: { y: { stacked: true }, x: { stacked: true, ticks: { autoSkip: true, maxTicksLimit: 20 } } },
       },
@@ -681,7 +690,7 @@ function updateCharts(labels, payments, costs, cumCash, sunkDC, sunkFC, penalty)
           title: { display: true, text: 'Cancellation Exposure Gap', font: { family: 'DM Sans', size: 12 } },
           legend: { labels: { font: { family: 'DM Sans', size: 10 }, boxWidth: 12 } },
           tooltip: { mode: 'index', intersect: false,
-            callbacks: { label: ctx => ' ' + fmtK(ctx.parsed.y) + 'EUR' } },
+            callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmtK(ctx.raw)}EUR` } },
         },
         scales: { y: { stacked: false }, x: { ticks: { autoSkip: true, maxTicksLimit: 20 } } },
         interaction: { mode: 'index', intersect: false },
