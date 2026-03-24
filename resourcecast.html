@@ -359,6 +359,9 @@
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;">
       <button class="btn-add" onclick="addRole({})">+ Add Role</button>
+      <select id="rc-proj-filter" style="display:none; font-family:'DM Sans',sans-serif; font-size:12px; padding:6px 10px; border-radius:6px; border:1px solid var(--border); outline:none; background:var(--bg);" onchange="filterResourceProjects()">
+        <option value="ALL">All Projects</option>
+      </select>
       <button class="btn-secondary" onclick="loadSETemplate()" style="font-size:11px;padding:5px 12px;" title="Load 17 standard SE roles with EUR rates">⚙ SE Template</button>
       <div class="pb-sep"></div>
       <label class="pb-btn" style="margin:0;cursor:pointer;">
@@ -643,6 +646,7 @@ function updateLogoUI() {
     chip.dataset.sy = data.sy || '';
     chip.dataset.em = data.em || '';
     chip.dataset.ey = data.ey || '';
+    chip.dataset.project = data.project || '';
     chip.draggable  = true;
     chip.innerHTML  = `<span class="drag-handle">⠿</span>
       <input type="text" value="${esc(name)}" placeholder="Phase name" oninput="rebuildMonthlyGrid()">
@@ -671,12 +675,13 @@ function updateLogoUI() {
 
   function getPhases() {
     return [...document.querySelectorAll('.phase-chip')].map(c => ({
-      id:   String(c.dataset.id),
-      name: c.querySelector('input').value.trim() || 'Phase',
-      sm:   parseInt(c.dataset.sm) || 0,
-      sy:   parseInt(c.dataset.sy) || 0,
-      em:   parseInt(c.dataset.em) || 0,
-      ey:   parseInt(c.dataset.ey) || 0,
+      id:      String(c.dataset.id),
+      name:    c.querySelector('input').value.trim() || 'Phase',
+      sm:      parseInt(c.dataset.sm) || 0,
+      sy:      parseInt(c.dataset.sy) || 0,
+      em:      parseInt(c.dataset.em) || 0,
+      ey:      parseInt(c.dataset.ey) || 0,
+      project: c.dataset.project || '',
     }));
   }
 
@@ -710,7 +715,7 @@ function updateLogoUI() {
       const toggleBtn = hasDates
         ? `<button class="mg-toggle-btn" onclick="togglePhase('${ph.id}')" title="${isCol?'Expand months':'Collapse to total'}">${isCol?'▶':'▼'}</button>`
         : '';
-      r1 += `<th colspan="${span}" class="mg-ph-th" style="background:${color}12;color:${color};border-left:2px solid ${color}55;border-right:2px solid ${color}55;">${toggleBtn}<strong>${esc(ph.name)}</strong>${rangeStr ? `<span class="mg-ph-range">${rangeStr}</span>` : ''}</th>`;
+      r1 += `<th colspan="${span}" class="mg-ph-th phase-col" data-proj="${esc(ph.project || '')}" style="background:${color}12;color:${color};border-left:2px solid ${color}55;border-right:2px solid ${color}55;">${toggleBtn}<strong>${esc(ph.name)}</strong>${rangeStr ? `<span class="mg-ph-range">${rangeStr}</span>` : ''}</th>`;
     });
 
     r1 += `<th rowspan="2" style="width:68px;">Total h</th>`;
@@ -718,13 +723,16 @@ function updateLogoUI() {
     r1 += `<th rowspan="2" style="width:24px;"></th>`;
     r1 += '</tr>';
 
+    const phaseMap = Object.fromEntries(phases.map(p => [p.id, p]));
+
     let r2 = '<tr>';
     cols.forEach(col => {
       const pi    = phases.findIndex(p => p.id === col.phaseId);
       const color = PHASE_COLORS[pi % PHASE_COLORS.length];
+      const projAttr = phaseMap[col.phaseId]?.project ? ` data-proj="${esc(phaseMap[col.phaseId].project)}"` : '';
       if (col.type === 'month') {
         const isToday = (now.getMonth() === col.m && now.getFullYear() === col.y);
-        r2 += `<th class="mg-mo-th${isToday ? ' mg-today' : ''}" style="border-left:1px solid ${color}22;">${MN[col.m].slice(0,3)}<br><span class="mg-yr-lbl">'${String(col.y).slice(-2)}</span></th>`;
+        r2 += `<th class="phase-col mg-mo-th${isToday ? ' mg-today' : ''}"${projAttr} style="border-left:1px solid ${color}22;">${MN[col.m].slice(0,3)}<br><span class="mg-yr-lbl">'${String(col.y).slice(-2)}</span></th>`;
       } else {
         const ph = phases.find(p => p.id === col.phaseId);
         const aggLbl = (() => {
@@ -733,7 +741,7 @@ function updateLogoUI() {
             return `${MN[ph.sm-1].slice(0,3)}<br><span class="mg-yr-lbl">'${String(ph.sy).slice(-2)}</span>`;
           return '∑ hrs';
         })();
-        r2 += `<th class="mg-mo-th mg-agg-col" style="color:${color};border-left:2px solid ${color}55;">${aggLbl}</th>`;
+        r2 += `<th class="phase-col mg-mo-th mg-agg-col"${projAttr} style="color:${color};border-left:2px solid ${color}55;">${aggLbl}</th>`;
       }
     });
     r2 += '</tr>';
@@ -746,6 +754,7 @@ function updateLogoUI() {
     rolesData.forEach(r => _renderRoleRow(r, cols));
 
     updateMonthlyTotals();
+    filterResourceProjects();
   }
 
   // ── Roles ──
@@ -784,7 +793,9 @@ function updateLogoUI() {
         ? `border-left:2px solid ${color}44;`
         : `border-left:1px solid ${color}11;`;
       const wClass = col.type === 'agg' ? ' mg-agg-inp' : '';
-      return `<td class="mg-cell" style="${borderStyle}"><input type="number" class="res-inp month-inp mg-inp${wClass}" data-key="${col.key}" data-role="${id}" value="${v !== '' ? v : ''}" min="0" max="99999" step="1" placeholder="" oninput="updateMonthlyTotals()"></td>`;
+      const ph2proj = phases.find(p => p.id === col.phaseId)?.project || '';
+      const projAttr2 = ph2proj ? ` data-proj="${esc(ph2proj)}"` : '';
+      return `<td class="mg-cell phase-cell"${projAttr2} style="${borderStyle}"><input type="number" class="res-inp month-inp mg-inp${wClass}" data-key="${col.key}" data-role="${id}" value="${v !== '' ? v : ''}" min="0" max="99999" step="1" placeholder="" oninput="updateMonthlyTotals()"></td>`;
     }).join('');
 
     const tr = document.createElement('tr');
@@ -834,6 +845,7 @@ function updateLogoUI() {
     rolesData.push(entry);
     _renderRoleRow(entry, _buildCols(getPhases()));
     updateMonthlyTotals();
+    filterResourceProjects();
   }
 
   function removeRole(btn) {
@@ -1872,6 +1884,13 @@ function suiteWrite() {
  * - Applies phases from Timecast into the phase chips.
  * - Writes project name from sync (index page is source of truth).
  */
+function filterResourceProjects() {
+  const val = document.getElementById('rc-proj-filter')?.value || 'ALL';
+  document.querySelectorAll('.phase-col, .phase-cell').forEach(el => {
+    el.style.display = (val === 'ALL' || el.dataset.proj === val) ? '' : 'none';
+  });
+}
+
 function suiteRead(sync) {
   try {
     if (!sync || sync._src === 'resourcecast') {
@@ -1883,9 +1902,25 @@ function suiteRead(sync) {
       document.getElementById('phases-wrap').innerHTML = '';
       _applyingState = true; // suppress per-addPhase grid rebuilds
       sync.phases.forEach(p => {
-        if (p.name) addPhase({ name: p.name, sm: p.sm, sy: p.sy, em: p.em, ey: p.ey });
+        if (p.name) addPhase({ name: p.name, sm: p.sm, sy: p.sy, em: p.em, ey: p.ey, project: p.project || '' });
       });
       _applyingState = false;
+
+      // Populate project filter dropdown from unique project tags
+      const uniqueProjs = [...new Set((sync.phases).map(p => p.project).filter(Boolean))];
+      const filterEl = document.getElementById('rc-proj-filter');
+      if (filterEl) {
+        if (uniqueProjs.length > 1) {
+          filterEl.style.display = 'inline-block';
+          const currentVal = filterEl.value;
+          filterEl.innerHTML = '<option value="ALL">All Projects</option>' +
+            uniqueProjs.map(p => `<option value="${esc(p)}">${esc(p)}</option>`).join('');
+          if (uniqueProjs.includes(currentVal)) filterEl.value = currentVal;
+        } else {
+          filterEl.style.display = 'none';
+        }
+      }
+
       rebuildMonthlyGrid(); // one clean rebuild; rolesData is preserved in memory
     }
     // Always apply project name from sync (index is source of truth).
