@@ -1164,7 +1164,13 @@ function updateLogoUI() {
     const projName = document.getElementById('proj-name').value.trim();
     const rev      = document.getElementById('proj-rev').value.trim();
     const date     = document.getElementById('proj-date').value.trim();
-    const phases   = getPhases();
+    const activeFilter = document.getElementById('rc-proj-filter')?.value || 'ALL';
+    const allPhases    = getPhases();
+
+    // If a project is selected, only print that project's phases to fit the A3 page
+    const phases = activeFilter === 'ALL'
+      ? allPhases
+      : allPhases.filter(p => p.project === activeFilter);
     const roles    = getRoleData();
     const expenses = [...document.querySelectorAll('.exp-row')].map(tr => ({
       label:  tr.querySelector('.exp-inp-lbl').value.trim() || '—',
@@ -1898,8 +1904,14 @@ function suiteWrite() {
  */
 function filterResourceProjects() {
   const val = document.getElementById('rc-proj-filter')?.value || 'ALL';
+
+  // Hide/Show Table Columns
   document.querySelectorAll('.phase-col, .phase-cell').forEach(el => {
     el.style.display = (val === 'ALL' || el.dataset.proj === val) ? '' : 'none';
+  });
+  // Hide/Show Phase Chips at the top
+  document.querySelectorAll('.phase-chip').forEach(chip => {
+    chip.style.display = (val === 'ALL' || chip.dataset.project === val) ? 'flex' : 'none';
   });
 }
 
