@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CashFlow · PYL0N</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f5f4f0; --surface: #ffffff; --border: #e0ddd6;
+  --text: #1a1916; --muted: #6b6860; --faint: #a8a49e;
+  --accent: #2c4e87; --accent2: #1e3a6b; --green: #107c41; --green-dk: #0a6032;
+  --red: #c0392b; --amber: #b45309;
+  --input-bg: #fffdf0; --input-bg-focus: #ffffff;
+}
+
+[data-theme="dark"] {
+  --bg: #1a1917; --surface: #242320; --border: #3a3835;
+  --text: #e8e6e1; --muted: #9b9891; --faint: #6b6860;
+  --accent: #5b82c4; --accent2: #4a6da8;
+  --green: #22a85a; --green-dk: #1a8a47;
+  --red: #e05a47; --amber: #d97706;
+  --input-bg: #2a2825; --input-bg-focus: #333230;
+}
+[data-theme="dark"] #toolbar { background: rgba(36,35,32,0.95); }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; -webkit-font-smoothing: antialiased;
+}
+
+/* ── Toolbar ── */
+#toolbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.tb-left  { display: flex; align-items: center; gap: 12px; }
+.tb-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.logo-icon {
+  width: 28px; height: 28px; background: var(--accent2); border-radius: 7px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.logo-icon svg { width: 16px; height: 16px; }
+.tool-name { font-size: 14px; font-weight: 700; letter-spacing: -0.3px; }
+.tool-tag  { font-size: 9px; font-weight: 600; color: var(--faint); letter-spacing: 1px; text-transform: uppercase; }
+.tb-sep    { width: 1px; height: 22px; background: var(--border); }
+.tb-btn {
+  font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500;
+  padding: 6px 12px; border-radius: 7px; border: 1.5px solid var(--border);
+  background: var(--bg); color: var(--muted); cursor: pointer; white-space: nowrap; transition: all .15s;
+}
+.tb-btn:hover { border-color: var(--accent); color: var(--accent); background: #fff; }
+.tb-btn.active { border-color: var(--accent); color: var(--accent); background: #f0f4fb; }
+
+/* ── Editor ── */
+#editor { max-width: 1500px; margin: 0 auto; padding: 24px 28px 60px; }
+
+/* ── Summary Cards ── */
+.stat-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px 20px;
+}
+.stat-card.hi { border-color: var(--accent); }
+.stat-card.warn { border-color: var(--amber); }
+.stat-label {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--faint); margin-bottom: 6px;
+}
+.stat-value {
+  font-size: 22px; font-weight: 700; font-family: 'DM Mono', monospace;
+  color: var(--text); line-height: 1.1;
+}
+.stat-sub { font-size: 10px; color: var(--faint); margin-top: 4px; }
+
+/* ── Two-column grid ── */
+.two-col {
+  display: grid; grid-template-columns: 350px 1fr; gap: 24px;
+  align-items: start;
+}
+
+/* ── Section card ── */
+.section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px 22px; margin-bottom: 14px;
+}
+.section:last-child { margin-bottom: 0; }
+.section-title {
+  font-size: 9px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--faint);
+  margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+
+/* ── Controls panel ── */
+.ctrl-label {
+  display: block; font-size: 11px; font-weight: 500;
+  color: var(--muted); margin-bottom: 4px;
+}
+.ctrl-inp {
+  width: 100%; font-family: 'DM Sans', sans-serif; font-size: 12px;
+  color: var(--text); background: var(--input-bg); border: 1px solid var(--border);
+  border-radius: 7px; padding: 8px 10px; outline: none; transition: border-color .15s;
+}
+.ctrl-inp:focus { border-color: var(--accent); background: var(--input-bg-focus); }
+.ctrl-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.ctrl-row-single { margin-bottom: 10px; }
+
+/* Milestone table */
+.ms-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 6px; }
+.ms-table th {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+  color: var(--faint); padding: 4px 6px; border-bottom: 1px solid var(--border); text-align: left;
+}
+.ms-table td { padding: 3px 4px; }
+.ms-inp {
+  width: 100%; padding: 5px 7px; font-size: 11px; font-family: 'DM Mono', monospace;
+  border: 1px solid var(--border); border-radius: 5px;
+  background: var(--input-bg); color: var(--text); outline: none;
+}
+.ms-inp:focus { border-color: var(--accent); }
+.ms-del {
+  background: none; border: none; cursor: pointer; color: var(--faint);
+  font-size: 14px; padding: 2px 5px; line-height: 1;
+}
+.ms-del:hover { color: var(--red); }
+.ms-total-row { font-size: 10px; color: var(--muted); margin-top: 5px; font-family: 'DM Mono', monospace; }
+.ms-warn {
+  font-size: 10px; font-weight: 600; padding: 5px 9px;
+  border-radius: 6px; margin-top: 6px;
+}
+.ms-warn.bad  { background: #fff8e1; color: #b45309; border: 1px solid #fcd34d; }
+.ms-warn.good { background: #ecfdf5; color: #065f46; border: 1px solid #6ee7b7; }
+.btn-add-row {
+  width: 100%; margin-top: 10px; padding: 8px; font-size: 11px; font-family: inherit;
+  font-weight: 600; background: var(--accent); color: #fff; border: none;
+  border-radius: 7px; cursor: pointer;
+}
+.btn-add-row:hover { background: var(--accent2); }
+
+/* Source badge */
+.src-badge {
+  display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 0.5px;
+  text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-left: 6px;
+}
+.src-badge.live   { background: #ecfdf5; color: #065f46; }
+.src-badge.sample { background: #fff7ed; color: #c2410c; }
+
+.info-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 11px; padding: 3px 0; border-bottom: 1px solid var(--border);
+}
+.info-row:last-child { border-bottom: none; }
+.info-key { color: var(--muted); }
+.info-val { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 600; }
+.btn-reload {
+  width: 100%; margin-top: 10px; padding: 7px; font-size: 11px; font-family: inherit;
+  font-weight: 600; background: var(--surface); color: var(--accent);
+  border: 1.5px solid var(--accent); border-radius: 7px; cursor: pointer;
+}
+.btn-reload:hover { background: var(--accent); color: #fff; }
+
+/* Chart container */
+.chart-title-row {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text); margin-bottom: 4px;
+}
+.chart-sub { font-size: 10px; color: var(--faint); margin-bottom: 14px; }
+
+@media (max-width: 1100px) { .two-col { grid-template-columns: 1fr; } }
+@media (max-width: 700px)  { .stat-grid { grid-template-columns: 1fr 1fr; } }
+
+/* ── Field grids (matching CalcCast) ── */
+.fields { display: grid; gap: 12px; margin-bottom: 0; }
+.f2 { grid-template-columns: 1fr 1fr; }
+
+label {
+  display: flex; flex-direction: column; gap: 5px;
+  font-size: 11px; font-weight: 500; color: var(--muted);
+}
+.section label input[type="number"],
+.section label select {
+  font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text);
+  background: var(--input-bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px; outline: none; width: 100%;
+  transition: border-color 0.15s, background 0.15s;
+}
+.section label input[type="number"]:focus,
+.section label select:focus {
+  border-color: var(--accent); background: var(--input-bg-focus);
+}
+</style>
+</head>
+<body>
+
+<!-- ══ TOOLBAR ══════════════════════════════════════════════════════ -->
+<div id="toolbar">
+  <div class="tb-left">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round">
+        <polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/>
+      </svg>
+    </div>
+    <div>
+      <div class="tool-name">CashFlow</div>
+      <div class="tool-tag">Cash Flow &amp; Risk · PYL0N</div>
+    </div>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" onclick="location.href='index.html'">← Dashboard</button>
+    <button class="tb-btn" onclick="location.href='calccast.html'">← CalcCast</button>
+  </div>
+  <div class="tb-right">
+    <button class="tb-btn" onclick="loadSuiteData(); simulate();" style="border-color:var(--accent);color:var(--accent);">↺ Refresh Data</button>
+    <button class="tb-btn" id="theme-btn" onclick="toggleTheme()" style="font-size:14px;padding:4px 8px;border:none;background:transparent;cursor:pointer;">🌙</button>
+  </div>
+</div>
+
+<!-- ══ EDITOR ═══════════════════════════════════════════════════════ -->
+<div id="editor">
+
+  <!-- Top Summary Cards -->
+  <div class="stat-grid">
+    <div class="stat-card hi">
+      <div class="stat-label">Contract Value</div>
+      <div class="stat-value" id="sum-cv">—</div>
+      <div class="stat-sub">Customer price · kEUR</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Cost</div>
+      <div class="stat-value" id="sum-cost">—</div>
+      <div class="stat-sub">Direct cost incl. bonds · kEUR</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Max Cash Valley</div>
+      <div class="stat-value" id="sum-valley" style="color:var(--red);">—</div>
+      <div class="stat-sub">Peak financing need · kEUR</div>
+    </div>
+    <div class="stat-card warn">
+      <div class="stat-label">Peak Exposure</div>
+      <div class="stat-value" id="sum-exposure" style="color:var(--amber);">—</div>
+      <div class="stat-sub">Max uncovered liability · kEUR</div>
+    </div>
+  </div>
+
+  <!-- Two-column grid -->
+  <div class="two-col">
+
+    <!-- ── Controls ── -->
+    <div id="controls-panel">
+
+      <!-- Ingested data -->
+      <div class="section">
+        <div class="section-title">
+          Project Data
+          <span class="src-badge sample" id="src-badge">Sample</span>
+        </div>
+        <div id="info-block">
+          <div class="info-row"><span class="info-key">Project</span><span class="info-val" id="info-proj">—</span></div>
+          <div class="info-row"><span class="info-key">Contract Value</span><span class="info-val" id="info-cv">—</span></div>
+          <div class="info-row"><span class="info-key">Direct Cost</span><span class="info-val" id="info-cost">—</span></div>
+          <div class="info-row"><span class="info-key">Duration</span><span class="info-val" id="info-dur">—</span></div>
+          <div class="info-row"><span class="info-key">Start</span><span class="info-val" id="info-start">—</span></div>
+        </div>
+        <button class="btn-reload" onclick="loadSuiteData(); simulate();">↺ Reload from Suite</button>
+      </div>
+
+      <!-- Simulation Parameters -->
+      <div class="section">
+        <div class="section-title">Simulation Parameters</div>
+
+        <div style="font-size:9px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--accent); margin-bottom:12px;">Payment Milestones</div>
+        <div style="font-size:11px; color:var(--muted); margin-bottom:8px;">Define customer payment schedule. Total must be 100%.</div>
+
+        <div style="display:flex; gap:8px; margin-bottom:4px; font-size:10px; font-weight:600; color:var(--faint);">
+          <div style="width:80px;">Month</div>
+          <div style="width:80px;">Payment %</div>
+        </div>
+        <div id="milestone-container" style="display:flex; flex-direction:column; gap:6px; margin-bottom:12px;"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid var(--border);">
+          <button class="tb-btn" onclick="addMilestone()" style="margin:0; padding:4px 8px;">+ Add Payment</button>
+          <div id="milestone-total" style="font-size:12px; font-weight:700; font-family:'DM Mono', monospace;">Total: 0%</div>
+        </div>
+
+        <div style="font-size:9px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--accent); margin-bottom:12px; margin-top:24px;">Cost Distribution Curves</div>
+        <div class="fields f2">
+          <label>Direct Cost Profile
+            <select id="sim-dc-curve" onchange="updateSimState('dcCurve', this.value)">
+              <option value="linear">Linear (Even)</option>
+              <option value="front" selected>Front-Loaded</option>
+              <option value="back">Back-Loaded</option>
+              <option value="bell">Bell Curve</option>
+            </select>
+          </label>
+          <label>Functional Cost Profile
+            <select id="sim-fc-curve" onchange="updateSimState('fcCurve', this.value)">
+              <option value="linear" selected>Linear (Even)</option>
+              <option value="front">Front-Loaded</option>
+              <option value="back">Back-Loaded</option>
+            </select>
+          </label>
+        </div>
+
+        <div style="font-size:9px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--accent); margin-bottom:12px; margin-top:24px;">Cancellation Terms</div>
+        <div class="fields f2">
+          <label>Initial Penalty % (M1)
+            <input type="number" id="sim-canc-start" value="10" min="0" max="100" oninput="updateSimState('cancStart', this.value)">
+          </label>
+          <label>Final Penalty % (End)
+            <input type="number" id="sim-canc-end" value="100" min="0" max="100" oninput="updateSimState('cancEnd', this.value)">
+          </label>
+        </div>
+      </div>
+
+    </div><!-- /controls-panel -->
+
+    <!-- ── Charts ── -->
+    <div id="charts-panel" style="display:flex;flex-direction:column;gap:24px;">
+
+      <div class="section">
+        <div class="chart-title-row">Cash Flow Analysis</div>
+        <div class="chart-sub">Monthly net cash flow (bars) · Cumulative cash position (line)</div>
+        <canvas id="cashflowChart" height="250"></canvas>
+      </div>
+
+      <div class="section">
+        <div class="chart-title-row">Cancellation Risk Exposure</div>
+        <div class="chart-sub">Cumulative cost liability vs. contractual cancellation value receivable</div>
+        <canvas id="exposureChart" height="250"></canvas>
+      </div>
+
+    </div><!-- /charts-panel -->
+
+  </div><!-- /two-col -->
+</div><!-- /editor -->
+
+<script>
+/* ══ SuiteManager ══════════════════════════════════════════════════════ */
+const SuiteManager = (() => {
+  const SYNC_KEY = 'bidcast_suite_sync';
+  const LOGO_KEY = 'bidcast_logo';
+  function read() { try { return JSON.parse(localStorage.getItem(SYNC_KEY) || '{}'); } catch { return {}; } }
+  function write(patch, src) {
+    try { const n = { ...read(), ...patch, _ts: Date.now(), _src: src }; localStorage.setItem(SYNC_KEY, JSON.stringify(n)); return n; } catch { return {}; }
+  }
+  function getLogo() { return localStorage.getItem(LOGO_KEY) || null; }
+  function migrate() {
+    const mv = [];
+    for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('pyl0n_')) mv.push(k); }
+    mv.forEach(k => { const nk = 'bidcast_' + k.slice(6); if (!localStorage.getItem(nk)) localStorage.setItem(nk, localStorage.getItem(k)); localStorage.removeItem(k); });
+  }
+  function onUpdate(cb) {
+    window.addEventListener('storage', e => { if (e.storageArea !== localStorage) return; if (e.key && e.key !== SYNC_KEY && e.key !== LOGO_KEY) return; cb(read(), e.key); });
+  }
+  return { read, write, getLogo, migrate, onUpdate };
+})();
+
+/* ══ Theme ═════════════════════════════════════════════════════════════ */
+function _applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('bidcast_theme', t);
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
+}
+function toggleTheme() {
+  _applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+}
+
+/* ══ Global simulation state ═══════════════════════════════════════════ */
+const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+let _simState = {
+  milestones: [
+    { m: 1,  p: 10 },
+    { m: 15, p: 20 },
+    { m: 30, p: 30 },
+    { m: 45, p: 30 },
+    { m: 60, p: 10 },
+  ],
+  dcCurve:   'front',
+  fcCurve:   'linear',
+  cancStart: 10,
+  cancEnd:   100,
+};
+
+function renderMilestones() {
+  const cont = document.getElementById('milestone-container');
+  if (!cont) return;
+  let html = '', total = 0;
+  _simState.milestones.forEach((ms, i) => {
+    total += ms.p;
+    html += `<div style="display:flex; gap:8px; align-items:center;">
+      <input type="number" style="width:80px; padding:6px; font-size:12px; border:1px solid var(--border); border-radius:4px; background:var(--input-bg); color:var(--text); font-family:'DM Mono',monospace;" value="${ms.m}" min="1" max="${_simData.duration || 120}" onchange="updateMilestone(${i},'m',this.value)">
+      <input type="number" style="width:80px; padding:6px; font-size:12px; border:1px solid var(--border); border-radius:4px; background:var(--input-bg); color:var(--text); font-family:'DM Mono',monospace;" value="${ms.p}" min="0" max="100" step="1" onchange="updateMilestone(${i},'p',this.value)">
+      <button onclick="removeMilestone(${i})" style="background:none; border:none; color:var(--faint); cursor:pointer; font-size:14px;">✕</button>
+    </div>`;
+  });
+  cont.innerHTML = html;
+
+  const totEl = document.getElementById('milestone-total');
+  if (totEl) {
+    totEl.textContent = `Total: ${total}%`;
+    totEl.style.color = total === 100 ? 'var(--green)' : 'var(--red)';
+  }
+
+  if (typeof simulate === 'function') simulate();
+}
+
+function updateMilestone(idx, field, val) {
+  _simState.milestones[idx][field] = parseFloat(val) || 0;
+  renderMilestones();
+}
+
+function addMilestone() {
+  _simState.milestones.push({ m: _simData.duration || 60, p: 0 });
+  renderMilestones();
+}
+
+function removeMilestone(idx) {
+  _simState.milestones.splice(idx, 1);
+  renderMilestones();
+}
+
+function updateSimState(key, val) {
+  _simState[key] = isNaN(parseFloat(val)) ? val : parseFloat(val);
+  if (typeof simulate === 'function') simulate();
+}
+
+let _simData = {
+  contractValue: 0,
+  directCost:    0,
+  funcCost:      0,
+  totalCost:     0,
+  duration:      60,
+  startMonth:    0,
+  startYear:     new Date().getFullYear(),
+  projectName:   'Project',
+  isLive:        false,
+};
+
+/* ══ Formatting helpers ════════════════════════════════════════════════ */
+function fmtEUR(n) {
+  return '€\u202f' + Math.round(n).toLocaleString('en-GB');
+}
+function fmtK(n) {
+  return (Math.round(Math.abs(n) / 100) / 10).toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 1 }) + ' k';
+}
+
+/* ══ Data Ingestion ════════════════════════════════════════════════════ */
+function loadSuiteData() {
+  let contractValue = 0, directCost = 0, funcCost = 0;
+  let duration = 60, startMonth = 0, startYear = new Date().getFullYear();
+  let projectName = 'Sample Project', isLive = false;
+
+  /* ── CalcCast ─────────────────────────────────────────────────────── */
+  try {
+    const raw = localStorage.getItem('bidcast_state_calccast');
+    if (raw) {
+      const s = JSON.parse(raw);
+      if (s.projName) projectName = s.projName;
+
+      const fx = {
+        EUR: 1,
+        USD: parseFloat(s.fxUsd) || 0.92,
+        GBP: parseFloat(s.fxGbp) || 1.17,
+        DKK: parseFloat(s.fxDkk) || 0.134,
+      };
+      const specRisk   = (parseFloat(s.kpiSpecRisk)   || 0) / 100;
+      const unspecRisk = (parseFloat(s.kpiUnspecRisk) || 0) / 100;
+      const risk  = specRisk + unspecRisk;
+      const warr  = (parseFloat(s.kpiWarranty) || 0) / 100;
+      const sga   = (parseFloat(s.kpiSga)      || 0) / 100;
+      const exu   = (parseFloat(s.kpiExu)      || 0) / 100;
+      const ba    = (parseFloat(s.kpiBa)        || 0) / 100;
+      const ebit  = (parseFloat(s.kpiEbit)     || 0) / 100;
+      const neg   = (parseFloat(s.kpiNeg)      || 0) / 100;
+
+      const kpiAll  = risk + warr + sga + exu + ba + ebit;
+      const kpiDiv  = kpiAll >= 1 ? 0.01 : (1 - kpiAll);
+
+      let tdirect = 0, torder = 0, runBase = 0;
+
+      (s.costRows || []).forEach(r => {
+        if (!r) return;
+        const excl  = r.scope === 'excluded';
+        const qty   = parseFloat(r.qty)       || 0;
+        const unit  = parseFloat(r.unitPrice) || 0;
+        const rate  = fx[r.currency]          || 1;
+        const rowC  = excl ? 0 : qty * unit * rate;
+        const rowS  = excl ? 0 : rowC / kpiDiv;
+        if (!excl) runBase += rowC;
+        tdirect += rowC;
+        torder  += rowS;
+      });
+
+      (s.guarRows || []).forEach(r => {
+        if (!r) return;
+        const dur  = parseFloat(r.duration) || 0;
+        const grate = (parseFloat(r.rate)  || 0) / 100;
+        const bc   = torder * grate * dur;
+        tdirect += bc;
+        torder  += bc;
+      });
+
+      contractValue = torder * (1 + neg);
+      directCost    = tdirect;
+
+      /* funcCost = SG&A + EXU + BA provision in EUR */
+      const kpiNoEbit    = risk + warr + sga + exu + ba;
+      const kpiNoEbitDiv = kpiNoEbit >= 1 ? 0.01 : (1 - kpiNoEbit);
+      const kpiRiskOnly  = risk + warr;
+      const kpiRiskDiv   = kpiRiskOnly >= 1 ? 0.01 : (1 - kpiRiskOnly);
+      funcCost = (tdirect / kpiNoEbitDiv) - (tdirect / kpiRiskDiv);
+
+      isLive = true;
+    }
+  } catch(e) { console.warn('CashFlow: CalcCast ingest error', e); }
+
+  /* ── TimeCast ─────────────────────────────────────────────────────── */
+  try {
+    const raw = localStorage.getItem('bidcast_state_timecast');
+    if (raw) {
+      const ts  = JSON.parse(raw);
+      const sm  = parseInt(ts.startMonth) || 0;
+      const sy  = parseInt(ts.startYear)  || new Date().getFullYear();
+      const em  = parseInt(ts.endMonth)   || 11;
+      const ey  = parseInt(ts.endYear)    || (new Date().getFullYear() + 4);
+      const d   = (ey * 12 + em) - (sy * 12 + sm) + 1;
+      duration   = (d >= 1 && d <= 120) ? d : 60;
+      startMonth = sm;
+      startYear  = sy;
+    }
+  } catch(e) { console.warn('CashFlow: TimeCast ingest error', e); }
+
+  /* ── Fallback sample if nothing loaded ─────────────────────────────── */
+  if (contractValue === 0) {
+    contractValue = 10_000_000;
+    directCost    = 7_200_000;
+    funcCost      =   360_000;
+    isLive        = false;
+  }
+
+  _simData = {
+    contractValue,
+    directCost,
+    funcCost,
+    totalCost: directCost,
+    duration,
+    startMonth,
+    startYear,
+    projectName,
+    isLive,
+  };
+
+  _updateInfoPanel();
+  renderMilestones();
+}
+
+function _updateInfoPanel() {
+  const d = _simData;
+  document.getElementById('info-proj').textContent  = d.projectName;
+  document.getElementById('info-cv').textContent    = fmtK(d.contractValue) + 'EUR';
+  document.getElementById('info-cost').textContent  = fmtK(d.totalCost) + 'EUR';
+  document.getElementById('info-dur').textContent   = d.duration + ' months';
+  document.getElementById('info-start').textContent = MN[d.startMonth] + ' ' + d.startYear;
+
+  const badge = document.getElementById('src-badge');
+  badge.textContent = d.isLive ? 'Live' : 'Sample';
+  badge.className   = 'src-badge ' + (d.isLive ? 'live' : 'sample');
+
+  /* Update top summary cards — cost and CV always reflect ingested data */
+  document.getElementById('sum-cv').textContent   = fmtK(d.contractValue) + 'EUR';
+  document.getElementById('sum-cost').textContent = fmtK(d.totalCost) + 'EUR';
+}
+
+/* ══ Math helpers ══════════════════════════════════════════════════════ */
+function distributeCost(total, duration, curveType) {
+  const weights = [];
+  let sum = 0;
+  for (let m = 1; m <= duration; m++) {
+    let w = 1;
+    if      (curveType === 'front') w = duration - m + 1;
+    else if (curveType === 'back')  w = m;
+    else if (curveType === 'bell')  w = Math.sin(Math.PI * (m - 1) / (duration - 1 || 1));
+    weights.push(w);
+    sum += w;
+  }
+  return weights.map(w => total * (w / (sum || 1)));
+}
+
+/* ══ Simulation engine ═════════════════════════════════════════════════ */
+let chartInst1 = null;
+let chartInst2 = null;
+
+function simulate() {
+  const N = _simData.duration || 60;
+  const labels = Array.from({ length: N }, (_, i) => `M${i + 1}`);
+
+  const arrPayments    = new Array(N).fill(0);
+  const arrTotalCost   = new Array(N).fill(0);
+  const arrCumCashflow = new Array(N).fill(0);
+  const arrSunkDC      = new Array(N).fill(0);
+  const arrSunkFC      = new Array(N).fill(0);
+  const arrCancPenalty = new Array(N).fill(0);
+
+  const dcMonthly = distributeCost(_simData.directCost, N, _simState.dcCurve);
+  const fcMonthly = distributeCost(_simData.funcCost,   N, _simState.fcCurve);
+
+  _simState.milestones.forEach(ms => {
+    const idx = Math.max(1, Math.min(N, Math.floor(ms.m))) - 1;
+    arrPayments[idx] += _simData.contractValue * (ms.p / 100);
+  });
+
+  let cumCash = 0, cumDC = 0, cumFC = 0;
+  let minValley = 0, maxExposure = 0;
+  const startPct = _simState.cancStart / 100;
+  const endPct   = _simState.cancEnd   / 100;
+
+  for (let i = 0; i < N; i++) {
+    const monthlyCost = dcMonthly[i] + fcMonthly[i];
+    arrTotalCost[i]   = -monthlyCost;
+
+    cumCash += arrPayments[i] - monthlyCost;
+    arrCumCashflow[i] = cumCash;
+    if (cumCash < minValley) minValley = cumCash;
+
+    cumDC += dcMonthly[i];
+    cumFC += fcMonthly[i];
+    arrSunkDC[i] = cumDC;
+    arrSunkFC[i] = cumFC;
+
+    const currentCancPct = startPct + (endPct - startPct) * (i / (N - 1 || 1));
+    const penaltyValue   = _simData.contractValue * currentCancPct;
+    arrCancPenalty[i]    = penaltyValue;
+
+    const exposure = (cumDC + cumFC) - penaltyValue;
+    if (exposure > maxExposure) maxExposure = exposure;
+  }
+
+  document.getElementById('sum-valley').textContent   = fmtEUR(minValley);
+  document.getElementById('sum-exposure').textContent = fmtEUR(maxExposure);
+
+  updateCharts(labels, arrPayments, arrTotalCost, arrCumCashflow, arrSunkDC, arrSunkFC, arrCancPenalty);
+}
+
+/* ══ Chart rendering ═══════════════════════════════════════════════════ */
+function updateCharts(labels, payments, costs, cumCash, sunkDC, sunkFC, penalty) {
+  if (!chartInst1) {
+    const ctx1 = document.getElementById('cashflowChart').getContext('2d');
+    chartInst1 = new Chart(ctx1, {
+      type: 'bar',
+      data: { labels, datasets: [] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          title: { display: true, text: 'Project Cash Flow (Cash Valley)', font: { family: 'DM Sans', size: 12 } },
+          legend: { labels: { font: { family: 'DM Sans', size: 10 }, boxWidth: 12 } },
+          tooltip: { mode: 'index', intersect: false,
+            callbacks: { label: ctx => ' ' + fmtK(ctx.parsed.y) + 'EUR' } },
+        },
+        scales: { y: { stacked: true }, x: { stacked: true, ticks: { autoSkip: true, maxTicksLimit: 20 } } },
+      },
+    });
+
+    const ctx2 = document.getElementById('exposureChart').getContext('2d');
+    chartInst2 = new Chart(ctx2, {
+      type: 'line',
+      data: { labels, datasets: [] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          title: { display: true, text: 'Cancellation Exposure Gap', font: { family: 'DM Sans', size: 12 } },
+          legend: { labels: { font: { family: 'DM Sans', size: 10 }, boxWidth: 12 } },
+          tooltip: { mode: 'index', intersect: false,
+            callbacks: { label: ctx => ' ' + fmtK(ctx.parsed.y) + 'EUR' } },
+        },
+        scales: { y: { stacked: false }, x: { ticks: { autoSkip: true, maxTicksLimit: 20 } } },
+        interaction: { mode: 'index', intersect: false },
+      },
+    });
+  }
+
+  /* Update labels in case duration changed */
+  chartInst1.data.labels = labels;
+  chartInst2.data.labels = labels;
+
+  chartInst1.data.datasets = [
+    { type: 'line', label: 'Cumulative Cash Flow', data: cumCash,
+      borderColor: '#2c4e87', backgroundColor: '#2c4e87', borderWidth: 2, tension: 0.3,
+      pointRadius: 0, yAxisID: 'y' },
+    { type: 'bar',  label: 'Payments (In)',  data: payments, backgroundColor: '#107c41' },
+    { type: 'bar',  label: 'Costs (Out)',    data: costs,    backgroundColor: '#c0392b' },
+  ];
+  chartInst1.update();
+
+  chartInst2.data.datasets = [
+    { type: 'line', label: 'Cancellation Penalty (Revenue)', data: penalty,
+      borderColor: '#107c41', backgroundColor: 'transparent',
+      borderWidth: 2, borderDash: [5, 5], pointRadius: 0 },
+    { type: 'line', label: 'Sunk Functional Cost', data: sunkFC,
+      borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.5)',
+      fill: true, stack: 'Stack 0', pointRadius: 0 },
+    { type: 'line', label: 'Sunk Direct Cost', data: sunkDC,
+      borderColor: '#2c4e87', backgroundColor: 'rgba(44,78,135,0.5)',
+      fill: true, stack: 'Stack 0', pointRadius: 0 },
+  ];
+  chartInst2.update();
+}
+
+/* ══ Boot ══════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  SuiteManager.migrate();
+  _applyTheme(localStorage.getItem('bidcast_theme') || 'light');
+  loadSuiteData();
+  simulate();
+
+  /* Live cross-tab refresh when CalcCast or TimeCast saves */
+  window.addEventListener('storage', e => {
+    if (e.key === 'bidcast_state_calccast' || e.key === 'bidcast_state_timecast') {
+      loadSuiteData();
+      simulate();
+    }
+  });
+});
+</script>
+</body>
+</html>
