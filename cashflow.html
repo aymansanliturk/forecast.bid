@@ -389,6 +389,13 @@ label {
           <canvas id="exposureChart"></canvas>
         </div>
       </div>
+      <div class="section" id="breakdown-section" style="display:none;">
+        <div class="chart-title-row">Monthly Cost Breakdown by Item</div>
+        <div class="chart-sub">Monthly outflow per cost item · Risk provision · Functional cost</div>
+        <div style="position: relative; height: 340px; width: 100%;">
+          <canvas id="breakdownChart"></canvas>
+        </div>
+      </div>
     </div><!-- /charts-panel -->
 
   </div><!-- /two-col -->
@@ -728,6 +735,13 @@ function distributeItem(itemId, total, N) {
 /* ══ Simulation engine ═════════════════════════════════════════════════ */
 let chartInst1 = null;
 let chartInst2 = null;
+let chartInst3 = null;
+
+const ITEM_COLORS = [
+  '#2c4e87','#107c41','#b45309','#7b4fa6','#c0392b',
+  '#0891b2','#059669','#d97706','#7c3aed','#be185d',
+  '#1d4ed8','#065f46','#92400e','#5b21b6','#9f1239',
+];
 
 function simulate() {
   const N = _simData.duration || 60;
@@ -741,11 +755,13 @@ function simulate() {
   const arrSunkDC      = new Array(N).fill(0);
   const arrSunkFC      = new Array(N).fill(0);
   const arrCancPenalty = new Array(N).fill(0);
-  // Distribute Costs — sum per-item distributions
-  const dcMonthly = new Array(N).fill(0);
+  // Distribute Costs — sum per-item distributions, capture per-item series for breakdown chart
+  const itemSeries = []; // [{label, data:[]}] for breakdown chart
+  const dcMonthly  = new Array(N).fill(0);
   if (_simData.costItems && _simData.costItems.length) {
     _simData.costItems.forEach(item => {
       const monthly = distributeItem(item.id, item.total, N);
+      itemSeries.push({ label: item.label, data: monthly });
       for (let i = 0; i < N; i++) dcMonthly[i] += monthly[i];
     });
   } else {
@@ -794,11 +810,11 @@ function simulate() {
   document.getElementById('sum-valley').textContent   = fmtEUR(minValley);
   document.getElementById('sum-exposure').textContent = fmtEUR(maxExposure);
 
-  updateCharts(labels, arrCumPayments, arrCumCosts, arrCumCashflow, arrSunkDC, arrSunkFC, arrCancPenalty);
+  updateCharts(labels, arrCumPayments, arrCumCosts, arrCumCashflow, arrSunkDC, arrSunkFC, arrCancPenalty, itemSeries, riskMonthly, fcMonthly);
 }
 
 /* ══ Chart rendering ═══════════════════════════════════════════════════ */
-function updateCharts(labels, cumPayments, cumCosts, cumCash, sunkDC, sunkFC, penalty) {
+function updateCharts(labels, cumPayments, cumCosts, cumCash, sunkDC, sunkFC, penalty, itemSeries, riskMonthly, fcMonthly) {
   if (!chartInst1) {
     const ctx1 = document.getElementById('cashflowChart').getContext('2d');
     chartInst1 = new Chart(ctx1, {
@@ -861,6 +877,64 @@ function updateCharts(labels, cumPayments, cumCosts, cumCash, sunkDC, sunkFC, pe
       fill: true, stack: 'Stack 0', pointRadius: 0 },
   ];
   chartInst2.update();
+
+  /* ── Breakdown chart (per-item stacked bar) ─────────────────────── */
+  const bkSection = document.getElementById('breakdown-section');
+  const hasItems  = itemSeries && itemSeries.length > 0;
+  if (bkSection) bkSection.style.display = hasItems ? '' : 'none';
+
+  if (hasItems) {
+    if (!chartInst3) {
+      const ctx3 = document.getElementById('breakdownChart').getContext('2d');
+      chartInst3 = new Chart(ctx3, {
+        type: 'bar',
+        data: { labels, datasets: [] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            title: { display: true, text: 'Monthly Cost Breakdown by Item', font: { family: 'DM Sans', size: 12 } },
+            legend: { labels: { font: { family: 'DM Sans', size: 10 }, boxWidth: 12 } },
+            tooltip: { mode: 'index', intersect: false,
+              callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmtK(ctx.raw)}EUR` } },
+          },
+          scales: {
+            x: { stacked: true, ticks: { autoSkip: true, maxTicksLimit: 20 } },
+            y: { stacked: true, title: { display: true, text: 'Monthly Cost (EUR)', font: { family: 'DM Sans', size: 10 } } },
+          },
+        },
+      });
+    }
+    chartInst3.data.labels = labels;
+
+    // One dataset per cost item, then risk, then functional cost
+    const datasets = itemSeries.map((s, i) => ({
+      label: s.label,
+      data:  s.data,
+      backgroundColor: ITEM_COLORS[i % ITEM_COLORS.length] + 'cc',
+      borderColor:     ITEM_COLORS[i % ITEM_COLORS.length],
+      borderWidth: 1, stack: 'cost',
+    }));
+    if (riskMonthly && riskMonthly.some(v => v > 0)) {
+      datasets.push({
+        label: 'Risk Provision',
+        data:  riskMonthly,
+        backgroundColor: 'rgba(192,57,43,0.55)',
+        borderColor:     '#c0392b',
+        borderWidth: 1, stack: 'cost',
+      });
+    }
+    if (fcMonthly && fcMonthly.some(v => v > 0)) {
+      datasets.push({
+        label: 'Functional Cost',
+        data:  fcMonthly,
+        backgroundColor: 'rgba(245,158,11,0.55)',
+        borderColor:     '#f59e0b',
+        borderWidth: 1, stack: 'cost',
+      });
+    }
+    chartInst3.data.datasets = datasets;
+    chartInst3.update();
+  }
 }
 
 /* ══ Per-item cost distribution UI ════════════════════════════════════ */
