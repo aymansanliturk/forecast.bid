@@ -54,9 +54,14 @@ ipcMain.handle('dialog:openFile', async (_event, options) => {
   return result; // { canceled, filePaths }
 });
 
-ipcMain.handle('fs:writeFile', async (_event, filePath, data) => {
+// encoding: 'utf8' (default) for text/JSON/HTML, 'base64' for binary (xlsx, pdf)
+ipcMain.handle('fs:writeFile', async (_event, filePath, data, encoding = 'utf8') => {
   try {
-    fs.writeFileSync(filePath, data);
+    if (encoding === 'base64') {
+      fs.writeFileSync(filePath, Buffer.from(data, 'base64'));
+    } else {
+      fs.writeFileSync(filePath, data, 'utf8');
+    }
     return { success: true };
   } catch (err) {
     return { success: false, error: err.message };
