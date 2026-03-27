@@ -1,0 +1,1 @@
+PYL0N is a self-contained, zero-installation web application suite for bid and project teams. It runs entirely in the browser — no server, no build step, no backend. The suite consists of seven specialized planning tools plus a landing page.
