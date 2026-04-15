@@ -120,7 +120,10 @@
   .btn-green:hover { filter:brightness(0.9); }
 
   /* ── OUTPUT ── */
-  #output { display:none; padding:28px 36px; }
+  #output { display:none; padding:28px 36px; background:white; margin:0 auto; box-shadow:0 0 10px rgba(0,0,0,0.1); overflow:hidden; position:relative; }
+  #output.a4-landscape { width:1123px; min-height:794px; }
+  #output.a4-portrait  { width:794px;  min-height:1123px; }
+  #output.a3-landscape { width:1587px; min-height:1123px; }
   .print-bar { display:flex; gap:10px; margin-bottom:20px; align-items:center; }
 
   .chart-header { display:flex; align-items:center; border-bottom:2px solid var(--text); padding-bottom:12px; margin-bottom:20px; gap:16px; }
@@ -183,9 +186,11 @@
     <button class="tb-btn" onclick="location.href='index.html'">← Dashboard</button>
   </div>
   <div class="tb-right">
-    <button class="tb-btn active" onclick="setFormat('A4')" data-fmt="A4">A4</button>
-    <button class="tb-btn" onclick="setFormat('A3')" data-fmt="A3">A3</button>
-    <button class="tb-btn" onclick="setFormat('screen')" data-fmt="screen">Screen</button>
+    <select id="format-select" onchange="changeFormat()" class="tb-btn" style="padding:5px 10px;cursor:pointer;outline:none;">
+      <option value="a4-landscape">A4 Landscape</option>
+      <option value="a4-portrait">A4 Portrait</option>
+      <option value="a3-landscape">A3 Landscape</option>
+    </select>
     <div class="tb-sep"></div>
     <button class="tb-btn" id="compact-btn" onclick="toggleCompact()">Compact</button>
     <div class="tb-sep"></div>
@@ -371,7 +376,7 @@ function updateLogoUI() {
   ];
 
   let personCount   = 0;
-  let currentFormat = 'A4';
+  let currentFormat = 'a4-landscape';
   let compactMode   = false;
 
   // Node dimensions
@@ -380,12 +385,33 @@ function updateLogoUI() {
   const H_GAP     = () => compactMode ? 18  : 22;
   const V_GAP     = () => compactMode ? 36  : 46;
 
+  function changeFormat() {
+    const fmt = document.getElementById('format-select').value;
+    setFormat(fmt);
+    if (typeof _scheduleSnap === 'function') _scheduleSnap();
+  }
+
   function setFormat(fmt) {
-    currentFormat = fmt;
-    document.querySelectorAll('.tb-btn[data-fmt]').forEach(b => b.classList.toggle('active', b.dataset.fmt === fmt));
-    const sizes = { A4:'A4 landscape', A3:'A3 landscape', screen:null };
+    // Normalise legacy values saved before the dropdown refactor
+    const legacyMap = { 'A4': 'a4-landscape', 'A3': 'a3-landscape', 'screen': 'a4-landscape' };
+    const normalised = legacyMap[fmt] || fmt || 'a4-landscape';
+    currentFormat = normalised;
+
+    const sel = document.getElementById('format-select');
+    if (sel) sel.value = normalised;
+
+    const out = document.getElementById('output');
+    if (out) out.className = normalised;
+
+    const pageSizes = {
+      'a4-landscape': 'A4 landscape',
+      'a4-portrait':  'A4 portrait',
+      'a3-landscape': 'A3 landscape',
+    };
     document.getElementById('page-size-style').textContent =
-      sizes[fmt] ? `@page { size:${sizes[fmt]}; margin:10mm; }` : '';
+      `@page { size:${pageSizes[normalised] || 'A4 landscape'}; margin:10mm; }`;
+
+    if (typeof autoScale === 'function') autoScale();
   }
 
   function toggleCompact() {
@@ -676,9 +702,17 @@ function updateLogoUI() {
 
   function autoScale(contentW) {
     const wrap = document.getElementById('org-scale-wrap');
-    const printW = currentFormat === 'A3' ? 400 : 277; // mm approx usable
+    // Usable print width in mm per format
+    const printWmm = currentFormat === 'a3-landscape' ? 400
+                   : currentFormat === 'a4-portrait'  ? 190
+                   : 277; // a4-landscape default
     const pxPerMm = 3.78;
-    const maxPx = printW * pxPerMm;
+    const maxPx = printWmm * pxPerMm;
+    // If called without contentW (e.g. on format change), use canvas width
+    if (contentW === undefined) {
+      const canvas = document.getElementById('org-canvas');
+      contentW = canvas ? parseInt(canvas.style.width) || canvas.offsetWidth : 0;
+    }
     const scale = contentW > maxPx ? maxPx / contentW : 1;
     wrap.style.transform = scale < 1 ? `scale(${scale.toFixed(3)})` : '';
     wrap.style.transformOrigin = 'top center';
@@ -977,8 +1011,11 @@ function updateLogoUI() {
   // ── PDF Export ──
   async function exportPDF() {
     const state = collectState();
-    const name = (state.title || 'orgcast').replace(/[^a-z0-9_-]/gi, '_').toLowerCase();
-    const fmt = (state.format || 'A4').toUpperCase();
+    const name  = (state.title || 'orgcast').replace(/[^a-z0-9_-]/gi, '_').toLowerCase();
+    const fmt   = currentFormat || 'a4-landscape';
+    const isPortrait  = fmt === 'a4-portrait';
+    const paperFormat = fmt.includes('a3') ? 'a3' : 'a4';
+    const orientation = isPortrait ? 'portrait' : 'landscape';
     const opts = {
       margin: 0,
       filename: name + '_orgcast.pdf',
@@ -988,7 +1025,7 @@ function updateLogoUI() {
         const wrap = d.querySelector('#output');
         if (wrap) { wrap.style.width = '100%'; wrap.style.padding = '10mm 12mm'; }
       }},
-      jsPDF: { unit: 'mm', format: fmt === 'A3' ? 'a3' : 'a4', orientation: 'landscape' }
+      jsPDF: { unit: 'mm', format: paperFormat, orientation }
     };
     await nativeSavePDF(document.getElementById('output'), name + '_orgcast.pdf', opts);
   }
