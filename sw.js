@@ -1,17 +1,37 @@
 /* sw.js — PYL0N Suite Service Worker
-   Strategy: Cache-First, falling back to Network.
-   New network responses are cached at runtime so the app stays
-   up-to-date while remaining fully usable offline.
+   Strategy:
+   - HTML navigations → Network-first (always fresh from server; cache as
+     offline fallback only). This prevents Safari WebKitInternal:0 errors and
+     avoids serving stale content after deployments.
+   - Static assets (scripts, libs, fonts, images) → Cache-first (fast repeat
+     loads; only hits the network on a miss).
+   All fetches use redirect:'follow' so the SW never hands a redirect
+   response to the browser (Safari refuses those with WebKitInternal:0).
 */
 
-const CACHE_NAME = 'pyl0n-v2';
+const CACHE_NAME = 'pyl0n-v3';
 
-const PRECACHE_URLS = [
-  /* ── Shell & dashboard ─────────────────────────────────────────── */
-  './',
+const PRECACHE_ASSETS = [
+  /* ── Brand assets ───────────────────────────────────────────────── */
+  './favicon.svg',
+  './logo.svg',
+
+  /* ── Vendor scripts ─────────────────────────────────────────────── */
+  './vendor/pyl0n-native.js',
+  './vendor/pyl0n-suite.js',
+  './vendor/pyl0n-state.js',
+  './vendor/pyl0n-validate.js',
+
+  /* ── Local libraries ────────────────────────────────────────────── */
+  './libs/chart.js',
+  './libs/xlsx.full.min.js',
+  './libs/html2pdf.bundle.min.js',
+  './libs/html2canvas.min.js',
+];
+
+/* HTML pages — fetched network-first at runtime, cached as offline fallback */
+const HTML_PAGES = [
   './index.html',
-
-  /* ── Tools ─────────────────────────────────────────────────────── */
   './timecast.html',
   './resourcecast.html',
   './orgcast.html',
@@ -23,38 +43,22 @@ const PRECACHE_URLS = [
   './cashflow.html',
   './w2w-report.html',
   './cvcast.html',
-
-  /* ── Brand assets ───────────────────────────────────────────────── */
-  './favicon.svg',
-  './logo.svg',
-  './build/icon.png',
-
-  /* ── Vendor scripts ─────────────────────────────────────────────── */
-  './vendor/pyl0n-native.js',
-  './vendor/pyl0n-suite.js',
-  './vendor/pyl0n-state.js',
-  './vendor/pyl0n-validate.js',
-
-  /* ── Local libraries ────────────────────────────────────────────── */
-  './libs/fonts.css',
-  './libs/chart.js',
-  './libs/xlsx.full.min.js',
-  './libs/html2pdf.bundle.min.js',
-  './libs/html2canvas.min.js',
 ];
 
-/* ── Install: pre-cache all known assets ────────────────────────────── */
+/* ── Install: pre-cache stable assets + seed HTML pages ─────────────── */
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      // Cache each URL individually so an unavailable optional file
-      // (e.g. fonts.css before libs are downloaded) does not abort the
-      // whole install.
+      const all = [...PRECACHE_ASSETS, ...HTML_PAGES];
       return Promise.allSettled(
-        PRECACHE_URLS.map(url =>
-          cache.add(url).catch(err => {
-            console.warn('PYL0N SW: could not pre-cache', url, err.message);
-          })
+        all.map(url =>
+          // redirect:'follow' prevents storing a redirect response in cache
+          fetch(url, { redirect: 'follow' })
+            .then(res => {
+              if (res.ok) return cache.put(url, res);
+              console.warn('PYL0N SW: non-ok response for', url, res.status);
+            })
+            .catch(err => console.warn('PYL0N SW: could not pre-cache', url, err.message))
         )
       );
     }).then(() => self.skipWaiting())
@@ -79,32 +83,52 @@ self.addEventListener('activate', event => {
   );
 });
 
-/* ── Fetch: serve from cache, fall back to network, cache new hits ──── */
+/* ── Fetch ───────────────────────────────────────────────────────────── */
 self.addEventListener('fetch', event => {
-  // Only handle GET requests; let POST/PUT pass through untouched.
   if (event.request.method !== 'GET') return;
 
+  const url = new URL(event.request.url);
+  const isNavigation = event.request.mode === 'navigate';
+
+  // ── HTML navigations: Network-first ──────────────────────────────────
+  // Always try the server so users get the latest version of the app.
+  // Fall back to the cached .html file only when offline.
+  if (isNavigation) {
+    event.respondWith(
+      fetch(event.request, { redirect: 'follow' })
+        .then(response => {
+          if (!response.ok) return response; // pass through 4xx/5xx
+          // Cache the fresh response for offline use
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
+          return response;
+        })
+        .catch(async () => {
+          // Offline: try the exact URL, then the .html variant, then index
+          const exact = await caches.match(event.request);
+          if (exact) return exact;
+
+          // Cloudflare / Azure may serve /timecast (no extension).
+          // Try the .html variant we pre-cached.
+          if (!url.pathname.includes('.')) {
+            const htmlUrl = url.origin + url.pathname + '.html';
+            const htmlCached = await caches.match(htmlUrl);
+            if (htmlCached) return htmlCached;
+          }
+
+          return caches.match('./index.html');
+        })
+    );
+    return;
+  }
+
+  // ── Static assets: Cache-first ───────────────────────────────────────
+  // Scripts, libs, fonts, images — stable and large; serve from cache.
   event.respondWith(
-    caches.match(event.request).then(async cached => {
+    caches.match(event.request).then(cached => {
       if (cached) return cached;
 
-      // Safari bug: SW must not return redirect responses.
-      // Cloudflare Pages redirects /timecast → /timecast.html (301).
-      // For extensionless navigation URLs, first try the .html variant
-      // already in cache before going to the network.
-      if (event.request.mode === 'navigate') {
-        const url = new URL(event.request.url);
-        const noExt = !url.pathname.includes('.') && !url.pathname.endsWith('/');
-        if (noExt) {
-          const htmlCached = await caches.match(url.origin + url.pathname + '.html');
-          if (htmlCached) return htmlCached;
-        }
-      }
-
-      // redirect:'follow' ensures we always receive a final 200 response,
-      // never a 301/302 — Safari refuses SW redirect responses (WebKitInternal:0).
       return fetch(event.request, { redirect: 'follow' }).then(response => {
-        // Only cache successful same-origin responses.
         if (
           !response ||
           response.status !== 200 ||
@@ -113,18 +137,9 @@ self.addEventListener('fetch', event => {
         ) {
           return response;
         }
-
-        // Clone before consuming — a Response body can only be read once.
-        const toCache = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, toCache));
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
         return response;
-      }).catch(() => {
-        // Network failed and nothing is cached.
-        // For navigation requests return the offline shell so the user
-        // still sees the dashboard rather than a browser error page.
-        if (event.request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
       });
     })
   );
