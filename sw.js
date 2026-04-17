@@ -24,7 +24,6 @@ const PAGES = [
   'cashflow', 'w2w-report', 'cvcast',
 ];
 
-/* ── Install ─────────────────────────────────────────────────────────── */
 self.addEventListener('install', event => {
   self.skipWaiting();
   event.waitUntil(
@@ -32,7 +31,6 @@ self.addEventListener('install', event => {
   );
 });
 
-/* ── Activate ────────────────────────────────────────────────────────── */
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -42,7 +40,6 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-/* ── Fetch ───────────────────────────────────────────────────────────── */
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
@@ -77,7 +74,6 @@ self.addEventListener('fetch', event => {
             const htmlCached = await caches.match(`./${stem}.html`);
             if (htmlCached) return htmlCached;
           }
-
           return caches.match('./index.html');
         })
     );
