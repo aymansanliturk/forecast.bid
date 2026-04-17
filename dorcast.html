@@ -330,6 +330,7 @@ input:focus, select:focus { border-color:var(--accent); background:var(--input-b
         <tbody id="dor-body"></tbody>
       </table>
     </div>
+    <div id="dor-empty" style="display:none;padding:40px 32px;text-align:center;color:var(--faint);font-size:13px;">No rows yet — add a <strong>Section</strong> then <strong>Items</strong> below to build your responsibility matrix.</div>
     <div class="add-row-bar">
       <button class="btn-add-row" onclick="addRowAt({type:'section'}, null)">+ Section at end</button>
       <button class="btn-add-row" onclick="addRowAt({type:'subsection'}, null)">+ Subsection at end</button>
@@ -595,6 +596,7 @@ function addRowAt(data, refTr) {
       });
     }
   }
+  _dorUpdateEmpty();
 }
 
 function deleteRow(btn) {
@@ -602,6 +604,12 @@ function deleteRow(btn) {
   const next = tr.nextElementSibling;
   if (next?.classList.contains('insert-row')) next.remove();
   tr.remove();
+  _dorUpdateEmpty();
+}
+
+function _dorUpdateEmpty() {
+  const el = document.getElementById('dor-empty');
+  if (el) el.style.display = document.querySelectorAll('#dor-body .dor-row').length === 0 ? 'block' : 'none';
 }
 
 function createInsertRow(siblingTr) {
@@ -675,6 +683,7 @@ function applyState(s) {
   document.getElementById('dor-body').innerHTML = '';
   rowCount = 0;
   (s.rows||[]).forEach(r => addRow(r));
+  _dorUpdateEmpty();
 }
 
 // ── Generate ──

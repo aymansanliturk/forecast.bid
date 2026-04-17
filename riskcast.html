@@ -417,6 +417,7 @@ input[type="text"]:focus { border-color:var(--accent); background:var(--input-bg
         <tbody id="risk-body"></tbody>
       </table>
     </div>
+    <div id="risk-empty" style="display:none;padding:40px 32px;text-align:center;color:var(--faint);font-size:13px;">No risks yet — click <strong>+ Add Risk</strong> to start building your register.</div>
     <div class="add-row-bar no-print">
       <button class="btn-add-risk" onclick="addRisk()">+ Add Risk</button>
     </div>
@@ -659,6 +660,7 @@ function addRisk(d) {
   document.getElementById('risk-body').appendChild(tr);
   _renumberRows();
   _updateSummary();
+  _riskUpdateEmpty();
 }
 
 function _refreshScore(tr) {
@@ -684,6 +686,12 @@ function removeRisk(btn) {
   btn.closest('.risk-row').remove();
   _renumberRows();
   _updateSummary();
+  _riskUpdateEmpty();
+}
+
+function _riskUpdateEmpty() {
+  const el = document.getElementById('risk-empty');
+  if (el) el.style.display = document.querySelectorAll('#risk-body .risk-row').length === 0 ? 'block' : 'none';
 }
 
 function _renumberRows() {
@@ -828,6 +836,7 @@ function applyState(s) {
   document.getElementById('risk-body').innerHTML = '';
   _rowIdx = 0;
   (s.risks || []).forEach(r => addRisk(r));
+  _riskUpdateEmpty();
 }
 
 /* ══ Persistence ════════════════════════════════════════════════════ */

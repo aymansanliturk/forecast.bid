@@ -292,6 +292,7 @@ input:focus, select:focus { border-color:var(--accent); background:var(--input-b
         <tbody id="rfq-body"></tbody>
       </table>
     </div>
+    <div id="rfq-empty" style="display:none;padding:40px 32px;text-align:center;color:var(--faint);font-size:13px;">No items yet — click <strong>+ Add Item</strong> to start tracking supplier quotes.</div>
     <div class="add-row-bar">
       <button class="btn-add-row" onclick="addItem({})">+ Add Item</button>
       <button class="btn-green" onclick="pushToCalcCast()" title="Send winning bids to the Pricing Engine" aria-label="Send winning bids to the Pricing Engine">→ Push to CalcCast</button>
@@ -497,6 +498,12 @@ function addItem(data) {
     if (e.target.closest('select,input,button,.btn-del')) return;
     toggleDetail(tr);
   });
+  _rfqUpdateEmpty();
+}
+
+function _rfqUpdateEmpty() {
+  const el = document.getElementById('rfq-empty');
+  if (el) el.style.display = document.querySelectorAll('#rfq-body .rfq-row').length === 0 ? 'block' : 'none';
 }
 
 function buildDetailPanel(tr, vendors, requiredMonths) {
@@ -746,6 +753,7 @@ function deleteRow(btn) {
   const det = document.querySelector(`.detail-row[data-parent="${id}"]`);
   if (det) det.remove();
   tr.remove();
+  _rfqUpdateEmpty();
 }
 
 // ── Drag ──
@@ -891,6 +899,7 @@ function applyState(s) {
   document.getElementById('rfq-body').innerHTML = '';
   rowCount = 0;
   (s.items || []).forEach(item => addItem(item));
+  _rfqUpdateEmpty();
 }
 
 // ── Generate (Output View) ──

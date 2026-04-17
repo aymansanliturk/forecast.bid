@@ -332,3 +332,47 @@ if ('serviceWorker' in navigator) {
     }
   });
 })();
+
+/* ── Global uncaught-error banner ────────────────────────────────────── */
+(function () {
+  var ERROR_BANNER_ID = 'pyl0n-error-banner';
+  var _shown = false;
+
+  function showErrorBanner(msg) {
+    if (_shown || document.getElementById(ERROR_BANNER_ID)) return;
+    _shown = true;
+    var banner = document.createElement('div');
+    banner.id = ERROR_BANNER_ID;
+    banner.setAttribute('role', 'alert');
+    banner.style.cssText = [
+      'position:fixed', 'bottom:16px', 'left:50%', 'transform:translateX(-50%)',
+      'background:#7f1d1d', 'color:#fef2f2', 'padding:10px 44px 10px 16px',
+      "font-family:'DM Sans',sans-serif", 'font-size:12px', 'font-weight:600',
+      'z-index:9998', 'border-radius:6px', 'box-shadow:0 4px 12px rgba(0,0,0,0.3)',
+      'max-width:540px', 'text-align:left', 'line-height:1.4',
+    ].join(';');
+    var label = document.createElement('span');
+    label.textContent = '\u26a0\ufe0f Script error: ' + (msg || 'Unknown error') + ' \u2014 Try reloading. If it persists, export your data and clear local storage.';
+    var closeBtn = document.createElement('button');
+    closeBtn.textContent = '\u2715';
+    closeBtn.setAttribute('aria-label', 'Dismiss error');
+    closeBtn.style.cssText = 'position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fef2f2;font-size:14px;cursor:pointer;padding:0;line-height:1;';
+    closeBtn.onclick = function () { banner.remove(); _shown = false; };
+    banner.appendChild(label);
+    banner.appendChild(closeBtn);
+    var append = function () { document.body.appendChild(banner); };
+    if (document.body) { append(); }
+    else { document.addEventListener('DOMContentLoaded', append); }
+    setTimeout(function () { if (banner.parentNode) banner.remove(); _shown = false; }, 15000);
+  }
+
+  window.addEventListener('error', function (e) {
+    // Ignore cross-origin script errors (no useful message)
+    if (e.message === 'Script error.' && !e.filename) return;
+    showErrorBanner(e.message);
+  });
+  window.addEventListener('unhandledrejection', function (e) {
+    var msg = e.reason && e.reason.message ? e.reason.message : String(e.reason || 'Unhandled promise rejection');
+    showErrorBanner(msg);
+  });
+})();

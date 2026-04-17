@@ -248,6 +248,7 @@
       </tr></thead>
       <tbody id="people-body"></tbody>
     </table>
+    <div id="org-empty" style="display:none;padding:40px 32px;text-align:center;color:var(--faint);font-size:13px;">No team members yet — click <strong>+ Add Person</strong> to build your org chart.</div>
     <div class="add-row">
       <button class="btn-add" onclick="addPerson({})">+ Add Person</button>
       <button class="btn-add" onclick="addPerson({vacancy:true})" style="border-color:#f5c518;color:#856404;flex:0 0 auto;padding:8px 18px;">+ Vacancy</button>
@@ -441,7 +442,7 @@ function updateLogoUI() {
           <span class="chex">${defClr}</span>
         </div>
       </td>
-      <td><button class="btn-del" onclick="this.closest('tr').remove()" aria-label="Delete">×</button></td>
+      <td><button class="btn-del" onclick="removePerson(this)" aria-label="Delete">×</button></td>
     `;
 
     tr.querySelector('.p-color').addEventListener('input', function() {
@@ -459,6 +460,18 @@ function updateLogoUI() {
     if (data.parent !== undefined) tr.dataset.pendingParent = data.parent;
     if (data._savedParent !== undefined) tr.dataset.savedParent = data._savedParent;
     refreshParentDropdowns();
+    _orgUpdateEmpty();
+  }
+
+  function removePerson(btn) {
+    btn.closest('tr').remove();
+    refreshParentDropdowns();
+    _orgUpdateEmpty();
+  }
+
+  function _orgUpdateEmpty() {
+    const el = document.getElementById('org-empty');
+    if (el) el.style.display = document.querySelectorAll('#people-body .node-row').length === 0 ? 'block' : 'none';
   }
 
   function refreshParentDropdowns() {
@@ -895,6 +908,7 @@ function updateLogoUI() {
       }
     });
     refreshParentDropdowns();
+    _orgUpdateEmpty();
   }
 
   async function exportHTML() {
