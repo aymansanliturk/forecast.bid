@@ -40,6 +40,11 @@
         err.name === 'QuotaExceededError' ||
         err.name === 'NS_ERROR_DOM_QUOTA_REACHED'
       );
+      // Surface the quota warning banner if SuiteManager is loaded (pyl0n-suite.js)
+      if (typeof SuiteManager !== 'undefined' && typeof SuiteManager.checkStorageQuota === 'function') {
+        SuiteManager.checkStorageQuota(err);
+      }
+      console.error('PylonState.safeWriteLS failed for key "' + key + '":', err);
       return { ok: false, error: err, quotaExceeded };
     }
   }
