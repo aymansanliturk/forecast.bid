@@ -363,6 +363,7 @@
         <tfoot id="res-tfoot"></tfoot>
       </table>
     </div>
+    <div id="res-empty" style="display:none;padding:40px 32px;text-align:center;color:var(--faint);font-size:13px;">No roles yet — click <strong>+ Add Role</strong> or load the <strong>SE Template</strong> to get started.</div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;">
       <button class="btn-add" onclick="addRole({})">+ Add Role</button>
       <select id="rc-proj-filter" style="display:none; font-family:'DM Sans',sans-serif; font-size:12px; padding:6px 10px; border-radius:6px; border:1px solid var(--border); outline:none; background:var(--bg);" onchange="filterResourceProjects()">
@@ -818,6 +819,7 @@ function updateLogoUI() {
     _renderRoleRow(entry, _buildCols(getPhases()));
     updateMonthlyTotals();
     filterResourceProjects();
+    _resUpdateEmpty();
   }
 
   function removeRole(btn) {
@@ -826,6 +828,12 @@ function updateLogoUI() {
     rolesData = rolesData.filter(r => String(r.id) !== id);
     tr.remove();
     updateMonthlyTotals();
+    _resUpdateEmpty();
+  }
+
+  function _resUpdateEmpty() {
+    const el = document.getElementById('res-empty');
+    if (el) el.style.display = document.querySelectorAll('#res-tbody .role-row').length === 0 ? 'block' : 'none';
   }
 
   // Re-order rolesData to match the current DOM row order (called after drag-drop).
@@ -1395,6 +1403,7 @@ function updateLogoUI() {
     rolesData = []; // reset in-memory store before populating from saved state
     rebuildMonthlyGrid(); // one authoritative rebuild: header + empty tbody
     (s.roles||[]).forEach(r => addRole(r));
+    _resUpdateEmpty();
 
     document.getElementById('exp-tbody').innerHTML = '';
     expCount = 0;
