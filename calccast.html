@@ -1049,7 +1049,7 @@ function clearLogo() {
 function updateLogoUI() {
   const logo = SuiteManager.getLogo();
   const pl = document.getElementById('print-logo');
-  if (pl) pl.innerHTML = logo ? `<img src="${logo}" style="height:36px;max-width:150px;object-fit:contain;display:block;">` : '';
+  if (pl) pl.innerHTML = logo ? `<img src="${logo}" style="max-height:36px;max-width:150px;width:auto;height:auto;display:block;">` : '';
 }
 
 /* ══ Exports ════════════════════════════════════════════════════════════ */
