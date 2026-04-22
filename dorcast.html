@@ -389,7 +389,7 @@ function updateLogoUI() {
   if (st) st.style.display = logo ? 'inline' : 'none';
   if (cl) cl.style.display = logo ? 'inline-flex' : 'none';
   const pl = document.getElementById('print-logo');
-  if (pl) pl.innerHTML = logo ? `<img src="${logo}" style="height:36px;max-width:150px;object-fit:contain;display:block;">` : '';
+  if (pl) pl.innerHTML = logo ? `<img src="${logo}" style="max-height:36px;max-width:150px;width:auto;height:auto;display:block;">` : '';
 }
 
 /* ── SUITE SYNC ── */

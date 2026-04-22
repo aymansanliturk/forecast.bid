@@ -306,11 +306,11 @@ function updateLogoUI() {
   // 1. Company Logo (Left)
   const logo = SuiteManager.getLogo();
   const pl = document.getElementById('print-logo');
-  if (pl) pl.innerHTML = logo ? `<img src="${logo}" style="height:36px;max-width:150px;object-fit:contain;display:block;">` : '';
+  if (pl) pl.innerHTML = logo ? `<img src="${logo}" style="max-height:36px;max-width:150px;width:auto;height:auto;display:block;">` : '';
   // 2. Customer Logo (Right)
   const custLogo = SuiteManager.getCustomerLogo();
   const pcl = document.getElementById('print-customer-logo');
-  if (pcl) pcl.innerHTML = custLogo ? `<img src="${custLogo}" style="height:36px;max-width:150px;object-fit:contain;display:block;margin-left:auto;">` : '';
+  if (pcl) pcl.innerHTML = custLogo ? `<img src="${custLogo}" style="max-height:36px;max-width:150px;width:auto;height:auto;display:block;margin-left:auto;">` : '';
   // Dashboard Sync UI (Editor View)
   const st = document.getElementById('logo-status');
   const cl = document.getElementById('logo-clear');
