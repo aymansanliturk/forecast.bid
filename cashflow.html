@@ -8,9 +8,11 @@
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="libs/fonts.css">
 <script src="libs/chart.js"></script>
-<script src="vendor/pyl0n-validate.js"></script>
+<script src="vendor/pyl0n-native.js"></script>
 <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
 <script src="vendor/pyl0n-cloud.js"></script>
+<script src="vendor/pyl0n-state.js"></script>
+<script src="vendor/pyl0n-validate.js"></script>
 <script src="vendor/pyl0n-suite.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -64,6 +66,7 @@ body {
 }
 .tb-btn:hover { border-color: var(--accent); color: var(--accent); background: #fff; }
 .tb-btn.active { border-color: var(--accent); color: var(--accent); background: #f0f4fb; }
+.tb-btn:disabled { opacity: 0.35; pointer-events: none; }
 
 /* ── Editor ── */
 #editor { max-width: 1500px; margin: 0 auto; padding: 24px 28px 60px; }
@@ -270,6 +273,11 @@ label {
     <button class="tb-btn" onclick="location.href='calccast.html'">← CalcCast</button>
   </div>
   <div class="tb-right">
+    <button class="tb-btn" id="btn-undo" onclick="undo()" disabled>↩ Undo</button>
+    <button class="tb-btn" id="btn-redo" onclick="redo()" disabled>↪ Redo</button>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" onclick="saveState()">💾 Save</button>
+    <div class="tb-sep"></div>
     <button class="tb-btn" onclick="loadSuiteData(); simulate();" style="border-color:var(--accent);color:var(--accent);">↺ Refresh Data</button>
     <button class="tb-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle dark mode" aria-label="Toggle dark mode" style="font-size:14px;padding:4px 8px;border:none;background:transparent;cursor:pointer;">🌙</button>
   </div>
@@ -424,6 +432,39 @@ let _simState = {
   itemDist: {}, // per-item cost distribution configs: { [itemId]: { type, milestones } }
 };
 
+const STATE_KEY = 'bidcast_state_cashflow';
+
+function collectState() {
+  return JSON.parse(JSON.stringify(_simState));
+}
+
+function applyState(s) {
+  if (!s) return;
+  _simState = JSON.parse(JSON.stringify(s));
+  const dcEl = document.getElementById('sim-dc-curve');
+  if (dcEl) dcEl.value = _simState.dcCurve || 'front';
+  const fcEl = document.getElementById('sim-fc-curve');
+  if (fcEl) fcEl.value = _simState.fcCurve || 'linear';
+  renderMilestones();
+  renderItemDist();
+  simulate();
+}
+
+/* ══ Undo / Redo (backed by vendor/pyl0n-state.js) ════════════════════ */
+const _undoStack = PylonState.createUndoStack({
+  collect: collectState, apply: applyState, max: 50, debounceMs: 500,
+  onChange: () => {
+    const u = document.getElementById('btn-undo');
+    const r = document.getElementById('btn-redo');
+    if (u) u.disabled = !_undoStack.canUndo;
+    if (r) r.disabled = !_undoStack.canRedo;
+  },
+});
+function _snapshot()     { _undoStack.snapshot(); }
+function _scheduleSnap() { _undoStack.scheduleSnap(); }
+function undo()          { _undoStack.undo(); }
+function redo()          { _undoStack.redo(); }
+
 function renderMilestones() {
   const cont = document.getElementById('milestone-container');
   if (!cont) return;
@@ -448,12 +489,13 @@ function renderMilestones() {
 }
 
 function saveState() {
-  localStorage.setItem('bidcast_state_cashflow', JSON.stringify(_simState));
+  PylonState.safeWriteLS(STATE_KEY, _simState);
   SuiteManager.write({ cashflow_updated: Date.now() }, 'cashflow');
+  _scheduleSnap();
 }
 function loadState() {
   try {
-    const raw = localStorage.getItem('bidcast_state_cashflow');
+    const raw = localStorage.getItem(STATE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       _simState = { ..._simState, ...parsed }; // Merge loaded state
@@ -1041,12 +1083,21 @@ document.addEventListener('DOMContentLoaded', () => {
   _applyTheme(localStorage.getItem('bidcast_theme') || 'light');
   loadSuiteData();
   simulate();
+  _snapshot();
 
-  /* Live cross-tab refresh when CalcCast, TimeCast, or CashFlow saves */
+  /* Live cross-tab refresh when CalcCast or TimeCast saves */
   window.addEventListener('storage', e => {
-    if (e.key === 'bidcast_state_calccast' || e.key === 'bidcast_state_timecast' || e.key === 'bidcast_state_cashflow') {
+    if (e.key === 'bidcast_state_calccast' || e.key === 'bidcast_state_timecast') {
       loadSuiteData();
       simulate();
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+      if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) { e.preventDefault(); redo(); }
+      if (e.key === 's') { e.preventDefault(); saveState(); }
     }
   });
 });

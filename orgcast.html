@@ -13,9 +13,9 @@
 <script src="vendor/pyl0n-native.js"></script>
 <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
 <script src="vendor/pyl0n-cloud.js"></script>
-<script src="vendor/pyl0n-suite.js"></script>
-<script src="vendor/pyl0n-validate.js"></script>
 <script src="vendor/pyl0n-state.js"></script>
+<script src="vendor/pyl0n-validate.js"></script>
+<script src="vendor/pyl0n-suite.js"></script>
 <style id="page-size-style">@page { size: A4 landscape; margin: 10mm; }</style>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -204,6 +204,8 @@
     <div class="tb-sep"></div>
     <button class="tb-btn" id="btn-undo" onclick="undo()" disabled>↩ Undo</button>
     <button class="tb-btn" id="btn-redo" onclick="redo()" disabled>↪ Redo</button>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" onclick="saveJSON()">💾 Save</button>
     <div class="tb-sep"></div>
     <button class="tb-btn green" onclick="exportExcel()">⬇ Export Excel</button>
     <button class="tb-btn" onclick="exportHTML()">⬇ Export HTML</button>
