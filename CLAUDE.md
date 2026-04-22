@@ -1,4 +1,4 @@
-# CLAUDE.md — PYL0N Suite (forecast.bid)
+# CLAUDE.md — PYL0N Suite (pyl0n.app)
 
 This file documents the codebase structure, conventions, and workflows for AI assistants working on this project.
 
