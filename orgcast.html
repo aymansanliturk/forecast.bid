@@ -552,30 +552,17 @@ function updateLogoUI() {
     return people.filter(p => !p._parent);
   }
 
-  // ── Centered top-down tree layout ─────────────────────────────────────
-  // Two-pass algorithm:
-  //   Pass 1: pixel size (w,h) of each subtree. Children line up in a row
-  //           under the parent; >TD_MAX_COLS children wrap into a grid.
-  //   Pass 2: position each node so parents sit centered above their kids.
+  // ── Saf Modern Top-Down (Ortogonal) Yerleşim ──────────────────────────
   function subtreeSize(node) {
     const nw = NODE_W(), nh = NODE_H();
     const hg = TD_H_GAP(), vg = TD_V_GAP();
     if (!node.children.length) return { w: nw, h: nh };
 
     const childSizes = node.children.map(subtreeSize);
-    const n    = node.children.length;
-    const cols = Math.min(TD_MAX_COLS, n);
-    const rows = Math.ceil(n / cols);
+    const totalW = childSizes.reduce((s, c, i) => s + c.w + (i ? hg : 0), 0);
+    const maxH = Math.max.apply(null, childSizes.map(c => c.h));
 
-    let maxRowW = 0, totalRowsH = 0;
-    for (let r = 0; r < rows; r++) {
-      const slice = childSizes.slice(r * cols, (r + 1) * cols);
-      const rowW  = slice.reduce((s, c, i) => s + c.w + (i ? hg : 0), 0);
-      const rowH  = Math.max.apply(null, slice.map(c => c.h));
-      if (rowW > maxRowW) maxRowW = rowW;
-      totalRowsH += rowH + (r ? vg : 0);
-    }
-    return { w: Math.max(nw, maxRowW), h: nh + vg + totalRowsH };
+    return { w: Math.max(nw, totalW), h: nh + vg + maxH };
   }
 
   function layoutNodeTopDown(node, x, y, positions) {
@@ -583,30 +570,18 @@ function updateLogoUI() {
     const hg = TD_H_GAP(), vg = TD_V_GAP();
     const size = subtreeSize(node);
 
-    // Center this node above its subtree span
     const nodeX = x + (size.w - nw) / 2;
     positions[node.id] = { x: nodeX, y, w: nw, h: nh };
 
     if (!node.children.length) return;
 
-    const n    = node.children.length;
-    const cols = Math.min(TD_MAX_COLS, n);
-    const rows = Math.ceil(n / cols);
-    const childSizes = node.children.map(subtreeSize);
-
-    let rowY = y + nh + vg;
-    for (let r = 0; r < rows; r++) {
-      const rowChildren = node.children.slice(r * cols, (r + 1) * cols);
-      const rowSizes    = childSizes.slice(r * cols, (r + 1) * cols);
-      const rowW = rowSizes.reduce((s, c, i) => s + c.w + (i ? hg : 0), 0);
-      const rowH = Math.max.apply(null, rowSizes.map(c => c.h));
-      let cursor = x + (size.w - rowW) / 2;
-      rowChildren.forEach((child, i) => {
-        layoutNodeTopDown(child, cursor, rowY, positions);
-        cursor += rowSizes[i].w + hg;
-      });
-      rowY += rowH + vg;
-    }
+    let cx = x;
+    const childY = y + nh + vg;
+    node.children.forEach(child => {
+      const cSize = subtreeSize(child);
+      layoutNodeTopDown(child, cx, childY, positions);
+      cx += cSize.w + hg;
+    });
   }
 
   // Portrait layout helpers ────────────────────────────────────────────────
@@ -670,7 +645,7 @@ function updateLogoUI() {
       const l = document.createElementNS('http://www.w3.org/2000/svg','line');
       l.setAttribute('x1',x1); l.setAttribute('y1',y1);
       l.setAttribute('x2',x2); l.setAttribute('y2',y2);
-      l.setAttribute('stroke','#ccc9c1'); l.setAttribute('stroke-width','2');
+      l.setAttribute('stroke','#d0cecb'); l.setAttribute('stroke-width','1.5');
       svg.appendChild(l);
     }
 
@@ -712,50 +687,32 @@ function updateLogoUI() {
       canvas.appendChild(div);
     });
 
-    // Draw orthogonal top-down connectors — per-row bus-bar style.
-    // Pattern: parent bottom-center → 20px drop to row bus → horizontal to
-    // each child column → 20px drop to child top. Grid-wrapped children are
-    // grouped by row (shared top-y); each row has its own horizontal bus so
-    // the geometry stays clean when a parent has >4 kids.
+    // ── Kusursuz Ortogonal Çizgiler ──
     people.forEach(parent => {
       if (!parent.children.length) return;
       const pp = positions[parent.id];
       if (!pp) return;
 
-      const parentCX     = pp.x + 20 + pp.w / 2;
-      const parentBottom = pp.y + 10 + pp.h;
+      const pCX    = pp.x + 20 + pp.w / 2;
+      const pBottom = pp.y + 10 + pp.h;
 
-      const validCps = parent.children
-        .map(c => positions[c.id])
-        .filter(Boolean);
-      if (!validCps.length) return;
+      const childrenCps = parent.children.map(c => positions[c.id]).filter(Boolean);
+      if (!childrenCps.length) return;
 
-      // Group children by displayed top-y (distinct row per y value)
-      const rowMap = new Map();
-      validCps.forEach(cp => {
-        const top = cp.y + 10;
-        if (!rowMap.has(top)) rowMap.set(top, []);
-        rowMap.get(top).push(cp);
-      });
-      const rowKeys = Array.from(rowMap.keys()).sort((a, b) => a - b);
-      const deepestBusY = rowKeys[rowKeys.length - 1] - 20;
+      const busY = pBottom + (TD_V_GAP() / 2);
 
-      // Central spine from parent bottom down through all row buses
-      line(parentCX, parentBottom, parentCX, deepestBusY);
+      // 1. Ebeveynden yatay yola dikey iniş
+      line(pCX, pBottom, pCX, busY);
 
-      rowKeys.forEach(rowTopY => {
-        const rowKids = rowMap.get(rowTopY);
-        const busY    = rowTopY - 20;
-        const xs      = rowKids.map(cp => cp.x + 20 + cp.w / 2);
-        const minX    = Math.min(parentCX, Math.min.apply(null, xs));
-        const maxX    = Math.max(parentCX, Math.max.apply(null, xs));
-        // Horizontal bus for this row
-        line(minX, busY, maxX, busY);
-        // Per-child drop: bus → child top
-        rowKids.forEach(cp => {
-          const cx = cp.x + 20 + cp.w / 2;
-          line(cx, busY, cx, cp.y + 10);
-        });
+      // 2. İlk çocuktan son çocuğa uzanan yatay köprü
+      const firstCX = childrenCps[0].x + 20 + childrenCps[0].w / 2;
+      const lastCX  = childrenCps[childrenCps.length - 1].x + 20 + childrenCps[childrenCps.length - 1].w / 2;
+      line(firstCX, busY, lastCX, busY);
+
+      // 3. Yatay köprüden her bir çocuğun kafasına dikey iniş
+      childrenCps.forEach(cp => {
+        const cCX = cp.x + 20 + cp.w / 2;
+        line(cCX, busY, cCX, cp.y + 10);
       });
     });
 
