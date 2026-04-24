@@ -322,3 +322,146 @@ body {
 }
 </style>
 </head>
+<body>
+
+<!-- ══ TOOLBAR ══════════════════════════════════════════════════════════ -->
+<div id="toolbar">
+  <div class="tb-left">
+    <div class="logo-icon">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="1"  y="10" width="4" height="7" rx="0.8"/>
+        <rect x="7"  y="6"  width="4" height="11" rx="0.8"/>
+        <rect x="13" y="2"  width="4" height="15" rx="0.8"/>
+        <path d="M3 9.5 Q9 5 15 1.5" stroke-width="1.2"/>
+      </svg>
+    </div>
+    <div>
+      <div class="tool-name">ForeCast</div>
+      <div class="tool-tag">Pipeline &amp; Overlap Monitor</div>
+    </div>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" onclick="location.href='index.html'">← Dashboard</button>
+  </div>
+  <div class="tb-right">
+    <button class="tb-btn" id="btn-undo" onclick="undo()" disabled>↩ Undo</button>
+    <button class="tb-btn" id="btn-redo" onclick="redo()" disabled>↪ Redo</button>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" onclick="saveJSON()">💾 Save</button>
+    <label  class="tb-btn" style="cursor:pointer;">↑ Load<input type="file" accept=".json" style="display:none" onchange="loadJSON(this)"></label>
+    <div class="tb-sep"></div>
+    <button class="tb-btn green"   onclick="exportExcel()">⬇ Excel</button>
+    <button class="tb-btn primary" onclick="exportPDF()">⬇ PDF</button>
+    <button class="tb-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle dark mode" style="font-size:14px;padding:4px 8px;border:none;background:transparent;cursor:pointer;" aria-label="Toggle dark mode">🌙</button>
+  </div>
+</div>
+
+<!-- ══ EDITOR ════════════════════════════════════════════════════════════ -->
+<div id="editor">
+
+  <!-- Project name -->
+  <div class="meta-row">
+    <label>Pipeline Name</label>
+    <input type="text" id="proj-name" placeholder="e.g. 2025 EMEA Pipeline"
+           oninput="_scheduleSnap(); _suiteWrite()">
+  </div>
+
+  <!-- Capacity input -->
+  <div class="cap-row">
+    <label>Quarterly Capacity Limit</label>
+    <input type="number" id="cap-limit" class="cap-input"
+           placeholder="0" min="0" step="0.1"
+           oninput="_scheduleSnap(); _refreshDashboard()">
+    <span class="cap-unit">M EUR</span>
+    <span class="cap-hint">When any quarter's weighted pipeline exceeds this limit, an overlap alert is raised.</span>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="dash-grid">
+
+    <!-- Total Pipeline -->
+    <div class="dash-card" id="dash-total">
+      <div class="dash-label">Total Pipeline</div>
+      <div class="dash-value" id="dash-gross-val">0.0 M</div>
+      <div class="dash-sub">Sum of Gross Value</div>
+    </div>
+
+    <!-- Weighted Pipeline -->
+    <div class="dash-card" id="dash-weighted">
+      <div class="dash-label">Weighted Pipeline</div>
+      <div class="dash-value" id="dash-wt-val">0.0 M</div>
+      <div class="dash-sub">Gross × P(Go) × P(Win)</div>
+    </div>
+
+    <!-- Q1 -->
+    <div class="dash-card" id="dash-q1">
+      <div class="dash-label">Q1 Overlap</div>
+      <div class="dash-value" id="dash-q1-val">0.0 M</div>
+      <div class="dash-sub">Weighted at risk</div>
+      <div class="q-bar-track"><div class="q-bar-fill" id="dash-q1-fill" style="width:0%"></div></div>
+      <div id="dash-q1-badge"></div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="dash-card" id="dash-q2">
+      <div class="dash-label">Q2 Overlap</div>
+      <div class="dash-value" id="dash-q2-val">0.0 M</div>
+      <div class="dash-sub">Weighted at risk</div>
+      <div class="q-bar-track"><div class="q-bar-fill" id="dash-q2-fill" style="width:0%"></div></div>
+      <div id="dash-q2-badge"></div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="dash-card" id="dash-q3">
+      <div class="dash-label">Q3 Overlap</div>
+      <div class="dash-value" id="dash-q3-val">0.0 M</div>
+      <div class="dash-sub">Weighted at risk</div>
+      <div class="q-bar-track"><div class="q-bar-fill" id="dash-q3-fill" style="width:0%"></div></div>
+      <div id="dash-q3-badge"></div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="dash-card" id="dash-q4">
+      <div class="dash-label">Q4 Overlap</div>
+      <div class="dash-value" id="dash-q4-val">0.0 M</div>
+      <div class="dash-sub">Weighted at risk</div>
+      <div class="q-bar-track"><div class="q-bar-fill" id="dash-q4-fill" style="width:0%"></div></div>
+      <div id="dash-q4-badge"></div>
+    </div>
+
+  </div><!-- /.dash-grid -->
+
+  <!-- Opportunities table -->
+  <div class="sec-title">Pipeline Opportunities</div>
+  <div class="opp-wrap">
+
+    <div class="opp-head">
+      <div>Opportunity Name</div>
+      <div>Customer</div>
+      <div>Quarter</div>
+      <div class="opp-head-r">Gross (M)</div>
+      <div class="opp-head-r">P(Go) %</div>
+      <div class="opp-head-r">P(Win) %</div>
+      <div class="opp-head-r">Weighted (M)</div>
+      <div>Owner &amp; Notes</div>
+      <div></div>
+    </div>
+
+    <div id="opp-body"></div>
+
+    <div class="opp-footer">
+      <button class="add-btn" onclick="addOpportunity()">+ Add Opportunity</button>
+      <div class="opp-totals">
+        <span>Pipeline: <strong id="foot-gross">0.0 M</strong></span>
+        <span>Weighted: <strong id="foot-wt">0.0 M</strong></span>
+        <span id="foot-count" style="color:var(--faint);">0 opportunities</span>
+      </div>
+    </div>
+
+  </div><!-- /.opp-wrap -->
+
+  <div class="watermark">Generated with ForeCast · Pipeline &amp; Overlap Monitor · PYL0N</div>
+
+</div><!-- /#editor -->
+
+</body>
+</html>
