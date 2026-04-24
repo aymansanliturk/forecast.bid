@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ForeCast · PYL0N</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="libs/fonts.css">
+<script src="libs/xlsx.full.min.js"></script>
+<script src="libs/html2pdf.bundle.min.js"></script>
+<script src="vendor/pyl0n-native.js"></script>
+<script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
+<script src="vendor/pyl0n-cloud.js"></script>
+<script src="vendor/pyl0n-state.js"></script>
+<script src="vendor/pyl0n-validate.js"></script>
+<script src="vendor/pyl0n-suite.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #f5f4f0;
+  --surface: #ffffff;
+  --border:  #e0ddd6;
+  --text:    #1a1916;
+  --muted:   #6b6860;
+  --faint:   #a8a49e;
+  --accent:  #c026d3;
+  --accent2: #a21caf;
+  --green:   #107c41;
+  --green-dk:#0a6032;
+  --red:     #c0392b;
+  --amber:   #b45309;
+  --input-bg:       #faf9f7;
+  --input-bg-focus: #ffffff;
+}
+
+[data-theme="dark"] {
+  --bg:      #111110;
+  --surface: #1c1c1a;
+  --border:  #2e2d2a;
+  --text:    #f0ede8;
+  --muted:   #9c9a94;
+  --faint:   #6b6860;
+  --input-bg:       #17160f;
+  --input-bg-focus: #1c1c1a;
+}
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── Toolbar ────────────────────────────────────────────────────────── */
+#toolbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+}
+[data-theme="dark"] #toolbar { background: rgba(28,28,26,0.95); }
+
+.tb-left  { display: flex; align-items: center; gap: 12px; }
+.tb-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tb-sep   { width: 1px; height: 22px; background: var(--border); }
+
+.logo-icon {
+  width: 28px; height: 28px;
+  background: var(--accent);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.logo-icon svg { width: 14px; height: 14px; }
+
+.tool-name { font-size: 14px; font-weight: 700; letter-spacing: -0.3px; }
+.tool-tag  { font-size: 9px; font-weight: 600; color: var(--faint); letter-spacing: 1px; text-transform: uppercase; }
+
+.tb-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px; font-weight: 500;
+  padding: 6px 12px; border-radius: 7px;
+  border: 1.5px solid var(--border);
+  background: var(--bg); color: var(--muted);
+  cursor: pointer; white-space: nowrap;
+  transition: all .15s;
+}
+.tb-btn:hover   { border-color: var(--accent); color: var(--accent); background: var(--surface); }
+.tb-btn:disabled { opacity: 0.35; pointer-events: none; }
+.tb-btn.green   { background: var(--green); color: #fff; border-color: var(--green); font-weight: 600; }
+.tb-btn.green:hover { background: var(--green-dk); }
+.tb-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+.tb-btn.primary:hover { background: var(--accent2); }
+
+/* ── Editor container ───────────────────────────────────────────────── */
+#editor { max-width: 1320px; margin: 0 auto; padding: 24px 24px 80px; }
+
+/* ── Section title ──────────────────────────────────────────────────── */
+.sec-title {
+  font-size: 11px; font-weight: 700;
+  color: var(--faint); letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+/* ── Meta row (project name) ────────────────────────────────────────── */
+.meta-row {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 18px;
+}
+.meta-row label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+  text-transform: uppercase; color: var(--faint); white-space: nowrap;
+}
+.meta-row input[type="text"] {
+  flex: 1; max-width: 400px;
+  padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+  background: var(--input-bg); color: var(--text);
+  font-size: 14px; font-weight: 600; font-family: inherit;
+  transition: border-color 0.15s;
+}
+.meta-row input[type="text"]:focus {
+  outline: none; border-color: var(--accent); background: var(--input-bg-focus);
+}
+
+/* ── Capacity row ───────────────────────────────────────────────────── */
+.cap-row {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 22px;
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 12px 18px;
+}
+.cap-row label {
+  font-size: 11px; font-weight: 600; color: var(--muted); white-space: nowrap;
+}
+.cap-input {
+  width: 130px;
+  padding: 7px 10px; border: 1.5px solid var(--border); border-radius: 7px;
+  background: var(--input-bg); color: var(--text);
+  font-size: 14px; font-family: 'DM Mono', monospace; font-weight: 600;
+  transition: border-color 0.15s;
+}
+.cap-input:focus { outline: none; border-color: var(--accent); background: var(--input-bg-focus); }
+.cap-unit { font-size: 11px; font-weight: 600; color: var(--faint); }
+.cap-hint { font-size: 11px; color: var(--faint); margin-left: auto; }
+
+/* ── Dashboard grid ─────────────────────────────────────────────────── */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+@media (max-width: 1100px) { .dash-grid { grid-template-columns: 1fr 1fr 1fr; } }
+@media (max-width: 640px)  { .dash-grid { grid-template-columns: 1fr 1fr; } }
+
+/* ── Stat card (summary) ────────────────────────────────────────────── */
+.dash-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.dash-card.alarm {
+  background: #fff0f0; border-color: var(--red);
+}
+.dash-card.warn {
+  background: #fffbeb; border-color: var(--amber);
+}
+[data-theme="dark"] .dash-card.alarm { background: #2a0a0a; border-color: var(--red); }
+[data-theme="dark"] .dash-card.warn  { background: #1e1200; border-color: var(--amber); }
+
+.dash-label {
+  font-size: 9px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--faint); margin-bottom: 6px;
+}
+.dash-value {
+  font-size: 22px; font-weight: 700; letter-spacing: -0.5px;
+  font-family: 'DM Mono', monospace;
+}
+.dash-sub { font-size: 10px; color: var(--muted); margin-top: 3px; }
+
+/* ── Quarter progress bar ───────────────────────────────────────────── */
+.q-bar-track {
+  height: 4px; border-radius: 99px;
+  background: var(--border); margin-top: 10px; overflow: hidden;
+}
+.q-bar-fill {
+  height: 100%; border-radius: 99px;
+  background: var(--accent); transition: width 0.35s ease;
+  min-width: 0;
+}
+.q-bar-fill.warn  { background: var(--amber); }
+.q-bar-fill.alarm { background: var(--red); }
+
+/* ── Alarm / warning badges ─────────────────────────────────────────── */
+.dash-alarm-badge,
+.dash-warn-badge {
+  display: inline-block; margin-top: 8px;
+  padding: 2px 8px; border-radius: 99px;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.5px; color: #fff;
+}
+.dash-alarm-badge { background: var(--red); }
+.dash-warn-badge  { background: var(--amber); }
+
+/* ── Opportunity table wrapper ──────────────────────────────────────── */
+.opp-wrap {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+/* 9-column grid: name | customer | quarter | gross | pgo | pwin | weighted | owner | del */
+.opp-head,
+.opp-row {
+  display: grid;
+  grid-template-columns: minmax(140px,2fr) 100px 72px 96px 62px 62px 96px minmax(100px,1.5fr) 32px;
+  align-items: center;
+  gap: 3px;
+  padding: 7px 10px;
+}
+
+/* ── Table header ───────────────────────────────────────────────────── */
+.opp-head {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  font-size: 9px; font-weight: 700;
+  color: var(--faint); letter-spacing: 0.8px; text-transform: uppercase;
+}
+.opp-head-r { text-align: right; }
+
+/* ── Table rows ─────────────────────────────────────────────────────── */
+.opp-row { border-bottom: 1px solid var(--border); }
+.opp-row:last-child { border-bottom: none; }
+.opp-row:hover { background: #fdf4ff; }
+[data-theme="dark"] .opp-row:hover { background: #1c0022; }
+
+.opp-row input,
+.opp-row select {
+  width: 100%;
+  padding: 5px 7px; border: 1.5px solid transparent; border-radius: 6px;
+  background: transparent; color: var(--text);
+  font-size: 12px; font-family: inherit;
+  transition: border-color 0.15s, background 0.15s;
+}
+.opp-row input[type="number"] {
+  font-family: 'DM Mono', monospace; text-align: right;
+}
+.opp-row input:focus,
+.opp-row select:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--input-bg-focus);
+}
+.opp-row select { cursor: pointer; }
+
+/* ── Weighted value cell (read-only) ────────────────────────────────── */
+.weighted-cell {
+  font-size: 12px; font-family: 'DM Mono', monospace; font-weight: 600;
+  color: var(--accent); padding: 5px 7px; text-align: right; white-space: nowrap;
+}
+
+/* ── Delete button ──────────────────────────────────────────────────── */
+.opp-del {
+  background: none; border: none; color: var(--faint);
+  cursor: pointer; font-size: 13px;
+  padding: 4px 6px; border-radius: 5px;
+  transition: color 0.15s; justify-self: center;
+}
+.opp-del:hover { color: var(--red); }
+
+/* ── Table footer ───────────────────────────────────────────────────── */
+.opp-footer {
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 8px;
+}
+.add-btn {
+  font-size: 12px; font-weight: 600; color: var(--accent);
+  background: none; border: 1.5px dashed var(--border); border-radius: 7px;
+  padding: 7px 14px; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+}
+.add-btn:hover { border-color: var(--accent); background: #fdf4ff; }
+[data-theme="dark"] .add-btn:hover { background: #1f0028; }
+
+.opp-totals {
+  font-size: 11px; color: var(--muted);
+  display: flex; gap: 16px; flex-wrap: wrap;
+}
+.opp-totals strong {
+  color: var(--text); font-family: 'DM Mono', monospace;
+}
+
+/* ── Watermark ──────────────────────────────────────────────────────── */
+.watermark {
+  font-size: 10px; color: var(--faint);
+  text-align: center; padding: 28px 0 0;
+}
+
+/* ── Responsive: collapse header on narrow screens ──────────────────── */
+@media (max-width: 820px) {
+  .opp-head { display: none; }
+  .opp-row  { grid-template-columns: 1fr 1fr; gap: 6px; padding: 12px; }
+  .opp-del  { grid-column: 2; justify-self: end; }
+  .cap-hint { display: none; }
+}
+
+/* ── Print ──────────────────────────────────────────────────────────── */
+@media print {
+  #toolbar { display: none !important; }
+  .opp-del, .add-btn, .opp-footer .add-btn { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ TOOLBAR ══════════════════════════════════════════════════════════ -->
+<div id="toolbar">
+  <div class="tb-left">
+    <div class="logo-icon">
+      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="1"  y="10" width="4" height="7" rx="0.8"/>
+        <rect x="7"  y="6"  width="4" height="11" rx="0.8"/>
+        <rect x="13" y="2"  width="4" height="15" rx="0.8"/>
+        <path d="M3 9.5 Q9 5 15 1.5" stroke-width="1.2"/>
+      </svg>
+    </div>
+    <div>
+      <div class="tool-name">ForeCast</div>
+      <div class="tool-tag">Pipeline &amp; Overlap Monitor</div>
+    </div>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" onclick="location.href='index.html'">← Dashboard</button>
+  </div>
+  <div class="tb-right">
+    <button class="tb-btn" id="btn-undo" onclick="undo()" disabled>↩ Undo</button>
+    <button class="tb-btn" id="btn-redo" onclick="redo()" disabled>↪ Redo</button>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" onclick="saveJSON()">💾 Save</button>
+    <label  class="tb-btn" style="cursor:pointer;">↑ Load<input type="file" accept=".json" style="display:none" onchange="loadJSON(this)"></label>
+    <div class="tb-sep"></div>
+    <button class="tb-btn green"   onclick="exportExcel()">⬇ Excel</button>
+    <button class="tb-btn primary" onclick="exportPDF()">⬇ PDF</button>
+    <button class="tb-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle dark mode" style="font-size:14px;padding:4px 8px;border:none;background:transparent;cursor:pointer;" aria-label="Toggle dark mode">🌙</button>
+  </div>
+</div>
+
+<!-- ══ EDITOR ════════════════════════════════════════════════════════════ -->
+<div id="editor">
+
+  <!-- Project name -->
+  <div class="meta-row">
+    <label>Pipeline Name</label>
+    <input type="text" id="proj-name" placeholder="e.g. 2025 EMEA Pipeline"
+           oninput="_scheduleSnap(); _suiteWrite()">
+  </div>
+
+  <!-- Capacity input -->
+  <div class="cap-row">
+    <label>Quarterly Capacity Limit</label>
+    <input type="number" id="cap-limit" class="cap-input"
+           placeholder="0" min="0" step="0.1"
+           oninput="_scheduleSnap(); _refreshDashboard()">
+    <span class="cap-unit">M EUR</span>
+    <span class="cap-hint">When any quarter's weighted pipeline exceeds this limit, an overlap alert is raised.</span>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="dash-grid">
+
+    <!-- Total Pipeline -->
+    <div class="dash-card" id="dash-total">
+      <div class="dash-label">Total Pipeline</div>
+      <div class="dash-value" id="dash-gross-val">0.0 M</div>
+      <div class="dash-sub">Sum of Gross Value</div>
+    </div>
+
+    <!-- Weighted Pipeline -->
+    <div class="dash-card" id="dash-weighted">
+      <div class="dash-label">Weighted Pipeline</div>
+      <div class="dash-value" id="dash-wt-val">0.0 M</div>
+      <div class="dash-sub">Gross × P(Go) × P(Win)</div>
+    </div>
+
+    <!-- Q1 -->
+    <div class="dash-card" id="dash-q1">
+      <div class="dash-label">Q1 Overlap</div>
+      <div class="dash-value" id="dash-q1-val">0.0 M</div>
+      <div class="dash-sub">Weighted at risk</div>
+      <div class="q-bar-track"><div class="q-bar-fill" id="dash-q1-fill" style="width:0%"></div></div>
+      <div id="dash-q1-badge"></div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="dash-card" id="dash-q2">
+      <div class="dash-label">Q2 Overlap</div>
+      <div class="dash-value" id="dash-q2-val">0.0 M</div>
+      <div class="dash-sub">Weighted at risk</div>
+      <div class="q-bar-track"><div class="q-bar-fill" id="dash-q2-fill" style="width:0%"></div></div>
+      <div id="dash-q2-badge"></div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="dash-card" id="dash-q3">
+      <div class="dash-label">Q3 Overlap</div>
+      <div class="dash-value" id="dash-q3-val">0.0 M</div>
+      <div class="dash-sub">Weighted at risk</div>
+      <div class="q-bar-track"><div class="q-bar-fill" id="dash-q3-fill" style="width:0%"></div></div>
+      <div id="dash-q3-badge"></div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="dash-card" id="dash-q4">
+      <div class="dash-label">Q4 Overlap</div>
+      <div class="dash-value" id="dash-q4-val">0.0 M</div>
+      <div class="dash-sub">Weighted at risk</div>
+      <div class="q-bar-track"><div class="q-bar-fill" id="dash-q4-fill" style="width:0%"></div></div>
+      <div id="dash-q4-badge"></div>
+    </div>
+
+  </div><!-- /.dash-grid -->
+
+  <!-- Opportunities table -->
+  <div class="sec-title">Pipeline Opportunities</div>
+  <div class="opp-wrap">
+
+    <div class="opp-head">
+      <div>Opportunity Name</div>
+      <div>Customer</div>
+      <div>Quarter</div>
+      <div class="opp-head-r">Gross (M)</div>
+      <div class="opp-head-r">P(Go) %</div>
+      <div class="opp-head-r">P(Win) %</div>
+      <div class="opp-head-r">Weighted (M)</div>
+      <div>Owner &amp; Notes</div>
+      <div></div>
+    </div>
+
+    <div id="opp-body"></div>
+
+    <div class="opp-footer">
+      <button class="add-btn" onclick="addOpportunity()">+ Add Opportunity</button>
+      <div class="opp-totals">
+        <span>Pipeline: <strong id="foot-gross">0.0 M</strong></span>
+        <span>Weighted: <strong id="foot-wt">0.0 M</strong></span>
+        <span id="foot-count" style="color:var(--faint);">0 opportunities</span>
+      </div>
+    </div>
+
+  </div><!-- /.opp-wrap -->
+
+  <div class="watermark">Generated with ForeCast · Pipeline &amp; Overlap Monitor · PYL0N</div>
+
+</div><!-- /#editor -->
+
+<script>
+/* ══ Helpers ═════════════════════════════════════════════════════════════ */
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function fmtM(n) {
+  const v = Number(n) || 0;
+  if (Math.abs(v) >= 10000) return (v / 1000).toFixed(1) + ' G';
+  if (Math.abs(v) >= 100)   return v.toFixed(0) + ' M';
+  return v.toFixed(1) + ' M';
+}
+
+function fmtMFull(n) {
+  return (Number(n) || 0).toFixed(2) + ' M';
+}
+
+function _setEl(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+/* ══ Constants ═══════════════════════════════════════════════════════════ */
+const STATE_KEY = 'bidcast_state_forecast';
+let _nextId = 1;
+
+/* ══ Opportunity row management ═════════════════════════════════════════ */
+function addOpportunity(data = {}) {
+  const id = (data.id != null) ? data.id : _nextId;
+  if (id >= _nextId) _nextId = id + 1;
+
+  const body  = document.getElementById('opp-body');
+  const row   = document.createElement('div');
+  row.className  = 'opp-row';
+  row.dataset.id = id;
+
+  const gross = data.grossValue != null ? data.grossValue : '';
+  const go    = data.probGo    != null ? data.probGo    : 50;
+  const win   = data.probWin   != null ? data.probWin   : 30;
+  const wt    = (parseFloat(gross)||0) * ((parseFloat(go)||0)/100) * ((parseFloat(win)||0)/100);
+
+  const qOpts = ['Q1','Q2','Q3','Q4','Multi'].map(q =>
+    `<option value="${q}"${(data.quarter||'Q1')===q?' selected':''}>${q}</option>`
+  ).join('');
+
+  row.innerHTML = `
+    <input type="text"   class="opp-name"     placeholder="Opportunity name…"
+           value="${esc(data.name||'')}"     oninput="onOppInput(event)">
+    <input type="text"   class="opp-customer" placeholder="Customer…"
+           value="${esc(data.customer||'')}" oninput="onOppInput(event)">
+    <select class="opp-quarter" onchange="onOppInput(event)">${qOpts}</select>
+    <input type="number" class="opp-gross"    placeholder="0.0" min="0" step="0.1"
+           value="${esc(gross)}"              oninput="onOppInput(event)">
+    <input type="number" class="opp-go"       placeholder="50"  min="0" max="100"
+           value="${esc(go)}"                 oninput="onOppInput(event)">
+    <input type="number" class="opp-win"      placeholder="30"  min="0" max="100"
+           value="${esc(win)}"                oninput="onOppInput(event)">
+    <div   class="weighted-cell" id="wt-${id}">${fmtMFull(wt)}</div>
+    <input type="text"   class="opp-owner"    placeholder="Owner / notes…"
+           value="${esc(data.owner||'')}"    oninput="onOppInput(event)">
+    <button class="opp-del" onclick="removeOpportunity(this)" title="Remove">✕</button>
+  `;
+
+  body.appendChild(row);
+  _refreshDashboard();
+}
+
+function removeOpportunity(btn) {
+  btn.closest('.opp-row').remove();
+  _refreshDashboard();
+  _scheduleSnap();
+}
+
+function onOppInput(evt) {
+  const row = evt.target.closest('.opp-row');
+  if (row) _updateRowWeighted(row);
+  _refreshDashboard();
+  _scheduleSnap();
+}
+
+function _updateRowWeighted(row) {
+  const gross = parseFloat(row.querySelector('.opp-gross')?.value) || 0;
+  const go    = parseFloat(row.querySelector('.opp-go')?.value)    || 0;
+  const win   = parseFloat(row.querySelector('.opp-win')?.value)   || 0;
+  const wt    = gross * (go/100) * (win/100);
+  const el    = document.getElementById('wt-' + row.dataset.id)
+             || row.querySelector('.weighted-cell');
+  if (el) el.textContent = fmtMFull(wt);
+}
+
+function _getOpportunities() {
+  return Array.from(document.querySelectorAll('#opp-body .opp-row')).map(r => ({
+    id:         Number(r.dataset.id),
+    name:       r.querySelector('.opp-name')?.value     || '',
+    customer:   r.querySelector('.opp-customer')?.value || '',
+    quarter:    r.querySelector('.opp-quarter')?.value  || 'Q1',
+    grossValue: parseFloat(r.querySelector('.opp-gross')?.value) || 0,
+    probGo:     parseFloat(r.querySelector('.opp-go')?.value)    || 0,
+    probWin:    parseFloat(r.querySelector('.opp-win')?.value)   || 0,
+    owner:      r.querySelector('.opp-owner')?.value    || '',
+  }));
+}
+
+/* ══ Dashboard refresh ═══════════════════════════════════════════════════ */
+function _refreshDashboard() {
+  const opps     = _getOpportunities();
+  const capLimit = parseFloat(document.getElementById('cap-limit')?.value) || 0;
+
+  let totalGross = 0, totalWt = 0;
+  const qw = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 };
+
+  opps.forEach(o => {
+    totalGross += o.grossValue;
+    const wt = o.grossValue * (o.probGo/100) * (o.probWin/100);
+    totalWt += wt;
+    if (o.quarter === 'Multi') {
+      qw.Q1 += wt; qw.Q2 += wt; qw.Q3 += wt; qw.Q4 += wt;
+    } else if (qw[o.quarter] !== undefined) {
+      qw[o.quarter] += wt;
+    }
+  });
+
+  /* summary cards */
+  _setEl('dash-gross-val', fmtM(totalGross));
+  _setEl('dash-wt-val',    fmtM(totalWt));
+  _setEl('foot-gross',     fmtM(totalGross));
+  _setEl('foot-wt',        fmtM(totalWt));
+  _setEl('foot-count',     opps.length + ' opportunit' + (opps.length === 1 ? 'y' : 'ies'));
+
+  /* quarter cards */
+  const maxQ = Math.max(...Object.values(qw), capLimit || 0, 0.001);
+  ['Q1','Q2','Q3','Q4'].forEach(q => {
+    const val   = qw[q];
+    const qid   = q.toLowerCase();
+    const card  = document.getElementById('dash-' + qid);
+    const valEl = document.getElementById('dash-' + qid + '-val');
+    const fill  = document.getElementById('dash-' + qid + '-fill');
+    const badge = document.getElementById('dash-' + qid + '-badge');
+    if (!card) return;
+
+    if (valEl) valEl.textContent = fmtM(val);
+
+    /* progress bar width */
+    const pct = capLimit > 0
+      ? Math.min((val / capLimit) * 100, 100)
+      : (val / maxQ) * 100;
+    if (fill) {
+      fill.style.width = pct + '%';
+      fill.classList.remove('alarm','warn');
+    }
+    card.classList.remove('alarm','warn');
+    if (badge) badge.innerHTML = '';
+
+    /* alarm thresholds */
+    if (capLimit > 0) {
+      if (val > capLimit) {
+        card.classList.add('alarm');
+        if (fill)  fill.classList.add('alarm');
+        if (badge) badge.innerHTML =
+          '<span class="dash-alarm-badge">⚠ Resource Overlap Alert</span>';
+      } else if (val > capLimit * 0.75) {
+        card.classList.add('warn');
+        if (fill)  fill.classList.add('warn');
+        if (badge) badge.innerHTML =
+          '<span class="dash-warn-badge">⚠ Near Capacity (75%+)</span>';
+      }
+    }
+  });
+}
+
+/* ══ State management ════════════════════════════════════════════════════ */
+function collectState() {
+  return {
+    version:       1,
+    projName:      document.getElementById('proj-name')?.value   || '',
+    capacityLimit: parseFloat(document.getElementById('cap-limit')?.value) || 0,
+    opportunities: _getOpportunities(),
+  };
+}
+
+function applyState(s) {
+  if (!s) return;
+  const $  = id => document.getElementById(id);
+  if ($('proj-name'))  $('proj-name').value  = s.projName      || '';
+  if ($('cap-limit'))  $('cap-limit').value  = s.capacityLimit != null ? s.capacityLimit : '';
+  $('opp-body').innerHTML = '';
+  _nextId = 1;
+  (s.opportunities || []).forEach(o => addOpportunity(o));
+  _refreshDashboard();
+}
+
+/* ══ Undo / Redo (backed by vendor/pyl0n-state.js) ══════════════════════ */
+const _undoStack = PylonState.createUndoStack({
+  collect: collectState, apply: applyState, max: 50, debounceMs: 600,
+  onChange: () => {
+    const u = document.getElementById('btn-undo');
+    const r = document.getElementById('btn-redo');
+    if (u) u.disabled = !_undoStack.canUndo;
+    if (r) r.disabled = !_undoStack.canRedo;
+    PylonState.safeWriteLS(STATE_KEY, collectState());
+  },
+});
+function _snapshot()     { _undoStack.snapshot(); }
+function _scheduleSnap() { _undoStack.scheduleSnap(); }
+function undo()          { _undoStack.undo(); }
+function redo()          { _undoStack.redo(); }
+
+/* ══ Suite sync ══════════════════════════════════════════════════════════ */
+function _suiteWrite() {
+  const n = document.getElementById('proj-name')?.value || '';
+  if (n) SuiteManager.write({ projectName: n }, 'forecast');
+}
+
+/* ══ File I/O ════════════════════════════════════════════════════════════ */
+async function saveJSON() {
+  const s = collectState();
+  const fname = (s.projName || 'forecast').replace(/[^a-z0-9_\-. ]/gi,'_') + '.forecast.json';
+  await nativeSaveText(fname, JSON.stringify(s, null, 2), 'ForeCast JSON', '.json');
+  _snapshot();
+}
+
+async function loadJSON(input) {
+  await nativeOpenText(['.json'], txt => {
+    try {
+      const s = JSON.parse(txt);
+      applyState(s);
+      _snapshot();
+    } catch { alert('Invalid JSON file.'); }
+  }, input);
+}
+
+/* ══ Exports ══════════════════════════════════════════════════════════════ */
+function exportExcel() {
+  if (!window.XLSX) { alert('XLSX library not loaded.'); return; }
+  const opps = _getOpportunities();
+  const rows = [
+    ['#','Opportunity Name','Customer','Quarter',
+     'Gross Value (M)','P(Go) %','P(Win) %','Weighted Value (M)','Owner & Notes'],
+    ...opps.map((o, i) => [
+      i + 1, o.name, o.customer, o.quarter,
+      o.grossValue, o.probGo, o.probWin,
+      parseFloat((o.grossValue*(o.probGo/100)*(o.probWin/100)).toFixed(4)),
+      o.owner,
+    ]),
+    [],
+    ['','Total Pipeline (M)','','',
+     opps.reduce((s,o)=>s+o.grossValue,0).toFixed(4),'','',
+     opps.reduce((s,o)=>s+o.grossValue*(o.probGo/100)*(o.probWin/100),0).toFixed(4),''],
+    ['','Quarterly Capacity Limit (M)',
+     parseFloat(document.getElementById('cap-limit')?.value)||0],
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [
+    {wch:4},{wch:36},{wch:20},{wch:8},
+    {wch:16},{wch:10},{wch:10},{wch:18},{wch:32},
+  ];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'ForeCast');
+  const base = (document.getElementById('proj-name')?.value||'forecast')
+    .replace(/[^a-z0-9_\-. ]/gi,'_');
+  nativeSaveXLSX(wb, base + '.forecast.xlsx');
+}
+
+async function exportPDF() {
+  const base  = (document.getElementById('proj-name')?.value||'forecast')
+    .replace(/[^a-z0-9_\-. ]/gi,'_');
+  const fname = base + '.forecast.pdf';
+  await nativeSavePDF(document.getElementById('editor'), fname, {
+    margin: [8,8,8,8], filename: fname,
+    image:     { type:'jpeg', quality:0.96 },
+    html2canvas:{ scale:2, useCORS:true },
+    jsPDF:     { unit:'mm', format:'a4', orientation:'landscape' },
+  });
+}
+
+/* ══ Theme ════════════════════════════════════════════════════════════════ */
+function _applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
+}
+function toggleTheme() {
+  const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  _applyTheme(t);
+  try { localStorage.setItem('bidcast_theme', t); } catch {}
+}
+
+/* ══ Boot ═════════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  SuiteManager.migrate();
+  _applyTheme(localStorage.getItem('bidcast_theme') || 'light');
+
+  const saved = localStorage.getItem(STATE_KEY);
+  if (saved) {
+    try { applyState(JSON.parse(saved)); } catch {}
+  } else {
+    /* seed with sample data so the dashboard is non-empty on first open */
+    addOpportunity({ name:'Wind Farm EPC Package A', customer:'GreenPower AS',
+      quarter:'Q2', grossValue:12.5, probGo:85, probWin:45 });
+    addOpportunity({ name:'Substation Upgrade Ph.1',  customer:'GridCo DK',
+      quarter:'Q3', grossValue:8.2,  probGo:70, probWin:60 });
+    addOpportunity({ name:'Solar BOS Supply',          customer:'SunTech GmbH',
+      quarter:'Q2', grossValue:5.0,  probGo:60, probWin:35 });
+    addOpportunity({ name:'Offshore Cable Contract',   customer:'NorthSea EPC',
+      quarter:'Multi', grossValue:22.0, probGo:40, probWin:25 });
+    const sync = SuiteManager.read();
+    if (sync.projectName) document.getElementById('proj-name').value = sync.projectName;
+  }
+
+  _snapshot();
+
+  SuiteManager.onUpdate(sync => {
+    const el = document.getElementById('proj-name');
+    if (el && document.activeElement !== el && sync.projectName) el.value = sync.projectName;
+  });
+
+  document.addEventListener('keydown', e => {
+    const inField = ['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName);
+    if ((e.ctrlKey||e.metaKey) && e.key === 's') { e.preventDefault(); saveJSON(); return; }
+    if (inField) return;
+    if ((e.ctrlKey||e.metaKey) && !e.shiftKey && e.key === 'z') { e.preventDefault(); undo(); }
+    if ((e.ctrlKey||e.metaKey) && (e.key==='y'||(e.shiftKey&&e.key==='z'))) { e.preventDefault(); redo(); }
+  });
+});
+</script>
+
+</body>
+</html>
