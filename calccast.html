@@ -330,7 +330,9 @@ input[type="number"] { font-family: 'DM Mono', monospace; }
       </label>
     </div>
 
-    <div class="field-group-label">FX Rates (Base EUR) — 1 unit of foreign currency = ? EUR</div>
+    <div class="field-group-label">FX Rates (Base EUR) — 1 unit of foreign currency = ? EUR
+      <span style="font-weight:400;font-size:11px;color:var(--faint);margin-left:8px;">Note: Enter as EUR per 1 Unit of Foreign Currency (e.g. 1 USD = 0.920 EUR)</span>
+    </div>
     <div class="fields f3">
       <label>USD → EUR
         <input type="number" id="fx-usd" value="0.920" min="0" step="0.001"
@@ -450,13 +452,25 @@ input[type="number"] { font-family: 'DM Mono', monospace; }
         <div class="sum-kpi">
           <div class="sum-kpi-label">Total Order Cost</div>
           <div class="sum-kpi-value" id="sum-order-cost">€ 0</div>
-          <div class="sum-kpi-sub">Direct cost × KPI multiplier</div>
+          <div class="sum-kpi-sub">DC + Risk + Warranty provisions</div>
+        </div>
+
+        <div class="sum-kpi">
+          <div class="sum-kpi-label">Cost of Sales incl. Opex</div>
+          <div class="sum-kpi-value" id="sum-cost-of-sales">€ 0</div>
+          <div class="sum-kpi-sub">Order Cost + SG&amp;A</div>
         </div>
 
         <div class="sum-kpi sum-hi">
-          <div class="sum-kpi-label">Customer Price</div>
+          <div class="sum-kpi-label">Customer Price excl. Neg.</div>
+          <div class="sum-kpi-value" id="sum-customer-ex-neg">€ 0</div>
+          <div class="sum-kpi-sub">Cost of Sales + HQ Adders + EBIT</div>
+        </div>
+
+        <div class="sum-kpi sum-hi">
+          <div class="sum-kpi-label">Customer Price incl. Neg.</div>
           <div class="sum-kpi-value" id="sum-customer-price">€ 0</div>
-          <div class="sum-kpi-sub">Incl. negotiation margin</div>
+          <div class="sum-kpi-sub">Solved price P (gross-up denominator)</div>
         </div>
 
         <div class="sum-kpi">
@@ -553,54 +567,127 @@ function getResourceCastTotal() {
   } catch { return 0; }
 }
 
+/* ══ CalcEngine — pure deterministic pricing function ═══════════════════════
+ *
+ * Implements the Parity Model (denominator-solve / gross-up):
+ *   P = DC_allScope / (1 − kpiSum)   where kpiSum includes neg
+ *
+ * Stages:
+ *   1. DC — sum included rows; pre-compute DC_incl_base for contingency
+ *   2. Bonds — preliminary P without bonds → bond EUR → add to DC_allScope
+ *   3. Solve — final P = DC_allScope / divisor
+ *   4. Derive buckets — all amounts as fractions of P
+ *   5. CustomerExNeg — CoS + HQ Adders + EBIT
+ */
+function calcEngine({ fxMap, kpis, costRows, guarRows }) {
+  const { rs, ru, w, sga, exu, ba, ebit, neg } = kpis;
+  const kpiSum  = rs + ru + w + sga + exu + ba + ebit + neg;
+  const divisor = kpiSum >= 1 ? 0.01 : (1 - kpiSum);
+
+  // Pass 1: DC_incl_base — fixed base for all contingency rows (order-independent)
+  let DC_incl_base = 0;
+  for (const row of costRows) {
+    if (row.rowType === 'contingency' || row.scope === 'excluded') continue;
+    DC_incl_base += row.rowCostEur || 0;
+  }
+
+  // Pass 2: resolve contingency rows using fixed base, then compute DC_included
+  const resolvedRows = costRows.map(row => {
+    if (row.rowType === 'contingency') {
+      const excluded   = row.scope === 'excluded';
+      const rowCostEur = excluded ? 0 : DC_incl_base * ((row.contingencyPct || 0) / 100);
+      return { ...row, rowCostEur, scope: row.scope };
+    }
+    return { ...row, rowCostEur: row.scope === 'excluded' ? 0 : (row.rowCostEur || 0) };
+  });
+
+  let DC_included = 0;
+  for (const row of resolvedRows) DC_included += row.rowCostEur;
+
+  // Pass 3: bonds — use preliminary P (DC without bonds) to derive bond EUR amounts
+  const P_prelim         = DC_included / divisor;
+  const riskWarrFrac     = rs + ru + w;
+  const OrderCost_prelim = DC_included + P_prelim * riskWarrFrac;
+  const bondData = guarRows.map(g => ({
+    ...g,
+    bondCostEur: OrderCost_prelim * g.rate * g.duration,
+  }));
+  const totalBondEur = bondData.reduce((s, b) => s + b.bondCostEur, 0);
+
+  // DC_allScope: included cost rows + bonds as virtual included rows
+  const DC_allScope = DC_included + totalBondEur;
+
+  // Stage 2 — solve price P
+  const P = DC_allScope / divisor;
+
+  // Stage 3 — derive bucket amounts
+  const riskSpecAmt   = P * rs;
+  const riskUnspecAmt = P * ru;
+  const warrantyAmt   = P * w;
+  const OrderCost     = DC_allScope + riskSpecAmt + riskUnspecAmt + warrantyAmt;
+  const sgaAmt        = P * sga;
+  const CostSalesInclOpex = OrderCost + sgaAmt;
+  const exuAmt        = P * exu;
+  const baAmt         = P * ba;
+  const HQAdders      = exuAmt + baAmt;
+  const EBITAmt       = P * ebit;
+  const NegAmt        = P * neg;
+
+  // Stage 4 — CustomerExNeg
+  const CustomerExNeg   = CostSalesInclOpex + HQAdders + EBITAmt;
+  const CustomerInclNeg = P;
+
+  const salesMarginEUR = P - DC_allScope;
+  const salesMarginPct = P > 0 ? (salesMarginEUR / P) * 100 : 0;
+  const profitEUR      = EBITAmt + NegAmt;
+  const profitPct      = P > 0 ? (profitEUR / P) * 100 : 0;
+
+  // Per-row sell prices (for column display)
+  const rowSellPrices = resolvedRows.map(row => ({
+    rowCostEur: row.rowCostEur,
+    rowSellEur: row.scope !== 'excluded' ? row.rowCostEur / divisor : 0,
+  }));
+
+  return {
+    DC_included, DC_allScope,
+    P, OrderCost, CostSalesInclOpex, HQAdders, EBITAmt, NegAmt,
+    CustomerExNeg, CustomerInclNeg,
+    riskSpecAmt, riskUnspecAmt, warrantyAmt, sgaAmt,
+    salesMarginEUR, salesMarginPct,
+    profitEUR, profitPct,
+    rowSellPrices, bondData,
+  };
+}
+
 function calculateModel() {
   const empty = document.getElementById('cost-empty');
   if (empty) empty.style.display = document.querySelectorAll('#cost-tbody .cost-row').length === 0 ? 'block' : 'none';
-  // ── 1. Read global parameters ────────────────────────────────────────
+
+  // ── 1. Read global parameters ───────────────────────────────────────
   const fxMap = {
     EUR: 1.0,
     USD: parseFloat(document.getElementById('fx-usd').value)  || 0.92,
     GBP: parseFloat(document.getElementById('fx-gbp').value)  || 1.17,
     DKK: parseFloat(document.getElementById('fx-dkk').value)  || 0.134,
   };
-  const specRisk   = (parseFloat(document.getElementById('kpi-spec-risk').value)   || 0) / 100;
-  const unspecRisk = (parseFloat(document.getElementById('kpi-unspec-risk').value) || 0) / 100;
-  const risk       = specRisk + unspecRisk;
-  const warr = (parseFloat(document.getElementById('kpi-warranty').value) || 0) / 100;
-  const sga  = (parseFloat(document.getElementById('kpi-sga').value)      || 0) / 100;
-  const exu  = (parseFloat(document.getElementById('kpi-exu').value)      || 0) / 100;
-  const ba   = (parseFloat(document.getElementById('kpi-ba').value)       || 0) / 100;
-  const ebit = (parseFloat(document.getElementById('kpi-ebit').value)     || 0) / 100;
-  const neg  = (parseFloat(document.getElementById('kpi-neg').value)      || 0) / 100;
+  const rs   = (parseFloat(document.getElementById('kpi-spec-risk').value)   || 0) / 100;
+  const ru   = (parseFloat(document.getElementById('kpi-unspec-risk').value) || 0) / 100;
+  const w    = (parseFloat(document.getElementById('kpi-warranty').value)    || 0) / 100;
+  const sga  = (parseFloat(document.getElementById('kpi-sga').value)         || 0) / 100;
+  const exu  = (parseFloat(document.getElementById('kpi-exu').value)         || 0) / 100;
+  const ba   = (parseFloat(document.getElementById('kpi-ba').value)          || 0) / 100;
+  const ebit = (parseFloat(document.getElementById('kpi-ebit').value)        || 0) / 100;
+  const neg  = (parseFloat(document.getElementById('kpi-neg').value)         || 0) / 100;
 
-  // KPI Stack uses the Margin Formula: Price = Cost / (1 - Margin)
-  // Therefore, we sum the percentages.
-  const totalKpiPct   = risk + warr + sga + exu + ba + ebit;
-  const kpiNoEbitPct  = risk + warr + sga + exu + ba;
-
-  // Prevent division by zero or negative prices if total margin >= 100%
-  const kpiDivisor       = totalKpiPct  >= 1 ? 0.01 : (1 - totalKpiPct);
-  const kpiNoEbitDivisor = kpiNoEbitPct >= 1 ? 0.01 : (1 - kpiNoEbitPct);
-
-  // ── 2. Process each cost row ─────────────────────────────────────────
+  // ── 2. Collect cost rows from DOM ────────────────────────────────────
   const rcTotal = getResourceCastTotal();
-  let totalDirect = 0;
-  let totalOrder  = 0;
-  let runningIncludedBase = 0; // for contingency rows: sum of included non-contingency rows so far
+  const costRows = [];
 
   document.querySelectorAll('#cost-tbody .cost-row').forEach(tr => {
     if (tr.classList.contains('is-contingency')) {
-      // Contingency row: percentage of all included non-contingency rows above it
-      const excluded = tr.querySelector('.sel-scope').value === 'excluded';
-      const pct      = parseFloat(tr.querySelector('.inp-contingency-pct').value) || 0;
-      const rowCost  = excluded ? 0 : runningIncludedBase * (pct / 100);
-      const rowSell  = excluded ? 0 : rowCost / kpiDivisor;
-      totalDirect += rowCost;
-      totalOrder  += rowSell;
-      tr.classList.toggle('is-excluded', excluded);
-      const fmt = n => n > 0 ? '€\u202f' + Math.round(n).toLocaleString('en-GB') : '—';
-      tr.querySelector('.cost-eur').textContent = excluded ? '—' : fmt(rowCost);
-      tr.querySelector('.sell-eur').textContent = excluded ? '—' : fmt(rowSell);
+      const pct    = parseFloat(tr.querySelector('.inp-contingency-pct').value) || 0;
+      const scope  = tr.querySelector('.sel-scope').value;
+      costRows.push({ rowType: 'contingency', contingencyPct: pct, scope, _tr: tr });
       return;
     }
 
@@ -615,85 +702,66 @@ function calculateModel() {
       qtyInp.value  = 1;
       unitInp.value = Math.round(rcTotal);
       ccySel.value  = 'EUR';
-      // Visual Lock
       qtyInp.readOnly = true; unitInp.readOnly = true;
       ccySel.style.pointerEvents = 'none';
       qtyInp.style.background = '#eef2f9'; unitInp.style.background = '#eef2f9'; ccySel.style.background = '#eef2f9';
     } else {
-      // Unlock for other categories
       qtyInp.readOnly = false; unitInp.readOnly = false;
       ccySel.style.pointerEvents = 'auto';
       qtyInp.style.background = ''; unitInp.style.background = ''; ccySel.style.background = '';
     }
 
-    const excluded = scopeSel.value === 'excluded';
-    // FIX: Parse float or default to 0 to prevent NaN
-    const qty      = parseFloat(qtyInp.value)  || 0;
-    const unit     = parseFloat(unitInp.value) || 0;
-    const ccy      = ccySel.value;
-    const fx       = fxMap[ccy] || 1;
+    const scope      = scopeSel.value;
+    const qty        = parseFloat(qtyInp.value)  || 0;
+    const unit       = parseFloat(unitInp.value) || 0;
+    const ccy        = ccySel.value;
+    const fx         = fxMap[ccy] || 1;
+    const rowCostEur = scope === 'excluded' ? 0 : qty * unit * fx;
 
-    // MATH FIX
-    const rowCost = excluded ? 0 : (qty * unit * fx);
-    const rowSell = excluded ? 0 : (rowCost / kpiDivisor);
-    if (!excluded) runningIncludedBase += rowCost;
-    totalDirect += rowCost;
-    totalOrder  += rowSell;
-
-    tr.classList.toggle('is-excluded', excluded);
-
-    const fmt = n => n > 0 ? '€\u202f' + Math.round(n).toLocaleString('en-GB') : '—';
-    tr.querySelector('.cost-eur').textContent = excluded ? '—' : fmt(rowCost);
-    tr.querySelector('.sell-eur').textContent = excluded ? '—' : fmt(rowSell);
+    costRows.push({ rowType: 'normal', scope, rowCostEur, _tr: tr });
   });
 
-  // ── 3. Guarantee Cost Calculation ────────────────────────────────────
-  let totalGuaranteeCost = 0;
-  document.querySelectorAll('#guar-tbody .guar-row').forEach(tr => {
-    const dur  = parseFloat(tr.querySelector('.inp-guar-dur').value)  || 0;
-    const rate = (parseFloat(tr.querySelector('.inp-guar-rate').value) || 0) / 100;
-    // Bond cost is calculated on the subtotal of Order Cost BEFORE bonds are added
-    const bondCost = totalOrder * rate * dur;
-    totalGuaranteeCost += bondCost;
-    const fmt = n => n > 0 ? '€\u202f' + Math.round(n).toLocaleString('en-GB') : '—';
-    tr.querySelector('.guar-cost-eur').textContent = fmt(bondCost);
+  // ── 3. Collect guarantee rows from DOM ───────────────────────────────
+  const guarRows = Array.from(document.querySelectorAll('#guar-tbody .guar-row')).map(tr => ({
+    duration: parseFloat(tr.querySelector('.inp-guar-dur').value)  || 0,
+    rate:     (parseFloat(tr.querySelector('.inp-guar-rate').value) || 0) / 100,
+    _tr: tr,
+  }));
+
+  // ── 4. Run engine ──────────────────────────────────────────────────────
+  const result = calcEngine({ fxMap, kpis: { rs, ru, w, sga, exu, ba, ebit, neg }, costRows, guarRows });
+
+  // ── 5. Write per-row sell prices back to DOM ─────────────────────────
+  const fmt = n => n > 0 ? '€ ' + Math.round(n).toLocaleString('en-GB') : '—';
+  result.rowSellPrices.forEach((rp, i) => {
+    const tr = costRows[i]._tr;
+    tr.classList.toggle('is-excluded', costRows[i].scope === 'excluded');
+    const excluded = costRows[i].scope === 'excluded';
+    tr.querySelector('.cost-eur').textContent = excluded ? '—' : fmt(rp.rowCostEur);
+    tr.querySelector('.sell-eur').textContent = excluded ? '—' : fmt(rp.rowSellEur);
   });
 
-  // Add total guarantee cost to total order and direct costs
-  totalDirect += totalGuaranteeCost;
-  totalOrder  += totalGuaranteeCost;
+  // ── 6. Write bond costs back to DOM ────────────────────────────────────
+  result.bondData.forEach((b, i) => {
+    guarRows[i]._tr.querySelector('.guar-cost-eur').textContent = fmt(b.bondCostEur);
+  });
 
-  // ── 4. Calculate summary totals ──────────────────────────────────────
-  const customerPrice  = totalOrder * (1 + neg);
-  const salesMarginEUR = customerPrice - totalDirect;
-  const salesMarginPct = customerPrice > 0 ? (salesMarginEUR / customerPrice) * 100 : 0;
-
-  // FunctionalCost = SG&A + EXU + BA only (risk/warranty are tracked separately, not deducted)
-  // Delta between price-after-risk and price-after-risk+func isolates the functional layer.
-  const priceNoEbit    = totalDirect / kpiNoEbitDivisor;       // after risk+warr+SGA+EXU+BA
-  const kpiRiskOnlyPct = risk + warr;
-  const kpiRiskOnlyDiv = kpiRiskOnlyPct >= 1 ? 0.01 : (1 - kpiRiskOnlyPct);
-  const priceAfterRisk = totalDirect / kpiRiskOnlyDiv;         // after risk+warr only
-  const functionalCost = priceNoEbit - priceAfterRisk;         // SG&A + EXU + BA EUR
-
-  // Profit = SalesMargin − FunctionalCost  (Risk provision stays inside profit)
-  const profitEUR      = salesMarginEUR - functionalCost;
-  const profitPct      = customerPrice > 0 ? (profitEUR / customerPrice) * 100 : 0;
-
-  // ── 5. Update summary UI ─────────────────────────────────────────────
-  const fmtEUR = n => '€\u202f' + Math.round(n).toLocaleString('en-GB');
-  const fmtPct = n => n.toFixed(1) + '\u202f%';
+  // ── 7. Update summary KPI cards ─────────────────────────────────────────
+  const fmtEUR = n => '€ ' + Math.round(n).toLocaleString('en-GB');
+  const fmtPct = n => n.toFixed(1) + ' %';
   const $      = id => document.getElementById(id);
 
-  $('sum-direct-cost').textContent     = fmtEUR(totalDirect);
-  $('sum-order-cost').textContent      = fmtEUR(totalOrder);
-  $('sum-customer-price').textContent  = fmtEUR(customerPrice);
-  $('sum-sales-margin-eur').textContent = fmtEUR(salesMarginEUR);
-  $('sum-sales-margin-pct').textContent = fmtPct(salesMarginPct);
-  $('sum-profit-eur').textContent      = fmtEUR(profitEUR);
-  $('sum-profit-pct').textContent      = fmtPct(profitPct);
+  $('sum-direct-cost').textContent      = fmtEUR(result.DC_allScope);
+  $('sum-order-cost').textContent       = fmtEUR(result.OrderCost);
+  $('sum-cost-of-sales').textContent    = fmtEUR(result.CostSalesInclOpex);
+  $('sum-customer-ex-neg').textContent  = fmtEUR(result.CustomerExNeg);
+  $('sum-customer-price').textContent   = fmtEUR(result.CustomerInclNeg);
+  $('sum-sales-margin-eur').textContent = fmtEUR(result.salesMarginEUR);
+  $('sum-sales-margin-pct').textContent = fmtPct(result.salesMarginPct);
+  $('sum-profit-eur').textContent       = fmtEUR(result.profitEUR);
+  $('sum-profit-pct').textContent       = fmtPct(result.profitPct);
 
-  // ── 6. Auto-save & undo snapshot ─────────────────────────────────────
+  // ── 8. Auto-save & undo snapshot ──────────────────────────────────────────
   _scheduleSnap();
 }
 
