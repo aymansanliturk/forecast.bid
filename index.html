@@ -177,11 +177,11 @@
 
   /* ── Tab Navigation (vertical) ── */
   .tab-nav-wrap {
-    width: 200px;
+    width: 170px;
     flex-shrink: 0;
     position: sticky;
     top: 102px;
-    padding: 20px 0 20px 24px;
+    padding: 20px 0 20px 16px;
     align-self: flex-start;
   }
   .tab-nav {
@@ -190,13 +190,13 @@
     gap: 4px;
     border-bottom: none;
     border-left: 1.5px solid var(--border);
-    padding-left: 16px;
+    padding-left: 12px;
     max-width: none;
     margin: 0;
   }
   .tab-btn {
     font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     color: var(--muted);
     background: transparent;
@@ -204,7 +204,7 @@
     border-left: 3px solid transparent;
     border-bottom: none;
     border-radius: 0 6px 6px 0;
-    padding: 10px 14px;
+    padding: 8px 10px;
     cursor: pointer;
     white-space: nowrap;
     margin-bottom: 0;
@@ -1014,7 +1014,7 @@
 
   <!-- ── Filter Navigation (vertical, right column) ── -->
   <div class="tab-nav-wrap">
-    <div style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--faint);padding:0 0 10px 16px;border-left:1.5px solid var(--border);">Filter</div>
+    <div style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--faint);padding:0 0 8px 12px;border-left:1.5px solid var(--border);">Filter</div>
     <div class="tab-nav" id="tab-nav">
       <button class="tab-btn active" data-tab="all" onclick="switchTab('all')">All Tools <span class="tab-count" id="tc-all">17</span></button>
       <button class="tab-btn" data-tab="pricing" onclick="switchTab('pricing')">Commercial Strength<span class="tab-count" id="tc-pricing"></span></button>
