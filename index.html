@@ -144,20 +144,7 @@
   .tb-chip.c-risk.warn { background:#fff7ed; color:#92400e; border-color:#fed7aa; }
   .tb-chip.c-team  { background:#f5f3ff; color:#5b21b6; border-color:#ddd6fe; }
 
-  .tb-logo-slots { display:flex; align-items:center; gap:3px; }
-  .tb-logo-slot {
-    width: 26px; height: 26px; border-radius: 5px;
-    border: 1.5px dashed var(--border);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; overflow: hidden; background: var(--bg);
-    transition: border-color 0.15s; flex-shrink: 0;
-    font-size: 7px; font-weight: 700; color: var(--faint); letter-spacing: 0.3px;
-  }
-  .tb-logo-slot:hover { border-color: var(--accent); }
-  .tb-logo-slot img { width:100%; height:100%; object-fit:contain; }
-
-  .pp-logo-preview { height:24px; max-width:56px; object-fit:contain; border-radius:3px; display:none; }
-  .pp-sync-dot { width:6px; height:6px; border-radius:50%; background:#22c55e; flex-shrink:0; box-shadow:0 0 0 2px #dcfce7; display:none; }
+.pp-sync-dot { width:6px; height:6px; border-radius:50%; background:#22c55e; flex-shrink:0; box-shadow:0 0 0 2px #dcfce7; display:none; }
   .pp-sync-dot.active { display:inline-block; }
 
   /* Header progress strip */
@@ -167,22 +154,7 @@
   }
   .tb-progress-fill { height: 100%; background: var(--accent); transition: width 0.4s ease; min-width: 2px; }
 
-  /* Snapshot floating panel */
-  .tb-snap-wrap { position: relative; }
-  .tb-snap-panel {
-    position: absolute; top: calc(100% + 6px); right: 0;
-    background: var(--surface); border: 1.5px solid var(--border);
-    border-radius: 10px; padding: 10px 12px; width: 280px;
-    box-shadow: 0 8px 28px rgba(0,0,0,0.13); z-index: 2000; display: none;
-  }
-  .tb-snap-panel.open { display: block; }
-  .snap-list { display:flex; flex-direction:column; gap:4px; margin-top:6px; max-height:200px; overflow-y:auto; }
-  .snap-item { display:flex; align-items:center; gap:6px; background:var(--bg); border-radius:6px; padding:5px 8px; }
-  .snap-item-name { flex:1; font-size:11px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .snap-item-ts { font-size:9px; color:var(--muted); white-space:nowrap; flex-shrink:0; }
-  .snap-empty { font-size:10px; color:var(--muted); font-style:italic; padding:2px 0; }
-
-  /* ── Recent Tools Strip ── */
+/* ── Recent Tools Strip ── */
   .recent-wrap { padding: 14px 24px 0; }
   .recent-inner {
     display: none; align-items: center; gap: 7px;
@@ -539,31 +511,6 @@
       <div class="tb-chip c-team"  id="tbchip-team"   style="display:none"></div>
     </div>
     <div style="margin-left:auto;display:flex;align-items:center;gap:5px;flex-shrink:0;">
-      <div class="tb-logo-slots">
-        <div class="tb-logo-slot" id="tb-co-slot" title="Company logo" onclick="document.getElementById('brand-logo-file').click()">CO</div>
-        <div class="tb-logo-slot" id="tb-cx-slot" title="Customer logo" onclick="document.getElementById('customer-logo-file').click()">CX</div>
-      </div>
-      <img id="pp-logo-preview" class="pp-logo-preview" alt="Logo">
-      <input type="file" id="pp-logo-input" accept="image/*" style="display:none" onchange="ppSaveLogo(this)">
-      <button class="pp-btn" id="pp-logo-btn" onclick="document.getElementById('pp-logo-input').click()" style="display:none">⊕ Logo</button>
-      <button class="pp-btn danger" id="pp-logo-clear" onclick="ppClearLogo()" style="display:none">✕</button>
-      <div class="tb-sep"></div>
-      <input type="file" id="master-import-input" accept=".json" style="display:none" onchange="masterImport(this)">
-      <button class="pp-btn" onclick="masterExport()" title="Export full archive">↓ Export</button>
-      <button class="pp-btn" onclick="document.getElementById('master-import-input').click()" title="Import archive">↑ Import</button>
-      <button class="pp-btn" onclick="openErConfig()" title="Executive Report">📄</button>
-      <div class="tb-sep"></div>
-      <div class="tb-snap-wrap">
-        <button class="pp-btn" id="tb-snap-btn" onclick="toggleSnapPanel()" title="Snapshots">📸</button>
-        <div class="tb-snap-panel" id="tb-snap-panel">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <span style="font-size:10px;font-weight:700;color:var(--faint);letter-spacing:0.5px;text-transform:uppercase;">Snapshots</span>
-            <button class="pp-btn" style="font-size:10px;padding:3px 8px;border-color:var(--green);color:var(--green);font-weight:700;" onclick="snapshotFreeze()">+ Freeze</button>
-          </div>
-          <div id="snap-list" class="snap-list"><div class="snap-empty">No snapshots yet.</div></div>
-        </div>
-      </div>
-      <div class="tb-sep"></div>
       <span class="pp-sync-dot" id="pp-sync-dot" title="Synced"></span>
       <span id="pp-sync-label" style="font-size:9px;color:var(--faint);display:none;">Synced</span>
     </div>
@@ -661,6 +608,7 @@
     <!-- Suite Portfolio -->
     <div class="dash-panel">
       <div class="dash-panel-title">Suite Portfolio</div>
+      <input type="file" id="master-import-input" accept=".json" style="display:none" onchange="masterImport(this)">
       <div class="panel-btn-row">
         <button class="panel-btn p-accent" onclick="masterExport()">↓ Export</button>
         <button class="panel-btn" onclick="document.getElementById('master-import-input').click()">↑ Import</button>
