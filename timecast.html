@@ -595,6 +595,7 @@
         <div class="sb-hd">Project Details</div>
         <div class="sb-field"><label>Chart Title</label><input type="text" id="proj-title" placeholder="Auto-synced with project name" oninput="_scheduleSnap(); syncTitleFromProject()"></div>
         <div class="sb-field"><label>Project No.</label><input type="text" id="proj-num" placeholder="e.g. PRJ-001" oninput="_scheduleSnap(); SuiteManager.write({projNum:this.value.trim()},'timecast')"></div>
+        <div class="sb-field"><label>Revision</label><input type="text" id="proj-rev" value="Rev. 1.0" oninput="_scheduleSnap()"></div>
         <div class="sb-field"><label>Date</label><input type="text" id="proj-date" placeholder="e.g. 2025-06-01" oninput="_scheduleSnap()"></div>
         <div class="sb-field"><label>View Scale</label><select id="view-scale" onchange="generate()"><option value="monthly">Monthly</option><option value="weekly">Weekly</option><option value="quarterly">Quarterly</option></select></div>
       </div>
@@ -1333,7 +1334,7 @@ function updateLogoUI() {
   function generate() {
     const title  = document.getElementById('proj-title').value.trim();
     const sub    = document.getElementById('proj-sub')?.value.trim() || '';
-    const rev    = document.getElementById('proj-rev').value.trim();
+    const rev    = document.getElementById('proj-rev')?.value.trim() || '';
     let sm = parseInt(document.getElementById('start-month').value);
     let sy = parseInt(document.getElementById('start-year').value);
     let em = parseInt(document.getElementById('end-month').value);
