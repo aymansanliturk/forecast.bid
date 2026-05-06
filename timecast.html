@@ -525,6 +525,23 @@
     .kb-hint, #autosave-label, .save-confirm { display:none !important; }
     #toolbar { display:none !important; }
 
+
+    .sb-field { margin-bottom:10px; }
+    .sb-field:last-child { margin-bottom:0; }
+    .sb-field label {
+      display:block; font-size:10px; font-weight:600; color:var(--faint);
+      letter-spacing:0.8px; text-transform:uppercase; margin-bottom:4px;
+    }
+    .sb-field input, .sb-field select, .sb-field textarea {
+      width:100%; padding:7px 9px; border:1.5px solid var(--border); border-radius:7px;
+      background:var(--bg); color:var(--text); font-size:13px;
+      font-family:inherit; transition:border-color 0.15s;
+    }
+    .sb-field input:focus, .sb-field select:focus, .sb-field textarea:focus {
+      outline:none; border-color:var(--accent); background:var(--surface);
+    }
+    .sb-field select { cursor:pointer; }
+
     /* ── Print ── */
     @media print {
       header, .sidebar, .nav-popover { display:none !important; }
@@ -574,7 +591,14 @@
 <div class="app-body">
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-inner">
-    <div class="sb-section">
+          <div class="sb-section">
+        <div class="sb-hd">Project Details</div>
+        <div class="sb-field"><label>Chart Title</label><input type="text" id="proj-title" placeholder="Auto-synced with project name" oninput="_scheduleSnap(); syncTitleFromProject()"></div>
+        <div class="sb-field"><label>Project No.</label><input type="text" id="proj-num" placeholder="e.g. PRJ-001" oninput="_scheduleSnap(); SuiteManager.write({projNum:this.value.trim()},'timecast')"></div>
+        <div class="sb-field"><label>Date</label><input type="text" id="proj-date" placeholder="e.g. 2025-06-01" oninput="_scheduleSnap()"></div>
+        <div class="sb-field"><label>View Scale</label><select id="view-scale" onchange="generate()"><option value="monthly">Monthly</option><option value="weekly">Weekly</option><option value="quarterly">Quarterly</option></select></div>
+      </div>
+<div class="sb-section">
       <div class="sb-hd">Actions</div>
       <div class="sb-actions-grid">
         <button class="sb-btn" id="btn-undo" onclick="undo()" disabled>↩ Undo</button>
@@ -596,23 +620,7 @@
 <div id="editor">
 
   <!-- Chart Info -->
-  <div class="section">
-    <div class="section-title">Chart Information</div>
-    <div class="fields f2">
-      <label>Chart Title
-        <input type="text" id="proj-title" value="" placeholder="Auto-synced with project name">
-      </label>
-      <label>Project No. <input type="text" id="proj-num" placeholder="e.g. PRJ-001" oninput="_scheduleSnap(); SuiteManager.write({projNum:this.value.trim()},'timecast')"></label>
-    </div>
-    <div class="fields f2" style="margin-top:12px;">
-      <label>Revision
-        <input type="text" id="proj-rev" value="Rev. 1.0">
-      </label>
-      <label>Date
-        <input type="text" id="proj-date" placeholder="e.g. 2025-06-01">
-      </label>
-    </div>
-  </div>
+  
 
   <!-- Timeline Range -->
   <div class="section">
@@ -1359,6 +1367,7 @@ function updateLogoUI() {
 
     document.getElementById('editor').style.display = 'none';
     document.getElementById('output').style.display  = 'block';
+    document.getElementById('sidebar').classList.add('collapsed');
     window.scrollTo(0,0);
   }
 
@@ -1955,6 +1964,7 @@ function updateLogoUI() {
   }
 
   function goBack() {
+    document.getElementById('sidebar').classList.remove('collapsed');
     document.getElementById('output').style.display = 'none';
     document.getElementById('editor').style.display = 'block';
   }
