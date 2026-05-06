@@ -29,14 +29,27 @@
     --input-bg: #faf9f7; --input-bg-focus: #ffffff;
   }
 
-  [data-theme="dark"] {
-    --bg: #1a1917; --surface: #242320; --border: #3a3835;
-    --text: #e8e6e1; --muted: #9b9891; --faint: #6b6860;
-    --accent: #5b82c4; --accent2: #4a6da8; --green: #22a85a;
-    --green-dk: #1a8a47; --input-bg: #2a2825; --input-bg-focus: #333230;
-  }
-  [data-theme="dark"] { --navy: #2a3f6a; }
-  [data-theme="dark"] .card-icon { background: rgba(255,255,255,0.07) !important; }
+/* ── Dark mode ── */
+[data-theme="dark"] {
+  --bg: #1a1917;
+  --surface: #242320;
+  --border: #3a3835;
+  --text: #e8e6e1;
+  --muted: #9b9891;
+  --faint: #6b6860;
+  --accent: #5b82c4;
+  --accent2: #4a6da8;
+  --green: #22a85a;
+  --green-dk: #1a8a47;
+  --input-bg: #2a2825; --input-bg-focus: #333230;
+}
+[data-theme="dark"] #toolbar,
+[data-theme="dark"] header {
+  background: rgba(36,35,32,0.95);
+}
+[data-theme="dark"] { --navy: #2a3f6a; }
+[data-theme="dark"] .stat-icon,
+[data-theme="dark"] .card-icon { background: rgba(255,255,255,0.07) !important; }
 
   body {
     font-family: 'DM Sans', sans-serif;
@@ -48,198 +61,342 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ── Header (lean: logo + theme toggle only) ── */
+  /* ── Header ── */
   header {
-    height: 52px;
-    padding: 0 32px;
+    padding: 14px 48px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: rgba(255,255,255,0.96);
+    background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
     position: sticky;
     top: 0;
     z-index: 1000;
+  }
+
+  .logo-wrap { display: flex; align-items: center; gap: 10px; }
+  .logo-text { display: flex; flex-direction: column; justify-content: center; gap: 1px; }
+
+  .logo-icon {
+    width: 34px; height: 34px;
+    background: var(--navy);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
-  [data-theme="dark"] header { background: rgba(36,35,32,0.97); }
-  .logo-wrap { display:flex; align-items:center; gap:8px; text-decoration:none; }
-  .logo-icon {
-    width: 28px; height: 28px; background: var(--navy);
-    border-radius: 7px; display: flex; align-items: center;
-    justify-content: center; flex-shrink: 0;
+  .logo-icon svg { width: 18px; height: 18px; }
+
+  .site-name {
+    font-size: 15px; font-weight: 600;
+    color: var(--text); white-space: nowrap; letter-spacing: -0.3px;
+    line-height: 1;
   }
-  .logo-icon svg { width: 15px; height: 15px; }
-  .site-name { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
-  .site-name .dot { opacity: 0.3; }
+  .site-name .dot { opacity: 0.35; }
+
+  .header-meta {
+    font-family: 'DM Mono', monospace; font-size: 8.5px;
+    color: var(--faint); text-align: left; line-height: 1;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
 
   /* ── Workspace Bar ── */
   .workspace-bar {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 52px;
-    z-index: 999;
-    flex-shrink: 0;
-    overflow: visible;
+    padding: 0 48px;
   }
   .wb-inner {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 0 32px;
-    height: 50px;
     display: flex;
     align-items: center;
-    justify-content: center;
-  gap: 8px;
+    gap: 16px;
+    padding: 12px 0;
     flex-wrap: wrap;
-    overflow: visible;
   }
-  [data-theme="dark"] .workspace-bar { background: rgba(36,35,32,0.97); }
-
-  .tb-sep { width: 1px; height: 22px; background: var(--border); flex-shrink: 0; }
-
-  .tb-project { display:flex; align-items:center; gap:5px; flex-shrink:0; }
+  .wb-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--faint);
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .wb-fields {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1;
+  }
   .pp-select {
     font-family: 'DM Sans', sans-serif; font-size: 12px;
-    border: 1.5px solid var(--border); border-radius: 7px;
-    padding: 5px 8px; background: var(--bg); color: var(--muted);
-    outline: none; cursor: pointer; max-width: 155px; transition: border-color 0.15s;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    padding: 7px 10px; background: var(--bg); color: var(--muted);
+    outline: none; cursor: pointer; max-width: 190px;
+    transition: border-color 0.15s;
   }
-  .pp-select:focus { border-color: var(--accent); color: var(--text); }
+  .pp-select:focus { border-color: var(--accent); background: var(--input-bg-focus); color: var(--text); }
   .pp-input {
     font-family: 'DM Sans', sans-serif; font-size: 13px;
-    border: 1.5px solid var(--border); border-radius: 7px;
-    padding: 5px 10px; background: var(--bg); color: var(--text);
+    border: 1.5px solid var(--border); border-radius: 8px;
+    padding: 7px 12px; background: var(--bg); color: var(--text);
     outline: none; transition: border-color 0.15s;
   }
   .pp-input:focus { border-color: var(--accent); background: var(--input-bg-focus); }
-  .pp-input.name { width: 190px; font-weight: 600; }
-
+  .pp-input.name  { width: 260px; font-weight: 600; }
+  .pp-sep { width: 1px; height: 26px; background: var(--border); flex-shrink: 0; }
+  .pp-logo-wrap { display: flex; align-items: center; gap: 8px; }
+  .pp-logo-preview {
+    height: 30px; max-width: 90px; object-fit: contain;
+    border-radius: 4px; display: none;
+  }
   .pp-btn {
     font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500;
-    padding: 5px 10px; border-radius: 6px; border: 1.5px solid var(--border);
+    padding: 6px 12px; border-radius: 7px; border: 1.5px solid var(--border);
     background: var(--bg); color: var(--muted); cursor: pointer;
-    white-space: nowrap; transition: all 0.15s; flex-shrink: 0;
+    white-space: nowrap; transition: all 0.15s;
   }
-  .pp-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: var(--surface); }
-  .pp-btn.danger:hover:not(:disabled) { border-color: #c0392b; color: #c0392b; background: var(--surface); }
+  .pp-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: #fff; }
+  .pp-btn.danger:hover:not(:disabled) { border-color: #c0392b; color: #c0392b; background: #fff; }
   .pp-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-  .pp-proj-count { font-family:'DM Mono',monospace; font-size:9px; color:var(--faint); white-space:nowrap; }
+  /* Standard suite button classes */
+  .btn-primary { font-family:'DM Sans',sans-serif; background:var(--accent); color:#fff; border:none; border-radius:7px; padding:9px 20px; font-size:13px; font-weight:600; cursor:pointer; transition:background 0.15s; }
+  .btn-primary:hover { background:var(--accent2); }
+  /* ── Exec Report config popover ── */
+  .er-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:2000; display:flex; align-items:center; justify-content:center; }
+  .er-dialog  { background:var(--surface); border-radius:14px; padding:24px 28px; width:400px; max-width:92vw; box-shadow:0 20px 60px rgba(0,0,0,0.25); }
+  .er-dialog-title { font-size:15px; font-weight:700; margin-bottom:3px; }
+  .er-dialog-sub   { font-size:12px; color:var(--muted); margin-bottom:16px; }
+  .er-cb-row { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); cursor:pointer; }
+  .er-cb-row:last-of-type { border-bottom:none; }
+  .er-cb-row input[type=checkbox] { width:15px; height:15px; accent-color:var(--accent); cursor:pointer; flex-shrink:0; }
+  .er-cb-label { font-size:13px; font-weight:500; flex:1; }
+  .er-cb-src   { font-size:10px; color:var(--faint); }
+  .btn-green   { font-family:'DM Sans',sans-serif; background:var(--green); color:#fff; border:none; border-radius:7px; padding:9px 20px; font-size:13px; font-weight:600; cursor:pointer; transition:filter 0.15s; }
+  .btn-green:hover { filter:brightness(0.9); }
+  .pp-proj-count {
+    font-family: 'DM Mono', monospace; font-size: 9px; color: var(--faint);
+    white-space: nowrap;
+  }
+  .pp-sync-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #22c55e; flex-shrink: 0;
+    box-shadow: 0 0 0 2px #dcfce7;
+    display: none;
+  }
+  .pp-sync-dot.active { display: inline-block; }
 
-  /* Status chips */
-  .tb-status { display:flex; align-items:center; gap:4px; flex-shrink:0; }
-  .tb-chip {
-    display: inline-flex; align-items: center; gap: 3px;
-    border-radius: 99px; padding: 3px 9px;
-    font-size: 11px; font-weight: 600; white-space: nowrap;
-    border: 1.5px solid transparent; flex-shrink: 0;
+  /* ── Hero ── */
+  .hero {
+    background-color: var(--surface);
+    background-image: radial-gradient(var(--border) 0.75px, transparent 0.75px);
+    background-size: 24px 24px;
+    border-bottom: 1px solid var(--border);
+    padding: 72px 48px 96px;
   }
-  .tb-chip.c-value { background:#f0fdf4; color:#166534; border-color:#bbf7d0; }
-  .tb-chip.c-pct   { background:#eff6ff; color:var(--accent); border-color:#bfdbfe; }
-  .tb-chip.c-pct.warn  { background:#fff7ed; color:#92400e; border-color:#fed7aa; }
-  .tb-chip.c-pct.alert { background:#fef2f2; color:#991b1b; border-color:#fecaca; }
-  .tb-chip.c-risk  { background:#fef2f2; color:#991b1b; border-color:#fecaca; }
-  .tb-chip.c-risk.ok { background:#f0fdf4; color:#166534; border-color:#bbf7d0; }
-  .tb-chip.c-risk.warn { background:#fff7ed; color:#92400e; border-color:#fed7aa; }
-  .tb-chip.c-team  { background:#f5f3ff; color:#5b21b6; border-color:#ddd6fe; }
+  .hero-inner { max-width: 1400px; margin: 0 auto; }
+  .hero-eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 16px;
+  }
+  .hero-title {
+    font-size: 60px; font-weight: 700; letter-spacing: -3px;
+    line-height: 1; color: var(--text); margin-bottom: 24px;
+  }
+  .hero-title span { color: var(--accent); opacity: 0.8; }
+  .hero-sub { font-size: 18px; color: var(--muted); line-height: 1.6; max-width: 650px; }
 
-.pp-sync-dot { width:6px; height:6px; border-radius:50%; background:#22c55e; flex-shrink:0; box-shadow:0 0 0 2px #dcfce7; display:none; }
-  .pp-sync-dot.active { display:inline-block; }
-
-  /* Header progress strip */
-  .tb-progress-strip {
-    position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
-    overflow: hidden; display: none;
+  /* ── Dashboard Stats ── */
+  .dash-wrap {
+    padding: 0 48px 48px;
+    margin-top: -48px;
+    position: relative;
+    z-index: 10;
   }
-  .tb-progress-fill { height: 100%; background: var(--accent); transition: width 0.4s ease; min-width: 2px; }
-
-/* ── Recent Tools Strip ── */
-  .recent-wrap { padding: 14px 24px 0; }
-  .recent-inner {
-    display: none; align-items: center; gap: 7px;
-    border-bottom: 1px solid var(--border); padding-bottom: 12px;
+  .dash-inner { max-width: 1400px; margin: 0 auto; }
+  .dash-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    width: 780px;
   }
-  .recent-inner.has-items { display: flex; }
-  .recent-label {
-    font-size: 8.5px; font-weight: 700; letter-spacing: 1px;
-    text-transform: uppercase; color: var(--faint); white-space: nowrap; flex-shrink: 0;
-  }
-  .recent-chip {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 4px 11px; border-radius: 99px;
-    border: 1.5px solid var(--border); background: var(--surface);
-    font-size: 11px; font-weight: 600; color: var(--muted);
-    text-decoration: none; white-space: nowrap; transition: all 0.15s; flex-shrink: 0;
-  }
-  .recent-chip:hover { border-color: var(--accent); color: var(--accent); }
-  .recent-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-
-  /* ── Tab Navigation (vertical) ── */
-  .tab-nav-wrap {
-    width: 170px;
-    flex-shrink: 0;
-    position: sticky;
-    top: 102px;
-    padding: 20px 0 20px 16px;
-    align-self: flex-start;
-  }
-  .tab-nav {
+  .stat-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 14px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    border-bottom: none;
-    border-left: 1.5px solid var(--border);
-    padding-left: 12px;
-    max-width: none;
-    margin: 0;
+    gap: 3px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+    min-width: 0;
   }
-  .tab-btn {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--muted);
-    background: transparent;
-    border: none;
-    border-left: 3px solid transparent;
-    border-bottom: none;
-    border-radius: 0 6px 6px 0;
-    padding: 8px 10px;
-    cursor: pointer;
-    white-space: nowrap;
-    margin-bottom: 0;
-    transition: color 0.15s, background 0.15s, border-color 0.15s;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    text-align: left;
-    width: 100%;
+  .stat-icon {
+    width: 26px; height: 26px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-bottom: 4px;
   }
-  .tab-btn:hover { color: var(--text); background: var(--bg); }
-  .tab-btn.active { color: var(--accent); border-left-color: var(--accent); background: var(--bg); }
-  .tab-btn .tab-count {
-    display: inline-flex; align-items: center; justify-content: center;
-    background: var(--border); color: var(--muted);
-    font-size: 9px; font-weight: 700; border-radius: 99px;
-    padding: 1px 6px; line-height: 1.4;
-    transition: background 0.15s, color 0.15s;
-    flex-shrink: 0;
+  .stat-icon svg { width: 13px; height: 13px; }
+  .stat-label {
+    font-size: 8.5px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--faint);
   }
-  .tab-btn.active .tab-count { background: #dbeafe; color: var(--accent); }
-  [data-theme="dark"] .tab-btn.active .tab-count { background: rgba(91,130,196,0.2); }
+  .stat-value {
+    font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 700;
+    color: var(--faint); letter-spacing: -0.3px; line-height: 1.1;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .stat-value.has-data { color: var(--text); }
+  /* Smaller text for longer strings (dates, ranges) */
+  .stat-value.sm { font-size: 11px; letter-spacing: 0; white-space: normal; line-height: 1.3; }
+  .stat-source { font-size: 8px; color: var(--faint); margin-top: 2px; }
+
+  /* ── Progress Bar ── */
+  .progress-wrap {
+  margin-top: 18px;
+  width: 780px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+  }
+  .progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  gap: 12px;
+  }
+  .progress-hd-edge {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: var(--faint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  }
+  .progress-hd-pct {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0;
+  }
+  .progress-track {
+  height: 6px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+  position: relative;
+  }
+  .progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+  min-width: 4px;
+  }
+  .progress-fill.warn { background: #d97706; }
+  .progress-fill.alert { background: #c0392b; }
+
+  /* ── Stat card state indicators ── */
+  .stat-card.s-healthy { border-left: 3px solid var(--green); padding-left: 11px; }
+  .stat-card.s-warn    { border-left: 3px solid #d97706; padding-left: 11px; }
+  .stat-card.s-alert   { border-left: 3px solid #c0392b; padding-left: 11px; }
+
+  .stat-chip {
+    display: inline-flex; align-items: center;
+    font-size: 7.5px; font-weight: 700; letter-spacing: 0.3px;
+    text-transform: uppercase; border-radius: 99px;
+    padding: 2px 7px; margin-top: 3px; width: fit-content;
+  }
+  .stat-chip.green { background: #dcfce7; color: #166534; }
+  .stat-chip.amber { background: #fef3c7; color: #92400e; }
+  .stat-chip.red   { background: #fee2e2; color: #991b1b; }
+  .stat-chip.hidden { display: none; }
+
+  /* ── Dashboard side-panels row (Brand + Archive) ── */
+  .dash-panels {
+    display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap;
+    max-width: 780px;
+  }
+  .dash-panel {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 14px 18px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+    flex: 1; min-width: 220px;
+  }
+  .dash-panel-hd {
+    font-size: 8px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--faint); margin-bottom: 10px;
+  }
+  .dash-panel-row { display: flex; align-items: center; gap: 10px; }
+  .brand-logo-box {
+    width: 56px; height: 40px; flex-shrink: 0;
+    border: 1.5px dashed var(--border); border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg); overflow: hidden; cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .brand-logo-box:hover { border-color: var(--accent); }
+  .brand-logo-box img { width: 100%; height: 100%; object-fit: contain; }
+  .brand-logo-empty { font-size: 18px; color: var(--faint); line-height: 1; }
+  .dash-panel-info { flex: 1; }
+  .dash-panel-title { font-size: 12px; font-weight: 600; color: var(--text); }
+  .dash-panel-desc  { font-size: 10px; color: var(--muted); margin-top: 1px; }
+  .dash-panel-btns  { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .dash-panel-btns .pp-btn { font-size: 10px; padding: 4px 10px; }
+  .archive-rows { display: flex; flex-direction: column; gap: 6px; }
+  .archive-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px;
+  }
+  .archive-row-desc { font-size: 10px; color: var(--muted); line-height: 1.4; flex: 1; }
+  .snap-list  { display:flex; flex-direction:column; gap:4px; margin-top:6px; max-height:188px; overflow-y:auto; }
+  .snap-item  { display:flex; align-items:center; gap:6px; background:var(--bg); border-radius:6px; padding:5px 8px; }
+  .snap-item-name { flex:1; font-size:11px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .snap-item-ts   { font-size:9px; color:var(--muted); white-space:nowrap; flex-shrink:0; }
+  .snap-empty     { font-size:10px; color:var(--muted); font-style:italic; padding:2px 0; }
 
   /* ── Cards ── */
-  .cards-wrap { flex: 1; padding: 20px 24px 80px; min-width: 0; position: relative; z-index: 10; }
+  .cards-wrap {
+    padding: 0 48px 80px;
+    position: relative;
+    z-index: 10;
+  }
   .cards {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 14px; max-width: none; margin: 0;
+    gap: 16px;
+    max-width: 1400px;
+    margin: 0 auto;
   }
+
+  @media (max-width: 1100px) {
+    .cards { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 900px) {
+    header { padding: 14px 24px; }
+    .hero { padding: 60px 24px 80px; }
+    .workspace-bar { padding: 0 24px; }
+    .dash-wrap { padding: 0 24px 40px; margin-top: -40px; }
+    .cards-wrap { padding: 0 24px 48px; }
+    .cards { grid-template-columns: repeat(2, 1fr); }
+    .hero-title { font-size: 42px; letter-spacing: -2px; }
+    .dash-stats { grid-template-columns: repeat(2, 1fr); width: auto; }
+  }
+  @media (max-width: 560px) {
+    .cards { grid-template-columns: 1fr; }
+    .cards-wrap { padding: 0 16px 32px; }
+    .hero-title { font-size: 36px; }
+    .dash-stats { grid-template-columns: repeat(2, 1fr); }
+    .pp-input.name { width: 180px; }
+  }
+
   .card {
-    background: var(--surface); border: 1.5px solid var(--border);
-    border-radius: 14px; padding: 20px 20px 16px;
-    text-decoration: none; color: inherit; display: flex;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 26px 22px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
     flex-direction: column;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04);
@@ -247,24 +404,25 @@
   .card:hover {
     border-color: var(--card-color, var(--accent));
     box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
-    transform: translateY(-10px);
+    transform: translateY(-12px);
   }
-  .card-header { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
-  .card-titles { display:flex; flex-direction:column; gap:2px; }
+
   .card-icon {
-    width: 36px; height: 36px; border-radius: 9px;
+    width: 44px; height: 44px;
+    border-radius: 11px;
     display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; position: relative;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+    position: relative;
   }
-  .card-icon svg { width: 18px; height: 18px; }
-  .card-name { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
-  .card-tagline { font-size: 8.5px; font-weight: 600; color: var(--faint); letter-spacing: 1.2px; text-transform: uppercase; }
-  .card-desc {
-    font-size: 12px; color: var(--muted); line-height: 1.55; flex: 1;
-    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-  }
+  .card-icon svg { width: 22px; height: 22px; }
+
+  .card-name { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 4px; }
+  .card-tagline { font-size: 9px; font-weight: 600; color: var(--faint); letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 14px; }
+  .card-desc { font-size: 13px; color: var(--muted); line-height: 1.65; flex: 1; }
+
   .card-footer {
-    margin-top: 14px; padding-top: 12px;
+    margin-top: 20px; padding-top: 16px;
     border-top: 1px solid var(--border);
     display: flex; align-items: center; justify-content: space-between;
   }
@@ -277,155 +435,28 @@
   .group-label-line { flex:1; height:1px; background:var(--border); }
   .group-label-sub { font-size:9.5px; color:var(--faint); letter-spacing:0; font-weight:400; white-space:nowrap; }
 
-  /* stat-chip: kept for refreshStats DOM manipulation */
-  .stat-chip { display:inline-flex; align-items:center; font-size:7.5px; font-weight:700; letter-spacing:0.3px; text-transform:uppercase; border-radius:99px; padding:2px 7px; margin-top:3px; width:fit-content; }
-  .stat-chip.green { background:#dcfce7; color:#166534; }
-  .stat-chip.amber { background:#fef3c7; color:#92400e; }
-  .stat-chip.red   { background:#fee2e2; color:#991b1b; }
-  .stat-chip.hidden { display:none; }
-  /* ── Dashboard Layout ── */
-  .dashboard-layout {
-    display: flex;
-    align-items: flex-start;
-    flex: 1;
-  }
-  .dash-sidebar {
-    width: 380px;
-    flex-shrink: 0;
-    position: sticky;
-    top: 102px;
-    max-height: calc(100vh - 102px);
-    overflow-y: auto;
-    overflow-x: hidden;
-    border-right: 1px solid var(--border);
-    padding: 20px 18px 40px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    background: var(--surface);
-  }
-  .dash-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .dash-content { display: flex; align-items: flex-start; flex: 1; }
-
-  /* ── Stat Cards Grid ── */
-  .dash-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 7px;
-  }
-  .stat-card {
-    background: var(--bg);
-    border: 1.5px solid var(--border);
-    border-radius: 9px;
-    padding: 10px 11px 8px;
-    transition: border-color 0.15s, background 0.15s;
-  }
-  .stat-card.s-healthy { border-color: #86efac; background: #f0fdf4; }
-  .stat-card.s-warn    { border-color: #fcd34d; background: #fffbeb; }
-  .stat-card.s-alert   { border-color: #fca5a5; background: #fef2f2; }
-  [data-theme="dark"] .stat-card.s-healthy { border-color: #166534; background: rgba(16,124,65,0.12); }
-  [data-theme="dark"] .stat-card.s-warn    { border-color: #b45309; background: rgba(217,119,6,0.1); }
-  [data-theme="dark"] .stat-card.s-alert   { border-color: #991b1b; background: rgba(190,18,60,0.1); }
-  .stat-source {
-    font-size: 8px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1px; color: var(--faint); margin-bottom: 4px;
-  }
-  .stat-value {
-    font-size: 12.5px; font-weight: 700; color: var(--text);
-    letter-spacing: -0.2px; min-height: 18px; line-height: 1.3;
-    word-break: break-word;
-  }
-  .stat-value:not(.has-data) { color: var(--faint); font-weight: 400; }
-
-  /* ── Sidebar Progress Bar ── */
-  #progress-wrap { padding: 2px 0; }
-  .progress-meta {
-    display: flex; justify-content: space-between;
-    font-size: 9px; color: var(--muted); margin-bottom: 5px;
-  }
-  .progress-track {
-    height: 5px; background: var(--border); border-radius: 3px; overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%; background: var(--accent); border-radius: 3px;
-    transition: width 0.4s ease; min-width: 2px;
-  }
-  .progress-fill.warn  { background: #d97706; }
-  .progress-fill.alert { background: #c0392b; }
-
-  /* ── Dash Panels ── */
-  .dash-panels { display: flex; flex-direction: column; gap: 10px; }
-  .dash-panel {
-    background: var(--bg);
-    border: 1.5px solid var(--border);
-    border-radius: 9px;
-    padding: 12px 12px 10px;
-  }
-  .dash-panel-title {
-    font-size: 8px; font-weight: 700; letter-spacing: 1px;
-    text-transform: uppercase; color: var(--faint); margin-bottom: 9px;
-  }
-  .logo-boxes { display: flex; gap: 7px; }
-  .logo-box {
-    flex: 1; height: 54px; border-radius: 7px;
-    border: 1.5px dashed var(--border);
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    cursor: pointer; overflow: hidden; background: var(--surface);
-    transition: border-color 0.15s;
-  }
-  .logo-box:hover { border-color: var(--accent); }
-  .logo-box img { width: 100%; height: 100%; object-fit: contain; padding: 6px; }
-  .logo-actions { display: flex; gap: 5px; margin-top: 7px; flex-wrap: wrap; }
-  .panel-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-  .panel-btn {
-    font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600;
-    padding: 7px 8px; border-radius: 7px; border: 1.5px solid var(--border);
-    background: var(--surface); color: var(--muted); cursor: pointer;
-    white-space: nowrap; transition: all 0.15s; text-align: center;
-  }
-  .panel-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--surface); }
-  .panel-btn.p-accent { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .panel-btn.p-accent:hover { background: var(--accent2); }
-
   /* ── Footer ── */
   footer {
-    margin-top: auto; padding: 11px 48px;
+    margin-top: auto;
+    padding: 18px 48px;
     border-top: 1px solid var(--border);
     display: flex; align-items: center; justify-content: space-between;
-    font-family: 'DM Mono', monospace; font-size: 8.5px; color: var(--faint);
+    font-family: 'DM Mono', monospace; font-size: 9px; color: var(--faint);
     letter-spacing: 0.5px; text-transform: uppercase;
-    opacity: 0.45; transition: opacity 0.25s;
   }
-  footer:hover { opacity: 1; }
 
-  /* Standard suite buttons */
-  .btn-primary { font-family:'DM Sans',sans-serif; background:var(--accent); color:#fff; border:none; border-radius:7px; padding:9px 20px; font-size:13px; font-weight:600; cursor:pointer; transition:background 0.15s; }
-  .btn-primary:hover { background:var(--accent2); }
-  .btn-green { font-family:'DM Sans',sans-serif; background:var(--green); color:#fff; border:none; border-radius:7px; padding:9px 20px; font-size:13px; font-weight:600; cursor:pointer; transition:filter 0.15s; }
-  .btn-green:hover { filter:brightness(0.9); }
-
-  /* ── Exec Report config dialog ── */
-  .er-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:2000; display:flex; align-items:center; justify-content:center; }
-  .er-dialog  { background:var(--surface); border-radius:14px; padding:24px 28px; width:400px; max-width:92vw; box-shadow:0 20px 60px rgba(0,0,0,0.25); }
-  .er-dialog-title { font-size:15px; font-weight:700; margin-bottom:3px; }
-  .er-dialog-sub   { font-size:12px; color:var(--muted); margin-bottom:16px; }
-  .er-cb-row { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); cursor:pointer; }
-  .er-cb-row:last-of-type { border-bottom:none; }
-  .er-cb-row input[type=checkbox] { width:15px; height:15px; accent-color:var(--accent); cursor:pointer; flex-shrink:0; }
-  .er-cb-label { font-size:13px; font-weight:500; flex:1; }
-  .er-cb-src   { font-size:10px; color:var(--faint); }
-
-  /* ── Exec Report output (print) ── */
+  /* ── Executive Report ── */
   body.printing-report header,
   body.printing-report .workspace-bar,
-  body.printing-report .dash-sidebar,
-  body.printing-report .recent-wrap,
-  body.printing-report .dash-content,
-  body.printing-report footer { display:none !important; }
-  body.printing-report #executive-report-output { display:block !important; background:#fff; }
-  #executive-report-output { display:none; }
-  .er-wrap { font-family:'DM Sans',sans-serif; background:#fff; color:#1a1916; max-width:210mm; margin:0 auto; }
+  body.printing-report .hero,
+  body.printing-report .dash-wrap,
+  body.printing-report .cards-wrap,
+  body.printing-report footer { display: none !important; }
+  body.printing-report #executive-report-output { display: block !important; background: #fff; }
+
+  #executive-report-output { display: none; }
+
+  .er-wrap { font-family: 'DM Sans', sans-serif; background: #fff; color: #1a1916; max-width: 210mm; margin: 0 auto; }
   .er-page {
     padding: 40px 48px; min-height: 270mm;
     display: flex; flex-direction: column;
@@ -443,39 +474,13 @@
     .er-page:last-child { page-break-after: avoid; }
     .er-page + .er-page { border-top: none; }
   }
-
-  .header-tagline {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: -0.3px;
-    white-space: nowrap;
-    pointer-events: none;
-  }
-  .header-tagline span { color: var(--accent); }
-  @media (max-width: 768px) { .header-tagline { display: none; } }
-
-  @media (max-width: 1024px) {
-    .dash-sidebar { display: none; }
-    .tab-nav-wrap { display: none; }
-    .cards-wrap { padding: 16px 20px 48px; }
-    .cards { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 560px) {
-    .cards { grid-template-columns: 1fr; }
-    .cards-wrap { padding: 10px 16px 32px; }
-  }
-
 </style>
 </head>
 <body>
 
-<header id="topbar" style="position:relative;">
-  <a class="logo-wrap" href="index.html">
-    <div class="logo-icon">
+<header>
+  <div class="logo-wrap">
+    <div class="logo-icon" id="header-logo-icon">
       <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="1" y="1" width="7" height="7" rx="1.5" fill="white"/>
         <rect x="10" y="1" width="7" height="7" rx="1.5" fill="white"/>
@@ -483,177 +488,294 @@
         <rect x="10" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.4"/>
       </svg>
     </div>
-    <span class="site-name">PYL0N<span class="dot">.</span></span>
-  </a>
-  <div class="header-tagline">Bid Management, <span>simplified.</span></div>
-
-  <button id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle dark mode" style="font-size:15px;padding:3px 6px;border:none;background:transparent;cursor:pointer;color:inherit;" aria-label="Toggle dark mode">🌙</button>
-  <div class="tb-progress-strip" id="tb-progress-strip">
-    <div class="tb-progress-fill" id="tb-progress-fill-hd" style="width:0%"></div>
+    <div class="logo-text">
+      <span class="site-name">PYL0N<span class="dot">.</span></span>
+      <div class="header-meta">100% Private · Local Execution</div>
+    </div>
   </div>
+  <button id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle dark mode" style="font-size:16px;padding:4px 8px;border:none;background:transparent;cursor:pointer;color:inherit;margin-left:auto;" aria-label="Toggle dark mode">🌙</button>
 </header>
 
 <!-- ── Workspace Bar ── -->
-<div class="workspace-bar">
+<div class="workspace-bar" id="workspace-bar">
   <div class="wb-inner">
-    <div class="tb-project">
+    <span class="wb-label">Workspace</span>
+    <div class="wb-fields">
       <select id="pp-select" class="pp-select" onchange="ppSelectChange()" title="Switch saved project"></select>
-      <input id="pp-name" class="pp-input name" type="text" placeholder="Project name…" title="Project name — syncs to all tools">
-      <button class="pp-btn" onclick="ppSave()" title="Save project">Save</button>
-      <button class="pp-btn" onclick="ppNew()" title="New project">New</button>
-      <button class="pp-btn danger" id="pp-del-btn" onclick="ppDelete()" disabled title="Delete project">Del</button>
+      <div class="pp-sep"></div>
+      <input id="pp-name" class="pp-input name" type="text" placeholder="Project name…" title="Project name — syncs to all tools instantly">
+      <div class="pp-sep"></div>
+      <button class="pp-btn" onclick="ppSave()" title="Save current project" aria-label="Save current project">Save</button>
+      <button class="pp-btn" onclick="ppNew()"  title="Create new blank project" aria-label="Create new blank project">New</button>
+      <button class="pp-btn danger" id="pp-del-btn" onclick="ppDelete()" title="Delete active project" disabled aria-label="Delete active project">Delete</button>
       <span class="pp-proj-count" id="pp-proj-count">0/5</span>
-    </div>
-    <div class="tb-sep"></div>
-    <div class="tb-status" id="tb-status">
-      <div class="tb-chip c-value" id="tbchip-value" style="display:none"></div>
-      <div class="tb-chip c-pct"   id="tbchip-pct"   style="display:none"></div>
-      <div class="tb-chip c-risk"  id="tbchip-risk"   style="display:none"></div>
-      <div class="tb-chip c-team"  id="tbchip-team"   style="display:none"></div>
-    </div>
-    <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;">
-      <span class="pp-sync-dot" id="pp-sync-dot" title="Synced"></span>
-      <span id="pp-sync-label" style="font-size:9px;color:var(--faint);display:none;">Synced</span>
+      <div class="pp-sep"></div>
+      <div class="pp-logo-wrap">
+        <img id="pp-logo-preview" class="pp-logo-preview" alt="Logo">
+        <input type="file" id="pp-logo-input" accept="image/*" style="display:none" onchange="ppSaveLogo(this)">
+        <button class="pp-btn" id="pp-logo-btn" onclick="document.getElementById('pp-logo-input').click()">⊕ Logo</button>
+        <button class="pp-btn danger" id="pp-logo-clear" onclick="ppClearLogo()" style="display:none" aria-label="Remove">✕</button>
+      </div>
+      <div class="pp-sep"></div>
+      <span class="pp-sync-dot" id="pp-sync-dot" title="Changes synced to all open tools"></span>
+      <span id="pp-sync-label" style="font-size:10px;color:var(--faint);display:none;">Synced</span>
     </div>
   </div>
 </div>
 
-<!-- ── Dashboard Layout ── -->
-<div class="dashboard-layout">
-
-<aside class="dash-sidebar">
-
-  <!-- Stat Cards -->
-  <div class="dash-stats">
-    <div class="stat-card" id="stat-card-budget">
-      <div class="stat-source">Value</div>
-      <div class="stat-value" id="stat-budget">—</div>
-      <div id="chip-budget" class="stat-chip hidden"></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-source">Team</div>
-      <div class="stat-value" id="stat-team">—</div>
-    </div>
-    <div class="stat-card" id="stat-card-timeline">
-      <div class="stat-source">Timeline</div>
-      <div class="stat-value" id="stat-timeline">—</div>
-      <div id="chip-timeline" class="stat-chip hidden"></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-source">Phases</div>
-      <div class="stat-value" id="stat-phases">—</div>
-    </div>
-    <div class="stat-card" id="stat-card-rfq">
-      <div class="stat-source">Procurement</div>
-      <div class="stat-value" id="stat-rfq">—</div>
-      <div id="chip-rfq" class="stat-chip hidden"></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-source">Org</div>
-      <div class="stat-value" id="stat-org">—</div>
-    </div>
-    <div class="stat-card" id="stat-card-risk">
-      <div class="stat-source">Risks</div>
-      <div class="stat-value" id="stat-risk">—</div>
-      <div id="chip-risk" class="stat-chip hidden"></div>
-    </div>
-    <div class="stat-card" id="stat-card-exposure">
-      <div class="stat-source">Exposure</div>
-      <div class="stat-value" id="stat-exposure">—</div>
-      <div id="chip-exposure" class="stat-chip hidden"></div>
-    </div>
+<!-- ── Hero ── -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">PYL0N Bid Project Suite</div>
+    <div class="hero-title">Bid Management, <span>simplified.</span></div>
+    <div class="hero-sub">The essential toolkit for complex bid projects. Runs locally in your browser.</div>
   </div>
+</div>
 
-  <!-- Project Timeline Progress -->
-  <div id="progress-wrap" style="display:none;">
-    <div class="progress-meta">
-      <span id="progress-start"></span>
-      <span id="progress-pct" style="font-weight:700;color:var(--accent);"></span>
-      <span id="progress-end"></span>
-    </div>
-    <div class="progress-track">
-      <div class="progress-fill" id="progress-fill" style="width:0%;"></div>
-    </div>
+<!-- ── Dashboard Stats ── -->
+<div class="dash-wrap">
+  <div class="dash-inner">
+    <div class="dash-stats">
+
+<div class="stat-card" id="stat-card-budget">
+  <div class="stat-icon" style="background:#f0fdf8;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 10h12"/>
+      <path d="M4 14h9"/>
+      <path d="M19 6a7.7 7.7 0 0 0-5.2-2A7.9 7.9 0 0 0 6 12c0 4.4 3.5 8 7.8 8 2 0 3.8-.8 5.2-2"/>
+    </svg>
   </div>
+  <div class="stat-label">Project Value</div>
+  <div class="stat-value" id="stat-budget">—</div>
+  <div class="stat-source">CalcCast · Customer Price</div>
+  <div class="stat-chip hidden" id="chip-budget"></div>
+</div>
 
-  <!-- Panels -->
-  <div class="dash-panels">
-
-    <!-- Corporate Identity -->
-    <div class="dash-panel">
-      <div class="dash-panel-title">Corporate Identity</div>
-      <input type="file" id="brand-logo-file" accept="image/svg+xml,image/png,image/jpeg,image/jpg" style="display:none" onchange="brandUploadLogo(this)">
-      <input type="file" id="customer-logo-file" accept="image/svg+xml,image/png,image/jpeg,image/jpg" style="display:none" onchange="customerUploadLogo(this)">
-      <div class="logo-boxes">
-        <div class="logo-box" onclick="document.getElementById('brand-logo-file').click()" title="Company logo">
-          <img id="brand-logo-img" src="" alt="" style="display:none;">
-          <span id="brand-logo-empty" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-            <span style="font-size:8px;font-weight:700;color:var(--faint);letter-spacing:0.5px;">CO</span>
-            <span style="font-size:7px;color:var(--faint);">Company</span>
-          </span>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#f0f4ff;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+            <path d="M16 3.13a4 4 0 010 7.75"/>
+          </svg>
         </div>
-        <div class="logo-box" onclick="document.getElementById('customer-logo-file').click()" title="Customer logo">
-          <img id="customer-logo-img" src="" alt="" style="display:none;">
-          <span id="customer-logo-empty" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-            <span style="font-size:8px;font-weight:700;color:var(--faint);letter-spacing:0.5px;">CX</span>
-            <span style="font-size:7px;color:var(--faint);">Customer</span>
-          </span>
+        <div class="stat-label">Team Size</div>
+        <div class="stat-value" id="stat-team">—</div>
+        <div class="stat-source">ResourceCast → OrgCast</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fff8f0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="5" width="20" height="15" rx="2"/>
+            <line x1="2" y1="10" x2="22" y2="10"/>
+            <line x1="7" y1="5" x2="7" y2="10"/>
+            <line x1="17" y1="5" x2="17" y2="10"/>
+            <line x1="6" y1="14" x2="14" y2="14"/>
+          </svg>
+        </div>
+        <div class="stat-label">Key Phases</div>
+        <div class="stat-value" id="stat-phases">—</div>
+        <div class="stat-source">TimeCast</div>
+      </div>
+
+      <!-- Row 2 ── -->
+
+      <div class="stat-card" id="stat-card-timeline">
+        <div class="stat-icon" style="background:#f5f3ff;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="5" width="20" height="15" rx="2"/>
+            <line x1="2" y1="10" x2="22" y2="10"/>
+            <line x1="7" y1="5" x2="7" y2="10"/>
+            <line x1="17" y1="5" x2="17" y2="10"/>
+            <line x1="6" y1="14" x2="10" y2="14"/>
+          </svg>
+        </div>
+        <div class="stat-label">Project Timeline</div>
+        <div class="stat-value sm" id="stat-timeline">—</div>
+        <div class="stat-source">TimeCast</div>
+        <div class="stat-chip hidden" id="chip-timeline"></div>
+      </div>
+
+      <div class="stat-card" id="stat-card-rfq">
+        <div class="stat-icon" style="background:#fff7f0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+            <rect x="9" y="3" width="6" height="4" rx="1"/>
+            <line x1="9" y1="12" x2="15" y2="12"/>
+            <line x1="9" y1="16" x2="13" y2="16"/>
+          </svg>
+        </div>
+        <div class="stat-label">RFQ Status</div>
+        <div class="stat-value sm" id="stat-rfq">—</div>
+        <div class="stat-source">RFQCast</div>
+        <div class="stat-chip hidden" id="chip-rfq"></div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#f0fdf8;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="5" r="2.5"/>
+            <line x1="12" y1="7.5" x2="12" y2="12"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <line x1="5" y1="12" x2="5" y2="15.5"/>
+            <line x1="12" y1="12" x2="12" y2="15.5"/>
+            <line x1="19" y1="12" x2="19" y2="15.5"/>
+          </svg>
+        </div>
+        <div class="stat-label">Org Composition</div>
+        <div class="stat-value sm" id="stat-org">—</div>
+        <div class="stat-source">OrgCast</div>
+      </div>
+
+      <div class="stat-card" id="stat-card-risk">
+        <div class="stat-icon" style="background:#fff1f2;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#be123c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <div class="stat-label">Project Risks</div>
+        <div class="stat-value" id="stat-risk">—</div>
+        <div class="stat-source">RiskCast</div>
+        <div class="stat-chip hidden" id="chip-risk"></div>
+      </div>
+
+      <div class="stat-card" id="stat-card-exposure">
+        <div class="stat-icon" style="background:#fff3e0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#b36a00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 10h12"/>
+            <path d="M4 14h9"/>
+            <path d="M19 6a7.7 7.7 0 0 0-5.2-2A7.9 7.9 0 0 0 6 12c0 4.4 3.5 8 7.8 8 2 0 3.8-.8 5.2-2"/>
+          </svg>
+        </div>
+        <div class="stat-label">Risk Exposure</div>
+        <div class="stat-value" id="stat-exposure">—</div>
+        <div class="stat-source">RiskCast</div>
+        <div class="stat-chip hidden" id="chip-exposure"></div>
+      </div>
+
+    </div>
+
+    <!-- ── Progress bar (shown when Timecast has data) ── -->
+    <div class="progress-wrap" id="progress-wrap" style="display:none;">
+      <div class="progress-header">
+        <span class="progress-hd-edge" id="progress-start">—</span>
+        <span class="progress-hd-pct" id="progress-pct">—% complete</span>
+        <span class="progress-hd-edge" id="progress-end">—</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:0%;"></div>
+      </div>
+    </div>
+
+    <!-- ── Brand Settings + Archive panels ── -->
+    <div class="dash-panels">
+
+      <!-- Corporate Identity -->
+      <div class="dash-panel">
+        <div class="dash-panel-hd">Corporate Identity</div>
+        <div class="dash-panel-row">
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:center;">
+            <div class="brand-logo-box" id="brand-logo-box" title="Click to upload company logo"
+                 onclick="document.getElementById('brand-logo-file').click()">
+              <img id="brand-logo-img" src="" alt="" style="display:none;">
+              <span class="brand-logo-empty" id="brand-logo-empty">⊕</span>
+            </div>
+            <span style="font-size:8px;font-weight:700;color:var(--faint);letter-spacing:0.5px;">COMPANY</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:center;">
+            <div class="brand-logo-box" id="customer-logo-box" title="Click to upload customer logo"
+                 onclick="document.getElementById('customer-logo-file').click()">
+              <img id="customer-logo-img" src="" alt="" style="display:none;">
+              <span class="brand-logo-empty" id="customer-logo-empty">⊕</span>
+            </div>
+            <span style="font-size:8px;font-weight:700;color:var(--faint);letter-spacing:0.5px;">CUSTOMER</span>
+          </div>
+          <div class="dash-panel-info">
+            <div class="dash-panel-title">Brand Logos</div>
+            <div class="dash-panel-desc">Company &amp; Customer logos for PDF exports across the suite.</div>
+          </div>
+        </div>
+        <div class="dash-panel-btns">
+          <input type="file" id="brand-logo-file" accept="image/svg+xml,image/png,image/jpeg,image/jpg"
+                 style="display:none" onchange="brandUploadLogo(this)">
+          <input type="file" id="customer-logo-file" accept="image/svg+xml,image/png,image/jpeg,image/jpg"
+                 style="display:none" onchange="customerUploadLogo(this)">
+          <button class="pp-btn danger" id="brand-logo-clear" onclick="brandClearLogo()" style="display:none">✕ Company</button>
+          <button class="pp-btn danger" id="customer-logo-clear" onclick="customerClearLogo()" style="display:none">✕ Customer</button>
         </div>
       </div>
-      <div class="logo-actions">
-        <button class="pp-btn danger" id="brand-logo-clear" onclick="brandClearLogo()" style="display:none;font-size:9px;padding:3px 7px;">✕ Co</button>
-        <button class="pp-btn danger" id="customer-logo-clear" onclick="customerClearLogo()" style="display:none;font-size:9px;padding:3px 7px;">✕ Cx</button>
+
+      <!-- Suite Portfolio -->
+      <div class="dash-panel">
+        <div class="dash-panel-hd">Suite Portfolio</div>
+        <div class="archive-rows">
+          <div class="archive-row">
+            <div class="archive-row-desc"><strong>Full Project Archive</strong> — all tools, settings &amp; logo in one file.</div>
+            <button class="pp-btn" style="border-color:var(--accent);color:var(--accent);font-weight:700;" onclick="masterExport()" title="Download Full_Project_Archive.json" aria-label="Download Full_Project_Archive.json">↓ Export</button>
+          </div>
+          <div class="archive-row">
+            <div class="archive-row-desc">Restore entire suite from a previously exported archive.</div>
+            <input type="file" id="master-import-input" accept=".json" style="display:none"
+                   onchange="masterImport(this)">
+            <button class="pp-btn" style="border-color:var(--accent);color:var(--accent);font-weight:700;" onclick="document.getElementById('master-import-input').click()" title="Import archive JSON" aria-label="Import archive JSON">↑ Import</button>
+          </div>
+          <div class="archive-row">
+            <div class="archive-row-desc">Consolidated executive summary from all suite tools — print-ready PDF.</div>
+            <button class="pp-btn" style="border-color:var(--accent);color:var(--accent);font-weight:700;" onclick="openErConfig()" title="Generate Executive Report" aria-label="Generate Executive Report">📄 Executive Report</button>
+          </div>
+          <div class="archive-row" style="flex-direction:column;align-items:stretch;gap:4px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="archive-row-desc" style="flex:1;"><strong>Snapshots</strong> — freeze a named point-in-time you can restore later.</div>
+              <button class="pp-btn" style="border-color:var(--green);color:var(--green);font-weight:700;flex-shrink:0;" onclick="snapshotFreeze()" title="Save a named snapshot of the current state" aria-label="Save a named snapshot of the current state">📸 Freeze</button>
+            </div>
+            <div id="snap-list" class="snap-list"><div class="snap-empty">No snapshots yet.</div></div>
+          </div>
+        </div>
       </div>
+
     </div>
 
-    <!-- Suite Portfolio -->
-    <div class="dash-panel">
-      <div class="dash-panel-title">Suite Portfolio</div>
-      <input type="file" id="master-import-input" accept=".json" style="display:none" onchange="masterImport(this)">
-      <div class="panel-btn-row">
-        <button class="panel-btn p-accent" onclick="masterExport()">↓ Export</button>
-        <button class="panel-btn" onclick="document.getElementById('master-import-input').click()">↑ Import</button>
-        <button class="panel-btn" onclick="openErConfig()">📄 Exec Report</button>
-        <button class="panel-btn" onclick="snapshotFreeze()">📸 Freeze</button>
-      </div>
-    </div>
-
-  </div><!-- /.dash-panels -->
-</aside><!-- /.dash-sidebar -->
-
-<main class="dash-main">
-
-  <!-- ── Recent Tools ── -->
-  <div class="recent-wrap">
-    <div class="recent-inner" id="recent-inner">
-      <span class="recent-label">Recent</span>
-    </div>
   </div>
+</div>
 
-  <!-- ── Content: Vertical Tabs + Cards ── -->
-  <div class="dash-content">
+<!-- ── First-run onboarding banner ── -->
+<div id="onboarding-banner" style="display:none; max-width:1400px; margin:0 auto 18px; border-radius:8px; background:var(--accent); color:#fff; padding:16px 20px; display:flex; align-items:center; gap:16px; box-shadow:0 2px 10px rgba(44,78,135,0.25); font-family:'DM Sans',sans-serif;">
+  <div style="font-size:22px;flex-shrink:0;">👋</div>
+  <div style="flex:1;">
+    <div style="font-weight:700;font-size:15px;margin-bottom:3px;">Welcome to PYL0N Suite!</div>
+    <div style="font-size:13px;opacity:0.9;">New here? Start with <strong>TimeCast</strong> to define your project timeline — phases and team data sync automatically to the other tools.</div>
+  </div>
+  <a href="timecast.html" style="flex-shrink:0;background:#fff;color:var(--accent);border-radius:6px;padding:8px 16px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;">Open TimeCast →</a>
+  <button onclick="document.getElementById('onboarding-banner').style.display='none';localStorage.setItem('bidcast_onboarding_done','1');" aria-label="Dismiss welcome banner" style="flex-shrink:0;background:none;border:none;color:#fff;font-size:18px;cursor:pointer;opacity:0.7;padding:0;line-height:1;">✕</button>
+</div>
 
-  <!-- ── Tool Cards ── -->
+<!-- ── Tool Cards ── -->
 <div class="cards-wrap">
-<div class="cards" id="cards-grid">
+<div class="cards">
 
-  <a href="timecast.html" class="card" data-category="operations" style="--card-color:#4f46e5;">
-    <div class="card-header">
-      <div class="card-icon" style="background:#f5f3ff;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="5" width="20" height="15" rx="2"/>
-          <line x1="2" y1="10" x2="22" y2="10"/>
-          <line x1="7" y1="5" x2="7" y2="10"/>
-          <line x1="17" y1="5" x2="17" y2="10"/>
-          <line x1="6" y1="14" x2="14" y2="14"/>
-          <line x1="6" y1="17" x2="10" y2="17"/>
-        </svg>
-      </div>
-      <div class="card-titles">
-        <div class="card-name">TimeCast</div>
-        <div class="card-tagline">Timeline Intelligence</div>
-      </div>
+  <div class="group-label">
+    <span class="group-label-text">Core Workflow</span>
+    <span class="group-label-line"></span>
+    <span class="group-label-sub">↻ phases, team &amp; costs sync automatically across these tools</span>
+  </div>
+
+  <a href="timecast.html" class="card" style="--card-color:#4f46e5;">
+    <div class="card-icon" style="background:#f5f3ff;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="5" width="20" height="15" rx="2"/>
+        <line x1="2" y1="10" x2="22" y2="10"/>
+        <line x1="7" y1="5" x2="7" y2="10"/>
+        <line x1="17" y1="5" x2="17" y2="10"/>
+        <line x1="6" y1="14" x2="14" y2="14"/>
+        <line x1="6" y1="17" x2="10" y2="17"/>
+      </svg>
     </div>
+    <div class="card-name">TimeCast</div>
+    <div class="card-tagline">Timeline Intelligence</div>
     <div class="card-desc">Multi-project Gantt charts with baseline tracking and A3-ready PDF output. Start here — phases flow to ResourceCast automatically.</div>
     <div class="card-footer">
       <span class="feat-tag" id="badge-timecast">Gantt · Baseline</span>
@@ -662,21 +784,17 @@
     </div>
   </a>
 
-  <a href="resourcecast.html" class="card" data-category="operations" style="--card-color:#0d9488;">
-    <div class="card-header">
-      <div class="card-icon" style="background:#f0fdfc;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="7" width="20" height="14" rx="2"/>
-          <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
-          <line x1="12" y1="12" x2="12" y2="16"/>
-          <line x1="10" y1="14" x2="14" y2="14"/>
-        </svg>
-      </div>
-      <div class="card-titles">
-        <div class="card-name">ResourceCast</div>
-        <div class="card-tagline">Cost Intelligence</div>
-      </div>
+  <a href="resourcecast.html" class="card" style="--card-color:#0d9488;">
+    <div class="card-icon" style="background:#f0fdfc;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="7" width="20" height="14" rx="2"/>
+        <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+        <line x1="12" y1="12" x2="12" y2="16"/>
+        <line x1="10" y1="14" x2="14" y2="14"/>
+      </svg>
     </div>
+    <div class="card-name">ResourceCast</div>
+    <div class="card-tagline">Cost Intelligence</div>
     <div class="card-desc">Plan team hours and calculate EUR costs per phase. Phases sync in from Timecast, team roles flow out to Orgcast.</div>
     <div class="card-footer">
       <span class="feat-tag" id="badge-resourcecast">Rates · Cost Planning</span>
@@ -685,26 +803,22 @@
     </div>
   </a>
 
-  <a href="orgcast.html" class="card" data-category="operations" style="--card-color:#059669;">
-    <div class="card-header">
-      <div class="card-icon" style="background:#f0fdf8;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="5" r="2.5"/>
-          <line x1="12" y1="7.5" x2="12" y2="12"/>
-          <line x1="5" y1="12" x2="19" y2="12"/>
-          <line x1="5" y1="12" x2="5" y2="15.5"/>
-          <line x1="12" y1="12" x2="12" y2="15.5"/>
-          <line x1="19" y1="12" x2="19" y2="15.5"/>
-          <rect x="2.5" y="15.5" width="5" height="3.5" rx="1"/>
-          <rect x="9.5" y="15.5" width="5" height="3.5" rx="1"/>
-          <rect x="16.5" y="15.5" width="5" height="3.5" rx="1"/>
-        </svg>
-      </div>
-      <div class="card-titles">
-        <div class="card-name">OrgCast</div>
-        <div class="card-tagline">Org Charts</div>
-      </div>
+  <a href="orgcast.html" class="card" style="--card-color:#059669;">
+    <div class="card-icon" style="background:#f0fdf8;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="5" r="2.5"/>
+        <line x1="12" y1="7.5" x2="12" y2="12"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+        <line x1="5" y1="12" x2="5" y2="15.5"/>
+        <line x1="12" y1="12" x2="12" y2="15.5"/>
+        <line x1="19" y1="12" x2="19" y2="15.5"/>
+        <rect x="2.5" y="15.5" width="5" height="3.5" rx="1"/>
+        <rect x="9.5" y="15.5" width="5" height="3.5" rx="1"/>
+        <rect x="16.5" y="15.5" width="5" height="3.5" rx="1"/>
+      </svg>
     </div>
+    <div class="card-name">OrgCast</div>
+    <div class="card-tagline">Org Charts</div>
     <div class="card-desc">Dynamic project organisation charts with SVG connectors. Team roles sync in from ResourceCast.</div>
     <div class="card-footer">
       <span class="feat-tag" id="badge-orgcast">SVG · Print</span>
@@ -713,26 +827,22 @@
     </div>
   </a>
 
-  <a href="calccast.html" class="card" data-category="pricing" style="--card-color:#6366f1;">
-    <div class="card-header">
-      <div class="card-icon" style="background:#eef2ff;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="4" y="2" width="16" height="20" rx="2"/>
-          <line x1="8" y1="6" x2="16" y2="6"/>
-          <line x1="8" y1="10" x2="8" y2="10"/>
-          <line x1="12" y1="10" x2="12" y2="10"/>
-          <line x1="16" y1="10" x2="16" y2="10"/>
-          <line x1="8" y1="14" x2="8" y2="14"/>
-          <line x1="12" y1="14" x2="12" y2="14"/>
-          <line x1="16" y1="14" x2="16" y2="14"/>
-          <line x1="8" y1="18" x2="16" y2="18"/>
-        </svg>
-      </div>
-      <div class="card-titles">
-        <div class="card-name">CalcCast</div>
-        <div class="card-tagline">Financial Pricing Engine</div>
-      </div>
+  <a href="calccast.html" class="card" style="--card-color:#6366f1;">
+    <div class="card-icon" style="background:#eef2ff;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="2" width="16" height="20" rx="2"/>
+        <line x1="8" y1="6" x2="16" y2="6"/>
+        <line x1="8" y1="10" x2="8" y2="10"/>
+        <line x1="12" y1="10" x2="12" y2="10"/>
+        <line x1="16" y1="10" x2="16" y2="10"/>
+        <line x1="8" y1="14" x2="8" y2="14"/>
+        <line x1="12" y1="14" x2="12" y2="14"/>
+        <line x1="16" y1="14" x2="16" y2="14"/>
+        <line x1="8" y1="18" x2="16" y2="18"/>
+      </svg>
     </div>
+    <div class="card-name">CalcCast</div>
+    <div class="card-tagline">Financial Pricing Engine</div>
     <div class="card-desc">Calculate W2W project costs, apply KPI stacks, and determine final customer price. Feeds directly from ResourceCast.</div>
     <div class="card-footer">
       <span class="feat-tag" id="badge-calccast">W2W · Margins</span>
@@ -741,21 +851,22 @@
     </div>
   </a>
 
-  <a href="dorcast.html" class="card" data-category="risk" style="--card-color:#d97706;">
-    <div class="card-header">
-      <div class="card-icon" style="background:#fffbf0;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="2"/>
-          <line x1="3" y1="9" x2="21" y2="9"/>
-          <line x1="3" y1="15" x2="21" y2="15"/>
-          <line x1="9" y1="3" x2="9" y2="21"/>
-        </svg>
-      </div>
-      <div class="card-titles">
-        <div class="card-name">DORCast</div>
-        <div class="card-tagline">Responsibility Matrix</div>
-      </div>
+  <div class="group-label" style="margin-top:8px;">
+    <span class="group-label-text">Bid Support</span>
+    <span class="group-label-line"></span>
+  </div>
+
+  <a href="dorcast.html" class="card" style="--card-color:#d97706;">
+    <div class="card-icon" style="background:#fffbf0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <line x1="3" y1="9" x2="21" y2="9"/>
+        <line x1="3" y1="15" x2="21" y2="15"/>
+        <line x1="9" y1="3" x2="9" y2="21"/>
+      </svg>
     </div>
+    <div class="card-name">DORCast</div>
+    <div class="card-tagline">Responsibility Matrix</div>
     <div class="card-desc">Build multi-party responsibility matrices (DOR/RAC) for complex project scopes.</div>
     <div class="card-footer">
       <span class="feat-tag" id="badge-dorcast">Excel · PDF · JSON</span>
@@ -763,21 +874,17 @@
     </div>
   </a>
 
-  <a href="rfqcast.html" class="card" data-category="pricing" style="--card-color:#ea580c;">
-    <div class="card-header">
-      <div class="card-icon" style="background:#fff7f0;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
-          <rect x="9" y="3" width="6" height="4" rx="1"/>
-          <line x1="9" y1="12" x2="15" y2="12"/>
-          <line x1="9" y1="16" x2="13" y2="16"/>
-        </svg>
-      </div>
-      <div class="card-titles">
-        <div class="card-name">RFQCast</div>
-        <div class="card-tagline">Supplier Tracking</div>
-      </div>
+  <a href="rfqcast.html" class="card" style="--card-color:#ea580c;">
+    <div class="card-icon" style="background:#fff7f0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+        <rect x="9" y="3" width="6" height="4" rx="1"/>
+        <line x1="9" y1="12" x2="15" y2="12"/>
+        <line x1="9" y1="16" x2="13" y2="16"/>
+      </svg>
     </div>
+    <div class="card-name">RFQCast</div>
+    <div class="card-tagline">Supplier Tracking</div>
     <div class="card-desc">Track supplier enquiries, offer validity status, and high-volume RFQ package timelines.</div>
     <div class="card-footer">
       <span class="feat-tag" id="badge-rfqcast">Alerts · Dashboard</span>
@@ -785,20 +892,16 @@
     </div>
   </a>
 
-  <a href="riskcast.html" class="card" data-category="risk" style="--card-color:#be123c;">
-    <div class="card-header">
-      <div class="card-icon" style="background:#fff1f2;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#be123c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-          <line x1="12" y1="9" x2="12" y2="13"/>
-          <line x1="12" y1="17" x2="12.01" y2="17"/>
-        </svg>
-      </div>
-      <div class="card-titles">
-        <div class="card-name">RiskCast</div>
-        <div class="card-tagline">Risk Register</div>
-      </div>
+  <a href="riskcast.html" class="card" style="--card-color:#be123c;">
+    <div class="card-icon" style="background:#fff1f2;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#be123c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
     </div>
+    <div class="card-name">RiskCast</div>
+    <div class="card-tagline">Risk Register</div>
     <div class="card-desc">Identify, score, and track project risks on a 5×5 matrix. Automatic criticality scoring with heat map output.</div>
     <div class="card-footer">
       <span class="feat-tag" id="badge-riskcast">5×5 Matrix · Heat Map</span>
@@ -806,22 +909,18 @@
     </div>
   </a>
 
-  <a href="lettercast.html" class="card" data-category="risk" style="--card-color:#0369a1;">
-    <div class="card-header">
-      <div class="card-icon" style="background:#f0f9ff;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#0369a1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="14" rx="2"/>
-          <line x1="7" y1="8"  x2="17" y2="8"/>
-          <line x1="7" y1="12" x2="13" y2="12"/>
-          <line x1="8" y1="21" x2="16" y2="21"/>
-          <line x1="12" y1="17" x2="12" y2="21"/>
-        </svg>
-      </div>
-      <div class="card-titles">
-        <div class="card-name">LetterCast</div>
-        <div class="card-tagline">Cover Letter Generator</div>
-      </div>
+  <a href="lettercast.html" class="card" style="--card-color:#0369a1;">
+    <div class="card-icon" style="background:#f0f9ff;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#0369a1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="14" rx="2"/>
+        <line x1="7" y1="8"  x2="17" y2="8"/>
+        <line x1="7" y1="12" x2="13" y2="12"/>
+        <line x1="8" y1="21" x2="16" y2="21"/>
+        <line x1="12" y1="17" x2="12" y2="21"/>
+      </svg>
     </div>
+    <div class="card-name">LetterCast</div>
+    <div class="card-tagline">Cover Letter Generator</div>
     <div class="card-desc">Compose professional A4 commercial offer letters with dynamic sections, dual logos, and one-click PDF export.</div>
     <div class="card-footer">
       <span class="feat-tag" id="badge-lettercast">A4 Print · PDF · JSON</span>
@@ -829,21 +928,22 @@
     </div>
   </a>
 
-  <a href="cashflow.html" class="card" data-category="operations" style="--card-color:#7c3aed;">
-    <div class="card-header">
-      <div class="card-icon" style="background:#faf5ff;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="13" width="4" height="7" rx="1"/>
-          <rect x="9" y="9" width="4" height="11" rx="1"/>
-          <rect x="16" y="5" width="4" height="15" rx="1"/>
-          <path d="M3 12 Q7 8 12 8 Q17 8 21 4" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <div class="card-titles">
-        <div class="card-name">CashFlow</div>
-        <div class="card-tagline">Monthly Cash Simulation</div>
-      </div>
+  <div class="group-label" style="margin-top:8px;">
+    <span class="group-label-text">Simulation &amp; Intelligence</span>
+    <span class="group-label-line"></span>
+  </div>
+
+  <a href="cashflow.html" class="card" style="--card-color:#7c3aed;">
+    <div class="card-icon" style="background:#faf5ff;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="13" width="4" height="7" rx="1"/>
+        <rect x="9" y="9" width="4" height="11" rx="1"/>
+        <rect x="16" y="5" width="4" height="15" rx="1"/>
+        <path d="M3 12 Q7 8 12 8 Q17 8 21 4" stroke-linecap="round"/>
+      </svg>
     </div>
+    <div class="card-name">CashFlow</div>
+    <div class="card-tagline">Monthly Cash Simulation</div>
     <div class="card-desc">Simulate monthly cash-flow, model payment milestones, and visualise cancellation penalty curves across the bid timeline.</div>
     <div class="card-footer">
       <span class="feat-tag" id="badge-cashflow">Cash · Forecast</span>
@@ -852,20 +952,16 @@
     </div>
   </a>
 
-  <a href="w2w-report.html" class="card" data-category="pricing" style="--card-color:#475569;">
-    <div class="card-header">
-      <div class="card-icon" style="background:#f8fafc;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <polyline points="8 14 10 17 14 12 17 17"/>
-        </svg>
-      </div>
-      <div class="card-titles">
-        <div class="card-name">W2W Report</div>
-        <div class="card-tagline">Wall-to-Wall Analysis</div>
-      </div>
+  <a href="w2w-report.html" class="card" style="--card-color:#475569;">
+    <div class="card-icon" style="background:#f8fafc;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <polyline points="8 14 10 17 14 12 17 17"/>
+      </svg>
     </div>
+    <div class="card-name">W2W Report</div>
+    <div class="card-tagline">Wall-to-Wall Analysis</div>
     <div class="card-desc">Consolidated factory-level financial report with sequential KPI stack (Risk → SG&amp;A → HQ Adders → EBIT) and scope breakdown.</div>
     <div class="card-footer">
       <span class="feat-tag" id="badge-w2wreport">KPI Stack · EBIT</span>
@@ -874,20 +970,16 @@
     </div>
   </a>
 
-  <a href="bidscore.html" class="card" data-category="pricing" style="--card-color:#0891b2;">
-    <div class="card-header">
-      <div class="card-icon" style="background:#ecfeff;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="9"/>
-          <circle cx="12" cy="12" r="5"/>
-          <circle cx="12" cy="12" r="1.5" fill="#0891b2" stroke="none"/>
-        </svg>
-      </div>
-      <div class="card-titles">
-        <div class="card-name">BidScore</div>
-        <div class="card-tagline">Bid / No-Bid Decision</div>
-      </div>
+  <a href="bidscore.html" class="card" style="--card-color:#0891b2;">
+    <div class="card-icon" style="background:#ecfeff;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <circle cx="12" cy="12" r="5"/>
+        <circle cx="12" cy="12" r="1.5" fill="#0891b2" stroke="none"/>
+      </svg>
     </div>
+    <div class="card-name">BidScore</div>
+    <div class="card-tagline">Bid / No-Bid Decision</div>
     <div class="card-desc">Score your bid on strategic, commercial, technical, and risk criteria with weighted scoring and an automatic Bid / Conditional / No-Bid recommendation.</div>
     <div class="card-footer">
       <span class="feat-tag" id="badge-bidscore">Weighted Score · Decision</span>
@@ -895,22 +987,18 @@
     </div>
   </a>
 
-  <a href="actionlog.html" class="card" data-category="operations" style="--card-color:#15803d;">
-    <div class="card-header">
-      <div class="card-icon" style="background:#f0fdf4;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="2"/>
-          <polyline points="7 8 9 10.5 13 6.5"/>
-          <line x1="16" y1="8.5" x2="19" y2="8.5"/>
-          <line x1="7" y1="13" x2="19" y2="13"/>
-          <line x1="7" y1="17" x2="14" y2="17"/>
-        </svg>
-      </div>
-      <div class="card-titles">
-        <div class="card-name">ActionLog</div>
-        <div class="card-tagline">Bid Action Tracker</div>
-      </div>
+  <a href="actionlog.html" class="card" style="--card-color:#15803d;">
+    <div class="card-icon" style="background:#f0fdf4;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <polyline points="7 8 9 10.5 13 6.5"/>
+        <line x1="16" y1="8.5" x2="19" y2="8.5"/>
+        <line x1="7" y1="13" x2="19" y2="13"/>
+        <line x1="7" y1="17" x2="14" y2="17"/>
+      </svg>
     </div>
+    <div class="card-name">ActionLog</div>
+    <div class="card-tagline">Bid Action Tracker</div>
     <div class="card-desc">Track open actions, owners, and due dates across the bid. Overdue detection, priority flags, and status rollup keep the team aligned.</div>
     <div class="card-footer">
       <span class="feat-tag" id="badge-actionlog">Actions · Tracker</span>
@@ -918,21 +1006,22 @@
     </div>
   </a>
 
-  <a href="forecast.html" class="card" data-category="operations" style="--card-color:#c026d3;">
-    <div class="card-header">
-      <div class="card-icon" style="background:#fdf4ff;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#c026d3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2"  y="13" width="5" height="9"  rx="1"/>
-          <rect x="9"  y="8"  width="5" height="14" rx="1"/>
-          <rect x="16" y="3"  width="5" height="19" rx="1"/>
-          <path d="M4 12 Q11 7 18 2.5" stroke-width="1.5"/>
-        </svg>
-      </div>
-      <div class="card-titles">
-        <div class="card-name">ForeCast</div>
-        <div class="card-tagline">Pipeline &amp; Overlap Monitor</div>
-      </div>
+  <div class="group-label" style="margin-top:8px;">
+    <span class="group-label-text">Output &amp; Delivery</span>
+    <span class="group-label-line"></span>
+  </div>
+
+  <a href="forecast.html" class="card" style="--card-color:#c026d3;">
+    <div class="card-icon" style="background:#fdf4ff;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#c026d3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2"  y="13" width="5" height="9"  rx="1"/>
+        <rect x="9"  y="8"  width="5" height="14" rx="1"/>
+        <rect x="16" y="3"  width="5" height="19" rx="1"/>
+        <path d="M4 12 Q11 7 18 2.5" stroke-width="1.5"/>
+      </svg>
     </div>
+    <div class="card-name">ForeCast</div>
+    <div class="card-tagline">Pipeline &amp; Overlap Monitor</div>
     <div class="card-desc">Track sales opportunities, calculate weighted pipelines, and visually detect quarterly resource overlaps and bottlenecks before they happen.</div>
     <div class="card-footer">
       <span class="feat-tag" id="badge-forecast">Weighted Pipeline · Alarms</span>
@@ -940,22 +1029,18 @@
     </div>
   </a>
 
-  <a href="cvcast.html" class="card" data-category="pricing" style="--card-color:#0f766e;">
-    <div class="card-header">
-      <div class="card-icon" style="background:#f0fdfa;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#0f766e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="9" cy="7" r="3"/>
-          <path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/>
-          <line x1="16" y1="3" x2="22" y2="3"/>
-          <line x1="16" y1="8" x2="22" y2="8"/>
-          <line x1="19" y1="13" x2="22" y2="13"/>
-        </svg>
-      </div>
-      <div class="card-titles">
-        <div class="card-name">CVCast</div>
-        <div class="card-tagline">Key Personnel Résumés</div>
-      </div>
+  <a href="cvcast.html" class="card" style="--card-color:#0f766e;">
+    <div class="card-icon" style="background:#f0fdfa;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#0f766e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="7" r="3"/>
+        <path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/>
+        <line x1="16" y1="3" x2="22" y2="3"/>
+        <line x1="16" y1="8" x2="22" y2="8"/>
+        <line x1="19" y1="13" x2="22" y2="13"/>
+      </svg>
     </div>
+    <div class="card-name">CVCast</div>
+    <div class="card-tagline">Key Personnel Résumés</div>
     <div class="card-desc">Build polished two-column A4 résumés for bid submissions — experience, skills, languages, and PDF export in minutes.</div>
     <div class="card-footer">
       <span class="feat-tag">A4 PDF · JSON</span>
@@ -963,21 +1048,17 @@
     </div>
   </a>
 
-  <a href="bidpack.html" class="card" data-category="pricing" style="--card-color:#1e40af;">
-    <div class="card-header">
-      <div class="card-icon" style="background:#eff6ff;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/>
-          <line x1="16" y1="17" x2="8" y2="17"/>
-          <line x1="10" y1="9"  x2="8" y2="9"/>
-        </svg>
-      </div>
-      <div class="card-titles">
-        <div class="card-name">BidPack</div>
-      </div>
+  <a href="bidpack.html" class="card" style="--card-color:#1e40af;">
+    <div class="card-icon" style="background:#eff6ff;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+        <line x1="10" y1="9"  x2="8" y2="9"/>
+      </svg>
     </div>
+    <div class="card-name">BidPack</div>
     <div class="card-desc">Assemble a complete bid document from all suite tools — cover page, timeline, cost breakdown, risks, suppliers, and actions in one printable PDF.</div>
     <div class="card-footer">
       <span class="feat-tag" id="badge-bidpack">Document Assembler</span>
@@ -985,23 +1066,19 @@
     </div>
   </a>
 
-  <a href="estimator.html" class="card" data-category="pricing" style="--card-color:#0e7490;">
-    <div class="card-header">
-      <div class="card-icon" style="background:#ecfeff;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#0e7490" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="4" y="2" width="16" height="20" rx="2"/>
-          <line x1="8" y1="7" x2="16" y2="7"/>
-          <line x1="8" y1="11" x2="16" y2="11"/>
-          <line x1="8" y1="15" x2="13" y2="15"/>
-          <circle cx="17" cy="17" r="3"/>
-          <line x1="19.5" y1="19.5" x2="22" y2="22"/>
-        </svg>
-      </div>
-      <div class="card-titles">
-        <div class="card-name">Estimator</div>
-        <div class="card-tagline">Pricing Engine</div>
-      </div>
+  <a href="estimator.html" class="card" style="--card-color:#0e7490;">
+    <div class="card-icon" style="background:#ecfeff;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#0e7490" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="2" width="16" height="20" rx="2"/>
+        <line x1="8" y1="7" x2="16" y2="7"/>
+        <line x1="8" y1="11" x2="16" y2="11"/>
+        <line x1="8" y1="15" x2="13" y2="15"/>
+        <circle cx="17" cy="17" r="3"/>
+        <line x1="19.5" y1="19.5" x2="22" y2="22"/>
+      </svg>
     </div>
+    <div class="card-name">Estimator</div>
+    <div class="card-tagline">Pricing Engine</div>
     <div class="card-desc">Calculate equipment prices from an offline Excel pricing database. Upload a local database, set technical parameters, and get instant estimates with confidence scoring.</div>
     <div class="card-footer">
       <span class="feat-tag">Offline DB · Blackbox Engine</span>
@@ -1009,30 +1086,13 @@
     </div>
   </a>
 
-
 </div>
-</div><!-- /.cards-wrap -->
-
-  <!-- ── Filter Navigation (vertical, right column) ── -->
-  <div class="tab-nav-wrap">
-    <div style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--faint);padding:0 0 8px 12px;border-left:1.5px solid var(--border);">Filter</div>
-    <div class="tab-nav" id="tab-nav">
-      <button class="tab-btn active" data-tab="all" onclick="switchTab('all')">All Tools <span class="tab-count" id="tc-all">17</span></button>
-      <button class="tab-btn" data-tab="pricing" onclick="switchTab('pricing')">Pricing &amp; Bidding <span class="tab-count" id="tc-pricing"></span></button>
-      <button class="tab-btn" data-tab="risk" onclick="switchTab('risk')">Risk &amp; Legal <span class="tab-count" id="tc-risk"></span></button>
-      <button class="tab-btn" data-tab="operations" onclick="switchTab('operations')">Operations &amp; Planning <span class="tab-count" id="tc-operations"></span></button>
-    </div>
-  </div>
-
-  </div><!-- /.dash-content -->
-
-</main><!-- /.dash-main -->
-</div><!-- /.dashboard-layout -->
+</div>
 
 <footer>
   <span style="display:flex; align-items:center; gap:8px;">
     Made with ♥ on ⏚
-    <span style="font-family:'DM Mono', monospace; font-size:8px; font-weight:700; padding:2px 6px; background:var(--border); color:var(--muted); border-radius:4px; letter-spacing:0.5px;">v2.2.0</span>
+    <span style="font-family:'DM Mono', monospace; font-size:8px; font-weight:700; padding:2px 6px; background:var(--border); color:var(--muted); border-radius:4px; letter-spacing:0.5px;">v2.0.2</span>
   </span>
   <span>Local Processing — Your data never leaves your browser</span>
 </footer>
@@ -1078,35 +1138,6 @@
    bidcast_logo (company logo as base64 dataURL).
    All tools embed this same utility.
 ═══════════════════════════════════════════════════════════════════ */
-/* ── Tab Navigation ── */
-function switchTab(tab) {
-  const cards = document.querySelectorAll('#cards-grid .card');
-  cards.forEach(card => {
-    const cat = card.dataset.category || 'all';
-    card.style.display = (tab === 'all' || cat === tab) ? '' : 'none';
-  });
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.tab === tab);
-  });
-  localStorage.setItem('bidcast_active_tab', tab);
-}
-
-function _initTabCounts() {
-  const cards = document.querySelectorAll('#cards-grid .card');
-  const counts = { all: 0, pricing: 0, risk: 0, operations: 0 };
-  cards.forEach(card => {
-    counts.all++;
-    const cat = card.dataset.category;
-    if (cat && counts[cat] !== undefined) counts[cat]++;
-  });
-  Object.keys(counts).forEach(k => {
-    const el = document.getElementById('tc-' + k);
-    if (el) el.textContent = counts[k];
-  });
-  const saved = localStorage.getItem('bidcast_active_tab') || 'all';
-  switchTab(saved);
-}
-
 /* ── Global Dirty State (Unexported Changes) ── */
 window._hasUnexportedChanges = false;
 window.addEventListener('beforeunload', (e) => {
@@ -1744,7 +1775,6 @@ function refreshStats() {
   _badge('badge-rfqcast',      rfqItems > 0 ? rfqItems + (rfqItems === 1 ? ' item' : ' items') + (rfqReceived > 0 ? ' · ' + rfqReceived + ' received' : '') : '', 'Alerts · Dashboard');
   _badge('badge-dorcast',      dorRows > 0 ? dorRows + (dorRows === 1 ? ' row' : ' rows') + ' defined' : '',         'Excel · PDF · JSON');
   _badge('badge-calccast',     hasCalcData ? 'Data Active' : '',               'W2W · Margins');
-  _syncHeaderChips();
 }
 
 /* ── Brand Settings panel logo sync ── */
@@ -2360,133 +2390,29 @@ function runExecReport() {
   generateExecutiveReport();
 }
 
-/* ── Recent Tools ── */
-const _RECENT_KEY = 'bidcast_recent';
-const _RECENT_MAX = 4;
-
-function _trackRecent(href, name, color) {
-  let recent = [];
-  try { recent = JSON.parse(localStorage.getItem(_RECENT_KEY) || '[]'); } catch {}
-  const filename = (href || '').split('/').pop().split('?')[0];
-  recent = recent.filter(r => r.href !== filename);
-  recent.unshift({ href: filename, name: name || filename, color: color || '#2c4e87' });
-  if (recent.length > _RECENT_MAX) recent = recent.slice(0, _RECENT_MAX);
-  localStorage.setItem(_RECENT_KEY, JSON.stringify(recent));
-  _renderRecent();
-}
-
-function _renderRecent() {
-  let recent = [];
-  try { recent = JSON.parse(localStorage.getItem(_RECENT_KEY) || '[]'); } catch {}
-  const inner = document.getElementById('recent-inner');
-  if (!inner) return;
-  inner.querySelectorAll('.recent-chip').forEach(c => c.remove());
-  if (recent.length === 0) { inner.classList.remove('has-items'); return; }
-  inner.classList.add('has-items');
-  recent.forEach(r => {
-    const a = document.createElement('a');
-    a.href = r.href;
-    a.className = 'recent-chip';
-    a.innerHTML = `<span class="recent-dot" style="background:${esc(r.color)}"></span>${esc(r.name)}`;
-    inner.appendChild(a);
-  });
-}
-
-/* ── Snapshot panel toggle ── */
-function toggleSnapPanel() {
-  const panel = document.getElementById('tb-snap-panel');
-  if (panel) panel.classList.toggle('open');
-}
-
-/* ── Header status chips sync ── */
-function _syncHeaderChips() {
-  const budgetEl = document.getElementById('stat-budget');
-  const budgetTxt = budgetEl?.textContent?.trim();
-  const hasVal = budgetTxt && budgetTxt !== '—';
-  const vChip = document.getElementById('tbchip-value');
-  if (vChip) { vChip.style.display = hasVal ? 'inline-flex' : 'none'; if (hasVal) vChip.textContent = budgetTxt; }
-
-  const pctEl = document.getElementById('progress-pct');
-  const pctTxt = pctEl?.textContent?.trim();
-  const hasPct = pctTxt && pctTxt !== '—' && document.getElementById('progress-wrap')?.style.display === 'block';
-  const pChip = document.getElementById('tbchip-pct');
-  if (pChip) {
-    pChip.style.display = hasPct ? 'inline-flex' : 'none';
-    if (hasPct) {
-      pChip.textContent = pctTxt;
-      const pct = parseInt(pctTxt) || 0;
-      pChip.className = 'tb-chip c-pct' + (pct >= 100 ? ' alert' : pct >= 90 ? ' warn' : '');
-    }
-  }
-
-  const riskEl = document.getElementById('stat-risk');
-  const riskTxt = riskEl?.textContent?.trim();
-  const hasRisk = riskTxt && riskTxt !== '—';
-  const rChip = document.getElementById('tbchip-risk');
-  if (rChip) {
-    rChip.style.display = hasRisk ? 'inline-flex' : 'none';
-    if (hasRisk) {
-      rChip.textContent = riskTxt;
-      const chipRisk = document.getElementById('chip-risk');
-      const isRed = chipRisk?.classList.contains('red');
-      const isAmber = chipRisk?.classList.contains('amber');
-      rChip.className = 'tb-chip c-risk' + (isRed ? '' : isAmber ? ' warn' : ' ok');
-    }
-  }
-
-  const teamEl = document.getElementById('stat-team');
-  const teamTxt = teamEl?.textContent?.trim();
-  const hasTeam = teamTxt && teamTxt !== '—';
-  const tChip = document.getElementById('tbchip-team');
-  if (tChip) { tChip.style.display = hasTeam ? 'inline-flex' : 'none'; if (hasTeam) tChip.textContent = teamTxt; }
-
-  const fill = document.getElementById('progress-fill');
-  const strip = document.getElementById('tb-progress-strip');
-  const hFill = document.getElementById('tb-progress-fill-hd');
-  if (strip && hFill && fill) {
-    const visible = document.getElementById('progress-wrap')?.style.display === 'block';
-    strip.style.display = visible ? 'block' : 'none';
-    if (visible) {
-      hFill.style.width = fill.style.width;
-      hFill.style.background = fill.className.includes('alert') ? 'var(--red)' : fill.className.includes('warn') ? '#d97706' : 'var(--accent)';
-    }
-  }
-}
-
 /* ── Boot ── */
 document.addEventListener('DOMContentLoaded', () => {
   _applyTheme(localStorage.getItem('bidcast_theme') || 'light');
   SuiteManager.migrate();
   SuiteManager.setReturnPath(null, null);
+  if (!localStorage.getItem('bidcast_onboarding_done')) {
+    const ob = document.getElementById('onboarding-banner');
+    if (ob) ob.style.display = 'flex';
+  }
   ppLoad();
   ppPopulateSelect();
   refreshStats();
   snapshotRenderList();
-  _initTabCounts();
-  _renderRecent();
 
+  // Assert master dashboard dominance: broadcast stored project name to all
+  // open tools immediately so they align with the dashboard on startup.
   const _bootName = (document.getElementById('pp-name')?.value || '').trim();
   if (_bootName && _bootName !== 'Project Name') SuiteManager.write({ projectName: _bootName }, 'index');
 
   const nameEl = document.getElementById('pp-name');
   if (nameEl) nameEl.addEventListener('input', ppOnName);
 
-  document.getElementById('cards-grid')?.addEventListener('click', e => {
-    const card = e.target.closest('a.card[href]');
-    if (!card) return;
-    const name = card.querySelector('.card-name')?.textContent?.trim() || '';
-    const color = getComputedStyle(card).getPropertyValue('--card-color').trim() || '#2c4e87';
-    _trackRecent(card.getAttribute('href'), name, color);
-  });
-
-  document.addEventListener('click', e => {
-    const panel = document.getElementById('tb-snap-panel');
-    const btn = document.getElementById('tb-snap-btn');
-    if (panel && panel.classList.contains('open') && !panel.contains(e.target) && e.target !== btn && !btn?.contains(e.target)) {
-      panel.classList.remove('open');
-    }
-  });
-
+  /* React to changes made in other tools or tabs. */
   SuiteManager.onUpdate((sync, changedKey) => {
     if (changedKey === 'bidcast_logo') { ppUpdateLogo(); _updateBrandPanel(); return; }
     if (sync && sync.theme) _applyTheme(sync.theme);
@@ -2497,6 +2423,7 @@ document.addEventListener('DOMContentLoaded', () => {
     refreshStats();
   });
 
+  /* Refresh stats when any tool data changes in another tab. */
   window.addEventListener('storage', e => {
     const trackedKeys = [
       'bidcast_state_timecast', 'bidcast_state_resourcecast',
@@ -2506,7 +2433,7 @@ document.addEventListener('DOMContentLoaded', () => {
       'bidcast_suite_sync',
     ];
     if (trackedKeys.includes(e.key)) {
-      window._hasUnexportedChanges = true;
+      window._hasUnexportedChanges = true; // Mark as dirty
       refreshStats();
     }
   });
