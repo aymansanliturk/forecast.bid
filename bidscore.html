@@ -19,58 +19,140 @@
       --bg:#f5f4f0; --surface:#fff; --border:#e0ddd6; --text:#1a1916;
       --accent:#0891b2; --green:#059669; --amber:#d97706; --red:#dc2626;
       --faint:#9c9a94; --muted:#6b6966;
+      --navy:#1e3a6b;
+      --sidebar-w: 272px;
     }
     [data-theme="dark"] {
       --bg:#111110; --surface:#1c1c1a; --border:#2e2d2a; --text:#f0ede8;
       --faint:#6b6966; --muted:#9c9a94;
     }
+    [data-theme="dark"] header { background: rgba(28,28,26,0.97); }
     *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
-    body { font-family:'DM Sans',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
-
-    /* ── Toolbar ── */
-    #toolbar {
-      position:sticky; top:0; z-index:100;
-      background:rgba(255,255,255,0.92); backdrop-filter:blur(12px);
-      border-bottom:1px solid var(--border);
-      padding:10px 24px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    body {
+      font-family:'DM Sans',system-ui,sans-serif;
+      background:var(--bg); color:var(--text);
+      height:100vh; overflow:hidden; display:flex; flex-direction:column;
     }
-    [data-theme="dark"] #toolbar { background:rgba(28,28,26,0.95); }
-    .tb-left  { display:flex; align-items:center; gap:12px; }
-    .tb-right { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-    .tb-sep   { width:1px; height:22px; background:var(--border); }
-    .logo-icon { width:28px; height:28px; background:var(--accent); border-radius:7px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-    .logo-icon svg { width:14px; height:14px; }
-    .tool-name { font-size:14px; font-weight:700; letter-spacing:-0.3px; }
-    .tool-tag  { font-size:9px; font-weight:600; color:var(--faint); letter-spacing:1px; text-transform:uppercase; }
-    .tb-btn {
+
+    /* ── Header ── */
+    header {
+      height:48px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 20px; gap:12px;
+      background:var(--surface); border-bottom:1px solid var(--border);
+      position:relative; z-index:200;
+    }
+    .hdr-left  { display:flex; align-items:center; gap:10px; min-width:0; }
+    .hdr-right { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+
+    .hdr-logo {
+      display:flex; align-items:center; justify-content:center;
+      width:28px; height:28px; background:var(--navy); border-radius:7px;
+      flex-shrink:0; text-decoration:none; transition:opacity 0.15s;
+    }
+    .hdr-logo:hover { opacity:0.8; }
+    .hdr-logo svg { width:14px; height:14px; }
+
+    .hdr-div { width:1px; height:18px; background:var(--border); flex-shrink:0; }
+
+    .breadcrumb { display:flex; align-items:center; gap:5px; min-width:0; }
+    .bc-link {
+      font-size:13px; color:var(--muted); text-decoration:none;
+      white-space:nowrap; transition:color 0.15s;
+    }
+    .bc-link:hover { color:var(--text); }
+    .bc-sep { font-size:11px; color:var(--faint); flex-shrink:0; }
+    .bc-current { font-size:13px; font-weight:700; color:var(--text); white-space:nowrap; }
+
+    .hdr-icon-btn {
+      width:30px; height:30px; border-radius:6px; border:none;
+      background:transparent; color:var(--muted); cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      transition:background 0.15s, color 0.15s; flex-shrink:0;
+    }
+    .hdr-icon-btn:hover { background:var(--bg); color:var(--text); }
+    .hdr-icon-btn svg { width:15px; height:15px; pointer-events:none; }
+
+    /* ── App body ── */
+    .app-body { display:flex; flex:1; overflow:hidden; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width:var(--sidebar-w); flex-shrink:0;
+      background:var(--surface); border-right:1px solid var(--border);
+      display:flex; flex-direction:column; overflow:hidden;
+      transition:width 0.22s ease;
+    }
+    .sidebar.collapsed { width:0; }
+    .sidebar-inner { width:var(--sidebar-w); overflow-y:auto; flex:1; display:flex; flex-direction:column; }
+
+    .sb-section { padding:18px 16px; border-bottom:1px solid var(--border); }
+    .sb-section:last-child { border-bottom:none; }
+    .sb-hd {
+      font-size:9px; font-weight:700; letter-spacing:1.2px;
+      text-transform:uppercase; color:var(--faint); margin-bottom:12px;
+    }
+
+    .sb-field { margin-bottom:10px; }
+    .sb-field:last-child { margin-bottom:0; }
+    .sb-field label {
+      display:block; font-size:10px; font-weight:600; color:var(--faint);
+      letter-spacing:0.8px; text-transform:uppercase; margin-bottom:4px;
+    }
+    .sb-field input, .sb-field textarea {
+      width:100%; padding:7px 9px; border:1.5px solid var(--border); border-radius:7px;
+      background:var(--bg); color:var(--text); font-size:13px;
+      font-family:inherit; transition:border-color 0.15s;
+    }
+    .sb-field input:focus, .sb-field textarea:focus {
+      outline:none; border-color:var(--accent); background:var(--surface);
+    }
+    .sb-field textarea { resize:vertical; min-height:72px; }
+
+    .sb-actions-grid {
+      display:grid; grid-template-columns:1fr 1fr; gap:6px;
+    }
+    .sb-btn {
       font-family:'DM Sans',sans-serif; font-size:11px; font-weight:500;
-      padding:6px 12px; border-radius:7px; border:1.5px solid var(--border);
-      background:var(--bg); color:var(--muted); cursor:pointer; white-space:nowrap; transition:all .15s;
+      padding:7px 10px; border-radius:7px; border:1.5px solid var(--border);
+      background:var(--bg); color:var(--muted); cursor:pointer;
+      white-space:nowrap; transition:all 0.15s; text-align:center;
     }
-    .tb-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--surface); }
-    .tb-btn:disabled { opacity:0.35; pointer-events:none; }
-    .tb-btn.primary { background:var(--accent); color:#fff; border-color:var(--accent); font-weight:600; }
-    .tb-btn.primary:hover { opacity:0.9; }
+    .sb-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--surface); }
+    .sb-btn:disabled { opacity:0.35; pointer-events:none; }
+    .sb-btn.full  { grid-column:1/-1; }
+    .sb-btn.primary { background:var(--accent); color:#fff; border-color:var(--accent); font-weight:600; }
+    .sb-btn.primary:hover { opacity:0.88; }
+    .sb-btn.green { background:var(--green); color:#fff; border-color:var(--green); font-weight:600; }
+    .sb-btn.green:hover { opacity:0.88; }
 
-    /* ── Editor ── */
-    #editor { max-width:1100px; margin:0 auto; padding:28px 24px 80px; }
+    /* ── Canvas ── */
+    .canvas { flex:1; min-width:0; display:flex; flex-direction:column; overflow:hidden; }
+
+    .canvas-score-bar {
+      flex-shrink:0; padding:10px 24px;
+      background:var(--surface); border-bottom:1px solid var(--border);
+      display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    }
+    .score-bar-label { font-size:10px; font-weight:700; color:var(--faint); text-transform:uppercase; letter-spacing:1px; white-space:nowrap; }
+    .score-bar-track { flex:1; min-width:60px; height:7px; background:var(--border); border-radius:4px; overflow:hidden; }
+    .score-bar-fill  { height:100%; border-radius:4px; transition:width 0.5s ease, background 0.3s; }
+    .score-bar-num   { font-size:18px; font-weight:700; font-family:'DM Mono',monospace; min-width:38px; text-align:right; }
+    .verdict-pill {
+      padding:3px 11px; border-radius:20px; font-size:10px; font-weight:700;
+      letter-spacing:0.5px; text-transform:uppercase; white-space:nowrap;
+    }
+    .v-bid  { background:#dcfce7; color:#15803d; }
+    .v-cond { background:#fef3c7; color:#b45309; }
+    .v-no   { background:#fee2e2; color:#dc2626; }
+
+    .canvas-body { flex:1; overflow-y:auto; padding:24px; }
+    .canvas-body-inner { max-width:960px; margin:0 auto; }
+
     .sec-title { font-size:11px; font-weight:700; color:var(--faint); letter-spacing:1px; text-transform:uppercase; margin-bottom:12px; }
 
-    .meta-grid {
-      display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:12px; margin-bottom:28px;
-    }
-    @media(max-width:700px){ .meta-grid { grid-template-columns:1fr 1fr; } }
-    .meta-field label { display:block; font-size:10px; font-weight:600; color:var(--faint); letter-spacing:0.8px; text-transform:uppercase; margin-bottom:4px; }
-    .meta-field input, .meta-field textarea {
-      width:100%; padding:8px 10px; border:1.5px solid var(--border); border-radius:7px;
-      background:var(--surface); color:var(--text); font-size:13px; font-family:inherit; transition:border-color 0.15s;
-    }
-    .meta-field input:focus, .meta-field textarea:focus { outline:none; border-color:var(--accent); }
-    .meta-field.wide { grid-column:1/-1; }
-    .meta-field textarea { resize:vertical; min-height:68px; }
-
     /* ── Criteria table ── */
-    .crit-wrap { background:var(--surface); border:1.5px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:16px; }
+    .crit-wrap { background:var(--surface); border:1.5px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:12px; }
 
     .crit-head, .crit-row {
       display:grid;
@@ -90,7 +172,7 @@
     .drag-handle { cursor:grab; color:var(--faint); font-size:14px; padding:2px 4px; user-select:none; }
     .drag-handle:active { cursor:grabbing; }
 
-    .ci { /* criteria input */
+    .ci {
       width:100%; padding:5px 7px; border:1.5px solid transparent; border-radius:6px;
       background:transparent; color:var(--text); font-size:13px; font-family:inherit; transition:border-color 0.15s;
     }
@@ -124,33 +206,18 @@
     .weight-total.warn { color:var(--amber); }
     .weight-total.bad  { color:var(--red); }
 
-    /* ── Live score bar ── */
-    .score-bar {
-      background:var(--surface); border:1.5px solid var(--border); border-radius:12px;
-      padding:16px 20px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;
-    }
-    .score-bar-label { font-size:11px; font-weight:700; color:var(--faint); text-transform:uppercase; letter-spacing:1px; white-space:nowrap; }
-    .score-bar-track { flex:1; min-width:80px; height:8px; background:var(--border); border-radius:4px; overflow:hidden; }
-    .score-bar-fill  { height:100%; border-radius:4px; transition:width 0.5s ease, background 0.3s; }
-    .score-bar-num   { font-size:20px; font-weight:700; font-family:'DM Mono',monospace; min-width:44px; text-align:right; }
-    .verdict-pill {
-      padding:4px 13px; border-radius:20px; font-size:11px; font-weight:700;
-      letter-spacing:0.5px; text-transform:uppercase; white-space:nowrap;
-    }
-    .v-bid  { background:#dcfce7; color:#15803d; }
-    .v-cond { background:#fef3c7; color:#b45309; }
-    .v-no   { background:#fee2e2; color:#dc2626; }
-
-    .score-hint { font-size:11px; color:var(--faint); text-align:center; margin-top:10px; }
+    .score-hint { font-size:11px; color:var(--faint); margin-top:8px; }
 
     /* ── Output ── */
-    #output { display:none; max-width:900px; margin:0 auto; padding:28px 24px 80px; }
+    #editor  { display:contents; }
+    #output  { display:none; flex:1; overflow-y:auto; padding:28px 24px 60px; }
+    #output.visible { display:block; }
 
-    .out-toolbar { display:flex; align-items:center; gap:8px; margin-bottom:24px; flex-wrap:wrap; }
+    .out-toolbar { max-width:900px; margin:0 auto 20px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 
     .out-card {
       background:var(--surface); border:1.5px solid var(--border);
-      border-radius:14px; padding:32px; margin-bottom:20px;
+      border-radius:14px; padding:32px; margin:0 auto 20px; max-width:900px;
     }
     .out-hdr {
       display:flex; align-items:flex-start; justify-content:space-between;
@@ -160,7 +227,6 @@
     .out-proj-name { font-size:22px; font-weight:700; letter-spacing:-0.5px; margin-bottom:4px; }
     .out-proj-meta { font-size:12px; color:var(--muted); }
 
-    /* Gauge */
     .gauge-wrap { display:flex; flex-direction:column; align-items:center; padding:8px 0 16px; }
     .gauge-bg   { fill:none; stroke:var(--border); stroke-width:14; stroke-linecap:round; }
     .gauge-fill { fill:none; stroke-width:14; stroke-linecap:round; transition:stroke-dasharray 1s cubic-bezier(.4,0,.2,1), stroke .4s; }
@@ -168,14 +234,12 @@
     .gauge-sub  { font-size:13px; text-anchor:middle; }
     .out-verdict { margin-top:10px; font-size:17px; font-weight:700; letter-spacing:0.5px; }
 
-    /* Category breakdown */
     .cat-row { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
     .cat-lbl  { width:110px; font-size:13px; font-weight:600; flex-shrink:0; }
     .cat-track{ flex:1; height:7px; background:var(--border); border-radius:4px; overflow:hidden; }
     .cat-fill { height:100%; border-radius:4px; }
     .cat-val  { width:52px; text-align:right; font-size:12px; font-weight:600; font-family:'DM Mono',monospace; color:var(--muted); flex-shrink:0; }
 
-    /* Scoring table */
     .out-table { width:100%; border-collapse:collapse; font-size:12px; margin-top:4px; }
     .out-table th { padding:7px 8px; text-align:left; font-size:10px; font-weight:700; color:var(--faint); text-transform:uppercase; letter-spacing:.8px; border-bottom:1.5px solid var(--border); white-space:nowrap; }
     .out-table td { padding:8px 8px; border-bottom:1px solid var(--border); vertical-align:middle; }
@@ -188,105 +252,145 @@
     .out-notes { font-size:13px; line-height:1.65; white-space:pre-wrap; }
     .out-footer { font-size:10px; color:var(--faint); text-align:center; padding-top:18px; margin-top:20px; border-top:1px solid var(--border); }
 
+    /* ── tb-btn alias (used in generated output toolbar) ── */
+    .tb-btn {
+      font-family:'DM Sans',sans-serif; font-size:11px; font-weight:500;
+      padding:6px 12px; border-radius:7px; border:1.5px solid var(--border);
+      background:var(--bg); color:var(--muted); cursor:pointer; white-space:nowrap; transition:all .15s;
+    }
+    .tb-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--surface); }
+
     @media print {
-      #toolbar, .out-toolbar { display:none !important; }
-      body { background:#fff; }
-      #output { display:block !important; padding:16px; }
+      body { height:auto; overflow:visible; }
+      header, .sidebar, .canvas-score-bar, .out-toolbar { display:none !important; }
+      .app-body, .canvas { display:block; overflow:visible; }
       #editor { display:none !important; }
+      #output { display:block !important; padding:0; }
       .out-card { border:none; padding:0; }
     }
   </style>
 </head>
 <body>
 
-<div id="toolbar">
-  <div class="tb-left">
-    <div class="logo-icon">
-      <svg viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round">
-        <circle cx="9" cy="9" r="7"/>
-        <circle cx="9" cy="9" r="4"/>
-        <circle cx="9" cy="9" r="1.2" fill="white" stroke="none"/>
+<!-- ── Header ── -->
+<header>
+  <div class="hdr-left">
+    <a class="hdr-logo" href="index.html" title="Dashboard">
+      <svg viewBox="0 0 18 18" fill="none">
+        <rect x="1" y="1" width="7" height="7" rx="1.5" fill="white"/>
+        <rect x="10" y="1" width="7" height="7" rx="1.5" fill="white"/>
+        <rect x="1" y="10" width="7" height="7" rx="1.5" fill="white"/>
+        <rect x="10" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.4"/>
       </svg>
-    </div>
-    <div>
-      <div class="tool-name">BidScore</div>
-      <div class="tool-tag">Bid / No-Bid Decision Tool</div>
-    </div>
-    <div class="tb-sep"></div>
-    <button class="tb-btn" onclick="location.href='index.html'">← Dashboard</button>
+    </a>
+    <div class="hdr-div"></div>
+    <nav class="breadcrumb">
+      <a class="bc-link" href="index.html">Dashboard</a>
+      <span class="bc-sep">›</span>
+      <span class="bc-current">BidScore</span>
+    </nav>
   </div>
-  <div class="tb-right">
-    <button class="tb-btn" id="btn-undo" onclick="undo()" disabled>↩ Undo</button>
-    <button class="tb-btn" id="btn-redo" onclick="redo()" disabled>↪ Redo</button>
-    <div class="tb-sep"></div>
-    <button class="tb-btn" onclick="saveJSON()">💾 Save</button>
-    <label class="tb-btn" style="cursor:pointer;">↑ Load<input type="file" accept=".json" style="display:none" onchange="loadJSON(this)"></label>
-    <div class="tb-sep"></div>
-    <button class="tb-btn" onclick="exportExcel()">Excel</button>
-    <button class="tb-btn" onclick="exportHTML()">HTML</button>
-    <button class="tb-btn" onclick="exportPDF()">PDF</button>
-    <button class="tb-btn primary" onclick="generate()">Preview ›</button>
-    <button class="tb-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle dark mode" style="font-size:14px;padding:4px 8px;border:none;background:transparent;cursor:pointer;" aria-label="Toggle dark mode">🌙</button>
+  <div class="hdr-right">
+    <button class="hdr-icon-btn" id="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle sidebar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <line x1="9" y1="3" x2="9" y2="21"/>
+      </svg>
+    </button>
+    <button class="hdr-icon-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle dark mode" style="font-size:15px;">🌙</button>
   </div>
-</div>
+</header>
 
+<!-- ── Editor (sidebar + canvas) ── -->
 <div id="editor">
-  <div class="sec-title">Project Details</div>
-  <div class="meta-grid">
-    <div class="meta-field">
-      <label>Project Name</label>
-      <input type="text" id="proj-name" placeholder="e.g. ABC Wind Farm EPC" oninput="_scheduleSnap();_suiteWrite()">
-    </div>
-    <div class="meta-field">
-      <label>Bid Reference</label>
-      <input type="text" id="bid-ref" placeholder="e.g. ITT-2024-001" oninput="_scheduleSnap()">
-    </div>
-    <div class="meta-field">
-      <label>Assessment Date</label>
-      <input type="date" id="bid-date" oninput="_scheduleSnap()">
-    </div>
-    <div class="meta-field">
-      <label>Assessed By</label>
-      <input type="text" id="assessed-by" placeholder="Name / Team" oninput="_scheduleSnap()">
-    </div>
-    <div class="meta-field wide">
-      <label>Decision Notes</label>
-      <textarea id="decision-notes" placeholder="Key observations, conditions, or action items…" oninput="_scheduleSnap()"></textarea>
-    </div>
-  </div>
+  <div class="app-body">
 
-  <div class="sec-title">Scoring Criteria</div>
-  <div class="crit-wrap">
-    <div class="crit-head">
-      <div></div>
-      <div class="crit-head-cell">Category</div>
-      <div class="crit-head-cell">Criterion</div>
-      <div class="crit-head-cell r">Wt %</div>
-      <div class="crit-head-cell">Score</div>
-      <div class="crit-head-cell r">Wtd</div>
-      <div></div>
-    </div>
-    <div id="crit-body"></div>
-    <div class="crit-footer">
-      <button class="add-btn" onclick="addCriterion()">+ Add Criterion</button>
-      <span class="weight-total warn" id="weight-total">Weight: 0%</span>
-    </div>
-  </div>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-inner">
 
-  <div class="score-bar">
-    <span class="score-bar-label">Overall Score</span>
-    <div class="score-bar-track">
-      <div class="score-bar-fill" id="score-bar-fill" style="width:0%;background:var(--faint)"></div>
+        <div class="sb-section">
+          <div class="sb-hd">Project Details</div>
+          <div class="sb-field">
+            <label>Project Name</label>
+            <input type="text" id="proj-name" placeholder="e.g. ABC Wind Farm EPC" oninput="_scheduleSnap();_suiteWrite()">
+          </div>
+          <div class="sb-field">
+            <label>Bid Reference</label>
+            <input type="text" id="bid-ref" placeholder="e.g. ITT-2024-001" oninput="_scheduleSnap()">
+          </div>
+          <div class="sb-field">
+            <label>Assessment Date</label>
+            <input type="date" id="bid-date" oninput="_scheduleSnap()">
+          </div>
+          <div class="sb-field">
+            <label>Assessed By</label>
+            <input type="text" id="assessed-by" placeholder="Name / Team" oninput="_scheduleSnap()">
+          </div>
+          <div class="sb-field">
+            <label>Decision Notes</label>
+            <textarea id="decision-notes" placeholder="Key observations, conditions, or action items…" oninput="_scheduleSnap()"></textarea>
+          </div>
+        </div>
+
+        <div class="sb-section">
+          <div class="sb-hd">Actions</div>
+          <div class="sb-actions-grid">
+            <button class="sb-btn" id="btn-undo" onclick="undo()" disabled>↩ Undo</button>
+            <button class="sb-btn" id="btn-redo" onclick="redo()" disabled>↪ Redo</button>
+            <button class="sb-btn" onclick="saveJSON()">💾 Save</button>
+            <label class="sb-btn" style="cursor:pointer;">↑ Load<input type="file" accept=".json" style="display:none" onchange="loadJSON(this)"></label>
+            <button class="sb-btn" onclick="exportExcel()">Excel</button>
+            <button class="sb-btn" onclick="exportHTML()">HTML</button>
+            <button class="sb-btn full" onclick="exportPDF()">↓ Export PDF</button>
+            <button class="sb-btn full primary" onclick="generate()">Preview Report ›</button>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- Canvas -->
+    <div class="canvas">
+      <div class="canvas-score-bar">
+        <span class="score-bar-label">Overall Score</span>
+        <div class="score-bar-track">
+          <div class="score-bar-fill" id="score-bar-fill" style="width:0%;background:var(--faint)"></div>
+        </div>
+        <span class="score-bar-num" id="score-bar-num" style="color:var(--faint)">—</span>
+        <span class="verdict-pill v-cond" id="live-verdict" style="display:none"></span>
+      </div>
+      <div class="canvas-body">
+        <div class="canvas-body-inner">
+          <div class="sec-title">Scoring Criteria</div>
+          <div class="crit-wrap">
+            <div class="crit-head">
+              <div></div>
+              <div class="crit-head-cell">Category</div>
+              <div class="crit-head-cell">Criterion</div>
+              <div class="crit-head-cell r">Wt %</div>
+              <div class="crit-head-cell">Score</div>
+              <div class="crit-head-cell r">Wtd</div>
+              <div></div>
+            </div>
+            <div id="crit-body"></div>
+            <div class="crit-footer">
+              <button class="add-btn" onclick="addCriterion()">+ Add Criterion</button>
+              <span class="weight-total warn" id="weight-total">Weight: 0%</span>
+            </div>
+          </div>
+          <div class="score-hint">
+            Score 1–5: &nbsp; 1 = Very Unfavorable &nbsp;·&nbsp; 3 = Neutral &nbsp;·&nbsp; 5 = Very Favorable to Bid
+            &nbsp;|&nbsp; <strong>BID</strong> ≥65 &nbsp;·&nbsp; <strong>CONDITIONAL</strong> 40–64 &nbsp;·&nbsp; <strong>NO BID</strong> &lt;40
+          </div>
+        </div>
+      </div>
     </div>
-    <span class="score-bar-num" id="score-bar-num" style="color:var(--faint)">—</span>
-    <span class="verdict-pill v-cond" id="live-verdict" style="display:none"></span>
-  </div>
-  <div class="score-hint">
-    Score 1–5: &nbsp; 1 = Very Unfavorable &nbsp;·&nbsp; 3 = Neutral &nbsp;·&nbsp; 5 = Very Favorable to Bid
-    &nbsp;|&nbsp; <strong>BID</strong> ≥65 &nbsp;·&nbsp; <strong>CONDITIONAL</strong> 40–64 &nbsp;·&nbsp; <strong>NO BID</strong> &lt;40
+
   </div>
 </div>
 
+<!-- ── Output (preview) ── -->
 <div id="output"></div>
 
 <datalist id="cat-list">
@@ -448,7 +552,6 @@ function _refreshLiveScore() {
   const verdict = verdictOf(score);
   const color   = verdictColor(verdict);
 
-  // Weight total indicator
   const totalW = criteria.reduce((a,c) => a + (parseFloat(c.weight)||0), 0);
   const wtEl   = document.getElementById('weight-total');
   if (wtEl) {
@@ -456,7 +559,6 @@ function _refreshLiveScore() {
     wtEl.className   = 'weight-total ' + (Math.abs(totalW-100) < 0.5 ? 'ok' : totalW > 100 ? 'bad' : 'warn');
   }
 
-  // Per-row weighted contribution
   criteria.forEach(c => {
     const el = document.getElementById('wtd-' + c.id);
     if (!el) return;
@@ -465,7 +567,6 @@ function _refreshLiveScore() {
     el.textContent = w > 0 ? (w * s / 5).toFixed(1) : '—';
   });
 
-  // Score bar
   const fill = document.getElementById('score-bar-fill');
   const num  = document.getElementById('score-bar-num');
   const pill = document.getElementById('live-verdict');
@@ -484,7 +585,6 @@ function generate() {
   const vColor  = verdictColor(verdict);
   const vClass  = verdictClass(verdict);
 
-  // Category breakdown
   const catMap = {};
   s.criteria.forEach(c => {
     const k = c.category || 'General';
@@ -495,8 +595,6 @@ function generate() {
     catMap[k].wScoreSum += w * sc;
   });
 
-  // SVG gauge: semicircle path M20,110 A80,80 0 0 1 180,110
-  // arc length = π×80 ≈ 251.33
   const ARC = Math.PI * 80;
   const filled = +(score / 100 * ARC).toFixed(2);
 
@@ -506,7 +604,7 @@ function generate() {
     : '—';
 
   const catRows = Object.entries(catMap).map(([cat, d]) => {
-    const avg = d.wSum > 0 ? d.wScoreSum / d.wSum : 0; // avg score 0-5
+    const avg = d.wSum > 0 ? d.wScoreSum / d.wSum : 0;
     const pct = Math.round(avg / 5 * 100);
     return `<div class="cat-row">
       <div class="cat-lbl">${esc(cat)}</div>
@@ -612,8 +710,16 @@ function generate() {
 }
 
 function goBack() {
-  document.getElementById('editor').style.display = 'block';
+  document.getElementById('editor').style.display = 'contents';
   document.getElementById('output').style.display  = 'none';
+}
+
+/* ══ Sidebar toggle ═══════════════════════════════════════════════════ */
+function toggleSidebar() {
+  const sb  = document.getElementById('sidebar');
+  const btn = document.getElementById('sidebar-toggle-btn');
+  const collapsed = sb.classList.toggle('collapsed');
+  btn.style.opacity = collapsed ? '0.45' : '1';
 }
 
 /* ══ Exports ══════════════════════════════════════════════════════════ */
