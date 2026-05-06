@@ -415,6 +415,23 @@
     .kb-hint, #autosave-label, .save-confirm { display:none !important; }
     #toolbar { display:none !important; }
 
+
+    .sb-field { margin-bottom:10px; }
+    .sb-field:last-child { margin-bottom:0; }
+    .sb-field label {
+      display:block; font-size:10px; font-weight:600; color:var(--faint);
+      letter-spacing:0.8px; text-transform:uppercase; margin-bottom:4px;
+    }
+    .sb-field input, .sb-field select, .sb-field textarea {
+      width:100%; padding:7px 9px; border:1.5px solid var(--border); border-radius:7px;
+      background:var(--bg); color:var(--text); font-size:13px;
+      font-family:inherit; transition:border-color 0.15s;
+    }
+    .sb-field input:focus, .sb-field select:focus, .sb-field textarea:focus {
+      outline:none; border-color:var(--accent); background:var(--surface);
+    }
+    .sb-field select { cursor:pointer; }
+
     /* ── Print ── */
     @media print {
       header, .sidebar, .nav-popover { display:none !important; }
@@ -464,7 +481,13 @@
 <div class="app-body">
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-inner">
-    <div class="sb-section">
+          <div class="sb-section">
+        <div class="sb-hd">Project Details</div>
+        <div class="sb-field"><label>Project Name</label><input type="text" id="proj-name" placeholder="e.g. Offshore Substation" oninput="_scheduleSnap(); const _v=this.value.trim(); if(_v) SuiteManager.write({projectName:_v},'resourcecast')"></div>
+        <div class="sb-field"><label>Project No.</label><input type="text" id="proj-num" placeholder="e.g. PRJ-001" oninput="_scheduleSnap(); SuiteManager.write({projNum:this.value.trim()},'resourcecast')"></div>
+        <div class="sb-field"><label>Start Date</label><input type="date" id="proj-date" oninput="_scheduleSnap(); rebuildMonthlyGrid()"></div>
+      </div>
+<div class="sb-section">
       <div class="sb-hd">Actions</div>
       <div class="sb-actions-grid">
         <button class="sb-btn" id="btn-undo" onclick="undo()" disabled>↩ Undo</button>
@@ -485,22 +508,7 @@
   
 
   <!-- Project Info -->
-  <div class="section">
-    <div class="section-title">Project Information</div>
-    <div class="fields f3">
-      <label>Project Name
-        <input type="text" id="proj-name" placeholder="e.g. Offshore Substation — Package 3"
-          oninput="const _v=this.value.trim();if(_v&&_v!=='Project Name')SuiteManager.write({projectName:_v},'resourcecast')">
-      </label>
-      <label>Project No. <input type="text" id="proj-num" placeholder="e.g. PRJ-001" oninput="_scheduleSnap(); SuiteManager.write({projNum:this.value.trim()},'resourcecast')"></label>
-      <label>Revision
-        <input type="text" id="proj-rev" value="Rev. 1.0">
-      </label>
-      <label>Date
-        <input type="text" id="proj-date" placeholder="06 Mar 2026" oninput="this.style.outline=(!this.value||/^\d{1,2}\s+[A-Za-z]{3}\s+\d{4}$/.test(this.value.trim()))?'':'2px solid #c0392b'">
-      </label>
-    </div>
-  </div>
+  
 
   <!-- Phases -->
   <div class="section">

@@ -462,6 +462,23 @@ input[type="text"]:focus { border-color:var(--accent); background:var(--input-bg
     .kb-hint, #autosave-label, .save-confirm { display:none !important; }
     #toolbar { display:none !important; }
 
+
+    .sb-field { margin-bottom:10px; }
+    .sb-field:last-child { margin-bottom:0; }
+    .sb-field label {
+      display:block; font-size:10px; font-weight:600; color:var(--faint);
+      letter-spacing:0.8px; text-transform:uppercase; margin-bottom:4px;
+    }
+    .sb-field input, .sb-field select, .sb-field textarea {
+      width:100%; padding:7px 9px; border:1.5px solid var(--border); border-radius:7px;
+      background:var(--bg); color:var(--text); font-size:13px;
+      font-family:inherit; transition:border-color 0.15s;
+    }
+    .sb-field input:focus, .sb-field select:focus, .sb-field textarea:focus {
+      outline:none; border-color:var(--accent); background:var(--surface);
+    }
+    .sb-field select { cursor:pointer; }
+
     /* ── Print ── */
     @media print {
       header, .sidebar, .nav-popover { display:none !important; }
@@ -512,7 +529,14 @@ input[type="text"]:focus { border-color:var(--accent); background:var(--input-bg
 <div class="app-body">
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-inner">
-    <div class="sb-section">
+          <div class="sb-section">
+        <div class="sb-hd">Project Details</div>
+        <div class="sb-field"><label>Document Title</label><input type="text" id="doc-title" value="Risk Register" oninput="_scheduleSnap()"></div>
+        <div class="sb-field"><label>Project No.</label><input type="text" id="proj-num" placeholder="e.g. PRJ-001" oninput="_scheduleSnap(); SuiteManager.write({projNum:this.value.trim()},'riskcast')"></div>
+        <div class="sb-field"><label>Revision</label><input type="text" id="doc-rev" value="Rev. 0" oninput="_scheduleSnap()"></div>
+        <div class="sb-field"><label>Date</label><input type="date" id="doc-date" oninput="_scheduleSnap()"></div>
+      </div>
+<div class="sb-section">
       <div class="sb-hd">Actions</div>
       <div class="sb-actions-grid">
         <button class="sb-btn" id="btn-undo" onclick="undo()" disabled>↩ Undo</button>
@@ -531,18 +555,7 @@ input[type="text"]:focus { border-color:var(--accent); background:var(--input-bg
     <div class="canvas-body">
 <div id="editor">
 
-  <div class="section">
-    <div class="section-title">Document Information</div>
-    <div class="fields f3">
-      <label>Project / Document Title
-        <input type="text" id="doc-title" value="Risk Register"
-          oninput="const _v=this.value.trim();if(_v&&_v!=='Project Name'&&_v!=='Risk Register')SuiteManager.write({projectName:_v},'riskcast')">
-      </label>
-      <label>Revision <input type="text" id="doc-rev" value="Rev. 0"></label>
-      <label>Date     <input type="text" id="doc-date"></label>
-      <label>Project No. <input type="text" id="proj-num" placeholder="e.g. PRJ-001" oninput="_scheduleSnap(); SuiteManager.write({projNum:this.value.trim()},'riskcast')"></label>
-    </div>
-  </div>
+  
 
   <div class="risk-summary no-print" id="risk-summary">
     <span class="risk-count-pill" id="risk-count-pill">0 risks</span>

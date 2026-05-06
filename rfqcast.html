@@ -351,6 +351,23 @@ input:focus, select:focus { border-color:var(--accent); background:var(--input-b
     .kb-hint, #autosave-label, .save-confirm { display:none !important; }
     #toolbar { display:none !important; }
 
+
+    .sb-field { margin-bottom:10px; }
+    .sb-field:last-child { margin-bottom:0; }
+    .sb-field label {
+      display:block; font-size:10px; font-weight:600; color:var(--faint);
+      letter-spacing:0.8px; text-transform:uppercase; margin-bottom:4px;
+    }
+    .sb-field input, .sb-field select, .sb-field textarea {
+      width:100%; padding:7px 9px; border:1.5px solid var(--border); border-radius:7px;
+      background:var(--bg); color:var(--text); font-size:13px;
+      font-family:inherit; transition:border-color 0.15s;
+    }
+    .sb-field input:focus, .sb-field select:focus, .sb-field textarea:focus {
+      outline:none; border-color:var(--accent); background:var(--surface);
+    }
+    .sb-field select { cursor:pointer; }
+
     /* ── Print ── */
     @media print {
       header, .sidebar, .nav-popover { display:none !important; }
@@ -400,7 +417,12 @@ input:focus, select:focus { border-color:var(--accent); background:var(--input-b
 <div class="app-body">
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-inner">
-    <div class="sb-section">
+          <div class="sb-section">
+        <div class="sb-hd">Project Details</div>
+        <div class="sb-field"><label>Project Name</label><input type="text" id="proj-name" placeholder="e.g. Alpha 132kV Substation" oninput="const _v=this.value.trim();if(_v&&_v!=='Project Name')SuiteManager.write({projectName:_v},'rfqcast')"></div>
+        <div class="sb-field"><label>Project No.</label><input type="text" id="proj-num" placeholder="e.g. PRJ-001" oninput="_scheduleSnap(); SuiteManager.write({projNum:this.value.trim()},'rfqcast')"></div>
+      </div>
+<div class="sb-section">
       <div class="sb-hd">Actions</div>
       <div class="sb-actions-grid">
         <button class="sb-btn" id="btn-undo" onclick="undo()" disabled>↩ Undo</button>
@@ -420,20 +442,7 @@ input:focus, select:focus { border-color:var(--accent); background:var(--input-b
     <div class="canvas-body">
 <div id="editor">
 
-  <div class="section">
-    <div class="section-title">Project Information</div>
-    <div class="fields f1">
-      <label>Project Name <input type="text" id="proj-name" value="" placeholder="e.g. Alpha 132kV Substation" oninput="const _v=this.value.trim();if(_v&&_v!=='Project Name')SuiteManager.write({projectName:_v},'rfqcast')"></label>
-      <label>Project No. <input type="text" id="proj-num" placeholder="e.g. PRJ-001" oninput="_scheduleSnap(); SuiteManager.write({projNum:this.value.trim()},'rfqcast')"></label>
-    </div>
-    <div class="fields f4" style="margin-top:12px;">
-      <label>Offer Due Date <input type="date" id="offer-due"></label>
-      <label>Validity Required (Months) <input type="number" id="validity-months" value="3" min="1" max="36"></label>
-      <label>DNP Required (Months) <input type="number" id="dnp-months" value="24" min="0" step="1" title="Defect Notification Period"></label>
-      <label>Revision <input type="text" id="doc-rev" value="Rev. 0"></label>
-      <label>Date <input type="text" id="doc-date" value=""></label>
-    </div>
-  </div>
+  
 
   <div class="section">
     <div class="section-title">Procurement Items <span style="font-size:10px;font-weight:400;color:var(--faint);text-transform:none;letter-spacing:0;"> — Click on any row to expand details, enter prices, and select a winner.</span></div>
