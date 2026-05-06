@@ -254,118 +254,26 @@ label {
 .section label select:focus {
   border-color: var(--accent); background: var(--input-bg-focus);
 }
-
-  /* ── SaaS Layout ── */
-  header {
-    height: 52px; padding: 0 24px; display: flex; align-items: center;
-    justify-content: space-between; background: var(--surface);
-    border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 2000;
-  }
-  .header-left  { display: flex; align-items: center; gap: 16px; }
-  .header-right { display: flex; align-items: center; gap: 8px; }
-  .waffle-btn {
-    background: transparent; border: none; color: var(--muted); cursor: pointer;
-    width: 32px; height: 32px; border-radius: 6px; display: flex;
-    align-items: center; justify-content: center; transition: background 0.15s, color 0.15s;
-    flex-shrink: 0;
-  }
-  .waffle-btn:hover, .waffle-btn.active { background: var(--bg); color: var(--text); }
-  .logo-wrap { display:flex; align-items:center; gap:8px; text-decoration:none; flex-shrink:0; }
-  .logo-icon  {
-    width: 24px; height: 24px; background: var(--navy); border-radius: 6px;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
-  .logo-icon svg { width: 12px; height: 12px; }
-  .tool-identity { display:flex; flex-direction:column; justify-content:center; line-height:1.1; }
-  .tool-name  { font-size:15px; font-weight:700; color:var(--text); letter-spacing:-0.3px; }
-  .tool-tag   { font-size:8px; font-weight:700; color:var(--faint); text-transform:uppercase; letter-spacing:1px; }
-  .tb-sep     { width:1px; height:20px; background:var(--border); flex-shrink:0; }
-  .workspace-bar { background:var(--bg); border-bottom:1px solid var(--border); position:sticky; top:52px; z-index:1500; }
-  .wb-inner   { padding:6px 24px; display:flex; align-items:center; gap:12px; }
-  .pp-label   { font-size:9px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--faint); white-space:nowrap; }
-  .pp-input   {
-    font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600;
-    border:1px solid transparent; border-radius:6px; padding:4px 8px;
-    background:transparent; color:var(--text); outline:none; transition:all 0.15s; width:220px;
-  }
-  .pp-input:focus, .pp-input:hover { border-color:var(--border); background:var(--surface); }
-  .pp-sync-dot { width:6px; height:6px; border-radius:50%; background:#22c55e; flex-shrink:0; box-shadow:0 0 0 2px #dcfce7; display:none; }
-  .pp-sync-dot.active { display:inline-block; }
-  .tool-actions-bar {
-    background:var(--surface); border-bottom:1px solid var(--border);
-    padding:5px 24px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;
-    position:sticky; top:90px; z-index:1000;
-  }
-  .tool-layout { display:flex; flex:1; overflow:hidden; }
-  .tool-canvas { flex:1; background:var(--bg); overflow-y:auto; }
-  .canvas-panel { padding:0; }
-  .app-switcher-wrap { position:relative; }
-  .app-switcher-panel {
-    position:absolute; top:calc(100% + 8px); left:0; background:var(--surface);
-    border:1px solid var(--border); border-radius:12px; padding:12px; width:300px;
-    box-shadow:0 10px 40px rgba(0,0,0,0.15); z-index:3000;
-    display:none; grid-template-columns:repeat(3,1fr); gap:6px;
-  }
-  .app-switcher-panel.open { display:grid; }
-  .as-item {
-    display:flex; flex-direction:column; align-items:center; gap:6px; padding:10px 6px;
-    border-radius:8px; text-decoration:none; color:var(--text); transition:background 0.15s; text-align:center;
-  }
-  .as-item:hover { background:var(--bg); }
-  .as-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .as-icon svg { width:16px; height:16px; }
-  .as-name { font-size:10px; font-weight:600; letter-spacing:-0.1px; line-height:1.2; }
 </style>
 </head>
 <body>
 
 <!-- ══ TOOLBAR ══════════════════════════════════════════════════════ -->
-<header id="topbar">
-  <div class="header-left">
-    <div class="app-switcher-wrap">
-      <button class="waffle-btn" id="waffle-btn" onclick="toggleAppSwitcher()" title="Switch Tool">
-        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
-        </svg>
-      </button>
-      <div class="app-switcher-panel" id="app-switcher">
-        <a href="index.html" class="as-item">
-          <div class="as-icon" style="background:var(--navy);">
-            <svg viewBox="0 0 18 18" fill="none"><rect x="1" y="1" width="7" height="7" rx="1.5" fill="white"/><rect x="10" y="1" width="7" height="7" rx="1.5" fill="white"/><rect x="1" y="10" width="7" height="7" rx="1.5" fill="white"/><rect x="10" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.4"/></svg>
-          </div>
-          <span class="as-name" style="color:var(--accent);">Dashboard</span>
-        </a>
-        <a href="timecast.html" class="as-item"><div class="as-icon" style="background:#f5f3ff;"><svg viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2"><rect x="2" y="5" width="20" height="15" rx="2"/></svg></div><span class="as-name">TimeCast</span></a>
-        <a href="resourcecast.html" class="as-item"><div class="as-icon" style="background:#f0fdfc;"><svg viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/></svg></div><span class="as-name">ResourceCast</span></a>
-        <a href="calccast.html" class="as-item"><div class="as-icon" style="background:#eef2ff;"><svg viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/></svg></div><span class="as-name">CalcCast</span></a>
-        <a href="riskcast.html" class="as-item"><div class="as-icon" style="background:#fff1f2;"><svg viewBox="0 0 24 24" fill="none" stroke="#be123c" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></div><span class="as-name">RiskCast</span></a>
-        <a href="estimator.html" class="as-item"><div class="as-icon" style="background:#ecfeff;"><svg viewBox="0 0 24 24" fill="none" stroke="#0e7490" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/></svg></div><span class="as-name">Estimator</span></a>
-      </div>
+<div id="toolbar">
+  <div class="tb-left">
+    <div class="logo-icon" style="background:#7c3aed">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="13" width="4" height="7" rx="1"/><rect x="9" y="9" width="4" height="11" rx="1"/><rect x="16" y="5" width="4" height="15" rx="1"/><path d="M3 12 Q7 8 12 8 Q17 8 21 4"/></svg>
     </div>
-    <a class="logo-wrap" href="index.html" title="Back to Dashboard">
-      <div class="logo-icon"><svg viewBox="0 0 18 18" fill="none"><rect x="1" y="1" width="7" height="7" rx="1.5" fill="white"/><rect x="10" y="1" width="7" height="7" rx="1.5" fill="white"/><rect x="1" y="10" width="7" height="7" rx="1.5" fill="white"/><rect x="10" y="10" width="7" height="7" rx="1.5" fill="white" opacity="0.4"/></svg></div>
-    </a>
+    <div>
+      <div class="tool-name">CashFlow</div>
+      <div class="tool-tag">Cash Flow &amp; Risk · PYL0N</div>
+    </div>
     <div class="tb-sep"></div>
-    <div class="tool-identity">
-      <span class="tool-name">CashFlow</span>
-      <span class="tool-tag">Cash Flow &amp; Risk · PYL0N</span>
-    </div>
+    <button class="tb-btn" onclick="location.href='index.html'">← Dashboard</button>
+    <button class="tb-btn" onclick="location.href='calccast.html'">← CalcCast</button>
   </div>
-  <div class="header-right">
-    <button id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle dark mode" style="font-size:15px;padding:3px 6px;border:none;background:transparent;cursor:pointer;color:inherit;">🌙</button>
-  </div>
-</header>
-
-<div class="workspace-bar">
-  <div class="wb-inner">
-    <span class="pp-label">Project:</span>
-    <input id="pp-name" class="pp-input" type="text" placeholder="Project name…" title="Project name — syncs to all tools">
-    <span class="pp-sync-dot" id="pp-sync-dot" title="Synced"></span>
-  </div>
-</div>
-
-<div class="tool-actions-bar" id="tool-actions">
-  <button class="tb-btn" id="btn-undo" onclick="undo()" disabled>↩ Undo</button>
+  <div class="tb-right">
+    <button class="tb-btn" id="btn-undo" onclick="undo()" disabled>↩ Undo</button>
     <button class="tb-btn" id="btn-redo" onclick="redo()" disabled>↪ Redo</button>
     <div class="tb-sep"></div>
     <button class="tb-btn" onclick="saveJSON()">💾 Save</button>
@@ -373,12 +281,10 @@ label {
     <div class="tb-sep"></div>
     <button class="tb-btn" onclick="loadSuiteData(); simulate();" style="border-color:var(--accent);color:var(--accent);">↺ Refresh Data</button>
     <button class="tb-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle dark mode" aria-label="Toggle dark mode" style="font-size:14px;padding:4px 8px;border:none;background:transparent;cursor:pointer;">🌙</button>
+  </div>
 </div>
 
 <!-- ══ EDITOR ═══════════════════════════════════════════════════════ -->
-<div class="tool-layout">
-<main class="tool-canvas">
-<div class="canvas-panel">
 <div id="editor">
 
   <!-- Top Summary Cards -->
@@ -497,10 +403,7 @@ label {
     </div><!-- /charts-panel -->
 
   </div><!-- /two-col -->
-</div>
-</div><!-- /.canvas-panel -->
-</main><!-- /.tool-canvas -->
-</div><!-- /.tool-layout --><!-- /editor -->
+</div><!-- /editor -->
 
 <script>
 /* ══ Theme ═════════════════════════════════════════════════════════════ */
@@ -1209,23 +1112,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
-
-function toggleAppSwitcher() {
-  const panel = document.getElementById('app-switcher');
-  const btn   = document.getElementById('waffle-btn');
-  const isOpen = panel.classList.contains('open');
-  if (isOpen) { panel.classList.remove('open'); btn.classList.remove('active'); }
-  else         { panel.classList.add('open');    btn.classList.add('active'); }
-}
-document.addEventListener('click', e => {
-  const panel = document.getElementById('app-switcher');
-  const btn   = document.getElementById('waffle-btn');
-  if (panel && panel.classList.contains('open') &&
-      !panel.contains(e.target) && !btn.contains(e.target)) {
-    panel.classList.remove('open'); btn.classList.remove('active');
-  }
-});
-
 </script>
 </body>
 </html>
