@@ -567,6 +567,23 @@ table.w2w-tbl tr.w2w-row-spacer td { height: 6px; background: var(--bg); padding
     .kb-hint, #autosave-label, .save-confirm { display:none !important; }
     #toolbar { display:none !important; }
 
+
+    .sb-field { margin-bottom:10px; }
+    .sb-field:last-child { margin-bottom:0; }
+    .sb-field label {
+      display:block; font-size:10px; font-weight:600; color:var(--faint);
+      letter-spacing:0.8px; text-transform:uppercase; margin-bottom:4px;
+    }
+    .sb-field input, .sb-field select, .sb-field textarea {
+      width:100%; padding:7px 9px; border:1.5px solid var(--border); border-radius:7px;
+      background:var(--bg); color:var(--text); font-size:13px;
+      font-family:inherit; transition:border-color 0.15s;
+    }
+    .sb-field input:focus, .sb-field select:focus, .sb-field textarea:focus {
+      outline:none; border-color:var(--accent); background:var(--surface);
+    }
+    .sb-field select { cursor:pointer; }
+
     /* ── Print ── */
     @media print {
       header, .sidebar, .nav-popover { display:none !important; }
