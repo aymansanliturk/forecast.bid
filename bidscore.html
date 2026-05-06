@@ -260,6 +260,62 @@
     }
     .tb-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--surface); }
 
+    /* ── Nav popover ── */
+    .bc-btn {
+      background: none; border: none; padding: 0; cursor: pointer;
+      font-size: 13px; color: var(--muted); font-family: inherit;
+      transition: color 0.15s; display: flex; align-items: center; gap: 4px;
+    }
+    .bc-btn:hover { color: var(--text); }
+    .bc-btn .bc-caret { font-size: 9px; opacity: 0.6; transition: transform 0.15s; }
+    .bc-btn.open .bc-caret { transform: rotate(180deg); }
+
+    .nav-popover {
+      position: fixed; top: 49px; left: 0;
+      width: 492px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-top: none; border-radius: 0 0 14px 14px;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.13);
+      z-index: 400; padding: 14px;
+      animation: navPopIn 0.16s ease;
+    }
+    @keyframes navPopIn {
+      from { opacity:0; transform:translateY(-8px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .nav-pop-hd {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-bottom: 10px; margin-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-pop-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.1px; color: var(--faint); }
+    .nav-pop-dash  { font-size: 12px; font-weight: 600; color: var(--accent); text-decoration: none; }
+    .nav-pop-dash:hover { text-decoration: underline; }
+
+    .nav-pop-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px;
+    }
+
+    .nav-tool-card {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 9px; border-radius: 8px;
+      text-decoration: none; color: var(--text);
+      transition: background 0.12s; cursor: pointer;
+    }
+    .nav-tool-card:hover { background: var(--bg); }
+    .nav-tool-card.ntc-active { background: var(--bg); outline: 1.5px solid var(--border); }
+
+    .ntc-icon {
+      width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; color: #fff; letter-spacing: -0.3px;
+      font-family: 'DM Mono', monospace;
+    }
+    .ntc-info { min-width: 0; }
+    .ntc-name { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ntc-tag  { font-size: 10px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+
     @media print {
       body { height:auto; overflow:visible; }
       header, .sidebar, .canvas-score-bar, .out-toolbar { display:none !important; }
@@ -285,7 +341,7 @@
     </a>
     <div class="hdr-div"></div>
     <nav class="breadcrumb">
-      <a class="bc-link" href="index.html">Dashboard</a>
+      <button class="bc-btn" id="dashboard-btn" onclick="toggleNavPopover(event)">Dashboard <span class="bc-caret">▾</span></button>
       <span class="bc-sep">›</span>
       <span class="bc-current">BidScore</span>
     </nav>
@@ -300,6 +356,15 @@
     <button class="hdr-icon-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle dark mode" style="font-size:15px;">🌙</button>
   </div>
 </header>
+
+<!-- ── Tool nav popover ── -->
+<div id="nav-popover" class="nav-popover" style="display:none" onclick="event.stopPropagation()">
+  <div class="nav-pop-hd">
+    <span class="nav-pop-title">All Tools</span>
+    <a href="index.html" class="nav-pop-dash">Dashboard →</a>
+  </div>
+  <div class="nav-pop-grid" id="nav-pop-grid"></div>
+</div>
 
 <!-- ── Editor (sidebar + canvas) ── -->
 <div id="editor">
@@ -787,6 +852,65 @@ async function loadJSON(input) {
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+/* ══ Tool nav popover ════════════════════════════════════════════════ */
+const SUITE_TOOLS = [
+  { name:'TimeCast',    file:'timecast.html',    color:'#2c4e87', abbr:'TC', tag:'Gantt timeline'     },
+  { name:'ResourceCast',file:'resourcecast.html',color:'#0891b2', abbr:'RC', tag:'Resource planning'  },
+  { name:'OrgCast',     file:'orgcast.html',     color:'#7c3aed', abbr:'OC', tag:'Org chart'           },
+  { name:'RFQCast',     file:'rfqcast.html',     color:'#d97706', abbr:'RQ', tag:'Supplier quotes'     },
+  { name:'DORCast',     file:'dorcast.html',     color:'#059669', abbr:'DC', tag:'RACI matrix'         },
+  { name:'RiskCast',    file:'riskcast.html',    color:'#dc2626', abbr:'RK', tag:'Risk register'       },
+  { name:'CalcCast',    file:'calccast.html',    color:'#0369a1', abbr:'CC', tag:'Cost calculator'     },
+  { name:'LetterCast',  file:'lettercast.html',  color:'#6366f1', abbr:'LC', tag:'Cover letters'       },
+  { name:'CashFlow',    file:'cashflow.html',    color:'#0ea5e9', abbr:'CF', tag:'Cash flow'           },
+  { name:'W2W Report',  file:'w2w-report.html',  color:'#10b981', abbr:'W2', tag:'Financial report'    },
+  { name:'CVCast',      file:'cvcast.html',      color:'#b45309', abbr:'CV', tag:'CV builder'          },
+  { name:'ForeCast',    file:'forecast.html',    color:'#8b5cf6', abbr:'FC', tag:'Pipeline monitor'    },
+  { name:'BidScore',    file:'bidscore.html',    color:'#1e3a6b', abbr:'BS', tag:'Bid/No-Bid scoring'  },
+  { name:'ActionLog',   file:'actionlog.html',   color:'#ef4444', abbr:'AL', tag:'Action tracker'      },
+  { name:'BidPack',     file:'bidpack.html',     color:'#334155', abbr:'BP', tag:'Bid assembler'       },
+];
+
+let _navOpen = false;
+
+function _buildNavPopover() {
+  const grid = document.getElementById('nav-pop-grid');
+  if (!grid || grid.children.length) return;
+  const current = location.pathname.split('/').pop() || 'index.html';
+  grid.innerHTML = SUITE_TOOLS.map(t => {
+    const active = t.file === current ? ' ntc-active' : '';
+    return `<a class="nav-tool-card${active}" href="${t.file}">
+      <div class="ntc-icon" style="background:${t.color}">${t.abbr}</div>
+      <div class="ntc-info">
+        <div class="ntc-name">${t.name}</div>
+        <div class="ntc-tag">${t.tag}</div>
+      </div>
+    </a>`;
+  }).join('');
+}
+
+function toggleNavPopover(e) {
+  e && e.stopPropagation();
+  _navOpen ? closeNavPopover() : openNavPopover();
+}
+
+function openNavPopover() {
+  _buildNavPopover();
+  const pop = document.getElementById('nav-popover');
+  const btn = document.getElementById('dashboard-btn');
+  pop.style.display = 'block';
+  btn.classList.add('open');
+  _navOpen = true;
+}
+
+function closeNavPopover() {
+  const pop = document.getElementById('nav-popover');
+  const btn = document.getElementById('dashboard-btn');
+  pop.style.display = 'none';
+  btn.classList.remove('open');
+  _navOpen = false;
+}
+
 /* ── Dark mode ── */
 function toggleTheme() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -836,12 +960,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeNavPopover(); return; }
     if (e.ctrlKey || e.metaKey) {
       if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
       if (e.key === 'y' || (e.key==='z' && e.shiftKey)) { e.preventDefault(); redo(); }
       if (e.key === 's') { e.preventDefault(); saveJSON(); }
     }
   });
+
+  document.addEventListener('click', () => { if (_navOpen) closeNavPopover(); });
 });
 </script>
 </body>
